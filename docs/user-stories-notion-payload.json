@@ -1,0 +1,293 @@
+[
+  {
+    "id": "US-01",
+    "epic": "Users & Authentication",
+    "title": "User Registration",
+    "story": "As a visitor, I want to register with email/password so I can access the platform.",
+    "priority": "High",
+    "sprint": 1,
+    "acceptance_criteria": [
+      "Form requests: name, email, password (min 8 chars), confirmation",
+      "Email must be unique",
+      "Email format validation",
+      "Password stored hashed (bcrypt)",
+      "New user gets 'student' role by default",
+      "Success message shown after registration",
+      "Redirect to dashboard after successful registration"
+    ]
+  },
+  {
+    "id": "US-02",
+    "epic": "Users & Authentication",
+    "title": "Login",
+    "story": "As a registered user, I want to log in so I can access my dashboard.",
+    "priority": "High",
+    "sprint": 1,
+    "acceptance_criteria": [
+      "Form requests email and password",
+      "Shows error if credentials are invalid",
+      "On success, receives Sanctum auth token",
+      "Token stored securely (httpOnly cookie or localStorage with interceptor)",
+      "Role-based redirect: admin→dashboard, instructor→my courses, student→catalog"
+    ]
+  },
+  {
+    "id": "US-03",
+    "epic": "Users & Authentication",
+    "title": "User Management (Admin)",
+    "story": "As an admin, I want to CRUD users so I can maintain the platform.",
+    "priority": "High",
+    "sprint": 1,
+    "acceptance_criteria": [
+      "User list with pagination and search by name/email",
+      "Create form with: name, email, password, role",
+      "Edit: allows changing name, email, role, status (active/inactive)",
+      "Logical deletion (soft delete or mark inactive)",
+      "Only admins can access this feature"
+    ]
+  },
+  {
+    "id": "US-04",
+    "epic": "Users & Authentication",
+    "title": "Password Recovery",
+    "story": "As a user, I want to recover my password if I forget it.",
+    "priority": "Medium",
+    "sprint": 1,
+    "acceptance_criteria": [
+      "Recovery form requests email",
+      "Sends email with recovery link/token (simulated)",
+      "Token expires in 1 hour",
+      "New password form with confirmation"
+    ]
+  },
+  {
+    "id": "US-05",
+    "epic": "Course Management",
+    "title": "Public Course Catalog",
+    "story": "As a visitor, I want to browse the course catalog with filters.",
+    "priority": "High",
+    "sprint": 1,
+    "acceptance_criteria": [
+      "Course list with: title, short description, level, category, duration",
+      "Filters by: level, category, price",
+      "Pagination (10 courses per page)",
+      "Search by title"
+    ]
+  },
+  {
+    "id": "US-06",
+    "epic": "Course Management",
+    "title": "Course Detail",
+    "story": "As a student, I want to view course details before enrolling.",
+    "priority": "High",
+    "sprint": 1,
+    "acceptance_criteria": [
+      "Shows: title, full description, syllabus, requirements, level, duration, instructor",
+      "Indicates if course requires specific subscription plan",
+      "Shows enroll button if user has access"
+    ]
+  },
+  {
+    "id": "US-07",
+    "epic": "Course Management",
+    "title": "Create/Edit Courses (Instructor)",
+    "story": "As an instructor, I want to create and edit my own courses.",
+    "priority": "High",
+    "sprint": 1,
+    "acceptance_criteria": [
+      "Form with: title, description, syllabus, duration, level, category, requirements",
+      "Instructor can only edit their own courses",
+      "Courses default to 'unpublished'",
+      "Validation of required fields"
+    ]
+  },
+  {
+    "id": "US-08",
+    "epic": "Course Management",
+    "title": "Course Management (Admin)",
+    "story": "As an admin, I want to manage all courses (full CRUD).",
+    "priority": "High",
+    "sprint": 1,
+    "acceptance_criteria": [
+      "List of all courses (published and unpublished)",
+      "Create, edit, publish/unpublish, delete courses",
+      "Assign instructor to a course"
+    ]
+  },
+  {
+    "id": "US-09",
+    "epic": "Subscriptions",
+    "title": "View Subscription Plans",
+    "story": "As a student, I want to view available subscription plans.",
+    "priority": "High",
+    "sprint": 2,
+    "acceptance_criteria": [
+      "Shows 3 plans: Basic, Pro, Premium",
+      "Each plan shows: name, price, duration, max_courses, description",
+      "Indicates if plan is unlimited (Premium)"
+    ]
+  },
+  {
+    "id": "US-10",
+    "epic": "Subscriptions",
+    "title": "Subscribe to a Plan",
+    "story": "As a student, I want to subscribe to a plan to access courses.",
+    "priority": "High",
+    "sprint": 2,
+    "acceptance_criteria": [
+      "Plan selection → redirect to payment gateway",
+      "After successful payment, creates subscription with status 'active'",
+      "end_date calculated automatically from plan's duration_days",
+      "Corresponding payment record created",
+      "Confirmation notification"
+    ]
+  },
+  {
+    "id": "US-11",
+    "epic": "Subscriptions",
+    "title": "Auto-Renewal",
+    "story": "As a student, I want my subscription to auto-renew.",
+    "priority": "Medium",
+    "sprint": 2,
+    "acceptance_criteria": [
+      "User can enable/disable auto_renew",
+      "When enabled, simulates charge at expiry",
+      "end_date extended by plan's duration_days",
+      "New payment record created"
+    ]
+  },
+  {
+    "id": "US-12",
+    "epic": "Subscriptions",
+    "title": "Subscription History",
+    "story": "As a student, I want to view my subscription history.",
+    "priority": "Medium",
+    "sprint": 2,
+    "acceptance_criteria": [
+      "Chronological list with: plan, dates, status, amount paid",
+      "Visual indicator of active subscription"
+    ]
+  },
+  {
+    "id": "US-13",
+    "epic": "Payments",
+    "title": "Payment via Test Gateway",
+    "story": "As a student, I want to pay via Stripe/PayPal sandbox.",
+    "priority": "High",
+    "sprint": 2,
+    "acceptance_criteria": [
+      "Integration with Stripe Checkout (test mode) or PayPal Sandbox",
+      "Shows payment summary: plan, amount, taxes (if applicable)",
+      "After successful payment, creates record in payments table",
+      "Handles payment errors (card declined, etc.)"
+    ]
+  },
+  {
+    "id": "US-14",
+    "epic": "Payments",
+    "title": "Payment Confirmation",
+    "story": "As a student, I want payment confirmation before activation.",
+    "priority": "High",
+    "sprint": 2,
+    "acceptance_criteria": [
+      "Confirmation screen with: transaction_id, amount, date, plan",
+      "Sends confirmation email (simulated)",
+      "Subscription activates only when status = completed"
+    ]
+  },
+  {
+    "id": "US-15",
+    "epic": "Payments",
+    "title": "Transaction Records (Admin)",
+    "story": "As an admin, I want to view all payment transactions.",
+    "priority": "Medium",
+    "sprint": 2,
+    "acceptance_criteria": [
+      "List with: user, plan, amount, date, method, status",
+      "Filters by status, date, payment method",
+      "Exportable to CSV/PDF"
+    ]
+  },
+  {
+    "id": "US-16",
+    "epic": "Course Access Control",
+    "title": "Access by Subscription",
+    "story": "As a student, I want to see only courses allowed by my plan.",
+    "priority": "High",
+    "sprint": 3,
+    "acceptance_criteria": [
+      "Courses show indicator if user's plan allows access",
+      "If no active subscription, shows prompt to subscribe",
+      "Basic: access to beginner level courses",
+      "Pro: access to beginner + intermediate courses",
+      "Premium: access to all courses"
+    ]
+  },
+  {
+    "id": "US-17",
+    "epic": "Course Access Control",
+    "title": "Course Enrollment",
+    "story": "As a student with active subscription, I want to enroll in a course.",
+    "priority": "High",
+    "sprint": 3,
+    "acceptance_criteria": [
+      "Enroll button visible if user has access",
+      "Validates subscription is active",
+      "Registers in course_enrollments with progress = 0",
+      "Prevents double enrollment to same course"
+    ]
+  },
+  {
+    "id": "US-18",
+    "epic": "Course Access Control",
+    "title": "Progress Tracking",
+    "story": "As a student, I want to track my progress in enrolled courses.",
+    "priority": "Medium",
+    "sprint": 3,
+    "acceptance_criteria": [
+      "Dashboard shows enrolled courses with progress bar",
+      "Progress percentage (0-100%)",
+      "Course marked complete when progress = 100%",
+      "Completion date recorded"
+    ]
+  },
+  {
+    "id": "US-19",
+    "epic": "Reports",
+    "title": "Monthly Revenue by Plan",
+    "story": "As an admin, I want monthly revenue broken down by subscription type.",
+    "priority": "High",
+    "sprint": 3,
+    "acceptance_criteria": [
+      "Bar chart or table with: month, plan, subscription count, total revenue",
+      "Date range filter",
+      "Exportable to PDF/CSV"
+    ]
+  },
+  {
+    "id": "US-20",
+    "epic": "Reports",
+    "title": "Top 5 Enrolled Courses",
+    "story": "As an admin, I want the top 5 most enrolled courses.",
+    "priority": "High",
+    "sprint": 3,
+    "acceptance_criteria": [
+      "Table/list with: course, instructor, enrollment count, level",
+      "Sorted descending by enrollments",
+      "Period filter"
+    ]
+  },
+  {
+    "id": "US-21",
+    "epic": "Reports",
+    "title": "Active vs Inactive Students",
+    "story": "As an admin, I want a report of active vs inactive students.",
+    "priority": "High",
+    "sprint": 3,
+    "acceptance_criteria": [
+      "Pie chart with: active (current subscription), inactive (no subscription)",
+      "Numeric count of each group",
+      "Registration date filter"
+    ]
+  }
+]

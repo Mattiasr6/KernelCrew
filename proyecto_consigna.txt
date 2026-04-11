@@ -1,0 +1,216 @@
+Planificación del PROYECTO FORMATIVO – DESARROLLO
+DE SISTEMAS I
+Plataforma de Cursos en Línea con Suscripciones y Pagos
+Automatizados
+1. Contexto y problema a resolver
+Una academia de capacitación tecnológica necesita una plataforma de cursos en línea que
+permita a los usuarios registrarse, suscribirse a diferentes tipos de planes (mensual,
+trimestral, anual), acceder a cursos según su suscripción, y realizar pagos automatizados.
+Actualmente gestionan todo con hojas de cálculo y correos electrónicos, l o que genera:
+• Demoras en la activación de suscripciones.
+• Errores en el control de accesos a cursos.
+• Falta de reportes sobre ingresos y cursos más vistos.
+• Mala experiencia para el usuario final.
+Tu equipo debe desarrollar un sistema que resuelva este problema.
+2. Objetivo del proyecto formativo
+Desarrollar una aplicación web funcional que permita:
+• Gestionar usuarios con diferentes roles (administrador, instructor, estudiante).
+• Administrar un catálogo de cursos (cada curso tiene título, descripción, duración,
+nivel, precio base o suscripción requerida).
+• Implementar un sistema de suscripciones (planes: Básico, Pro, Premium) con
+diferentes niveles de acceso a cursos.
+• Integrar pagos automatizados (simulados con pasarela de prueba tipo Stripe o
+PayPal Sandbox).
+• Generar reportes (ingresos por suscripción, cursos más populares, estudiantes
+activos).
+• Proveer una interfaz responsive y amigable.
+3. Alcance funcional mínimo obligatorio
+Módulo de usuarios y autenticación
+• Registro e inicio de sesión (email/contraseña o redes sociales opcional).
+• Roles diferenciados con permisos:
+o Administrador: ABMC de cursos, usuarios, visualización de reportes.
+o Instructor: Crear/editar sus propios cursos, ver estudiantes inscritos.
+o Estudiante: Ver cursos disponibles según su suscripción, acceder al
+contenido.
+Módulo de cursos
+• Listado público de cursos con filtros (por nivel, por categoría, por precio).
+• Vista de detalle del curso (descripción, requisitos, temario).
+• Acceso restringido según el plan de suscripción del estudiante.
+Módulo de suscripciones
+• Catálogo de planes de suscripción (ej: Básico → 3 cursos/mes, Pro → 10 cursos/mes,
+Premium → ilimitado).
+• Contratación de suscripción con fecha de inicio y fin.
+• Renovación automática simulada o manual.
+• Historial de suscripciones por usuario.
+Módulo de pagos (simulado pero funcional)
+• Integración con pasarela de prueba (Stripe Checkout o PayPal Sandbox).
+• Registro de transacciones (fecha, monto, plan, estado).
+• Confirmación de pago antes de activar la suscripción.
+Módulo de reportes (mínimo 3 reportes)
+• Reporte de ingresos mensuales por tipo de suscripción.
+• Reporte de cursos más inscritos (top 5).
+• Reporte de estudiantes activos vs inactivos.
+Requisitos técnicos obligatorios
+• Backend: Laravel (PHP) con API REST.
+• Frontend: Angular (TypeScript) como SPA.
+• Base de datos: MySQL o PostgreSQL, normalizada al menos hasta 3FN.
+• Metodología: Scrum con 4 sprints de 1 semanas cada uno.
+• Control de versiones: Git (GitHub o GitLab) con ramas por funcionalidad.
+4. Metodología de trabajo – Scrum
+Cada equipo estará conformado por 4 integrantes con los siguientes roles rotativos por
+sprint (cada integrante debe pasar por todos los roles al menos una vez):
+Rol Responsabilidad
+Product Owner
+Define prioridades del backlog, valida que se cumplan los criterios
+de aceptación, se comunica con el “cliente” (docente).
+Scrum Master
+Facilita las reuniones diarias (daily), elimina impedimentos, asegura
+que se sigan las prácticas ágiles.
+Developer 1
+(Backend)
+Implementa endpoints en Laravel, modelos, migraciones,
+controladores y lógica de negocio.
+Developer 2
+(Frontend)
+Implementa componentes en Angular, servicios de consumo de
+API, manejo de estado y vistas.
+Nota: La pareja de desarrolladores debe colaborar estrechamente. Pueden intercambiar
+tareas, pero cada uno tiene foco primario en su área.
+Estructura de sprints (4 sprints de 1 semanas = 4 semanas totales)
+Sprint Objetivo Entregable principal
+Sprint
+0
+Configuración de entorno, repositorio, BD inicial,
+historias de usuario del backlog.
+Backlog priorizado,
+arquitectura definida,
+entorno funcionando.
+Sprint
+1
+Autenticación, roles, ABMC de usuarios y cursos
+básico.
+Login funcional +
+ABMC de cursos (sin
+suscripciones aún).
+Sprint Objetivo Entregable principal
+Sprint
+2
+Módulo de suscripciones + integración de pagos
+simulados.
+Usuario puede
+contratar plan y pagar
+(sandbox).
+Sprint
+3
+Restricción de acceso a cursos por suscripción +
+reportes básicos.
+Estudiante solo ve
+cursos según su plan.
+Reportes en pantalla.
+Sprint
+4
+Pulido de UI/UX, pruebas de integración,
+documentación, demo final.
+Sistema completo
+funcionando local o
+en la nube.
+Artefactos Scrum obligatorios por equipo
+• Product Backlog (en Trello, Jira o GitHub Projects).
+• Sprint Backlog (tareas asignadas por día).
+• Daily Scrum (registro mínimo de asistencia y tres preguntas).
+• Sprint Review (demo al docente al final de cada sprint).
+• Sprint Retrospective (documento de 3 cosas que mejoraron y 3 por mejorar).
+5. Entregables del proyecto formativo (alineados al sílabo)
+Evidencia (según sílabo) Entregable concreto Sprint
+Reporte de modelo
+conceptual, lógico y físico de
+BD
+Diagrama entidad-relación (ER) + modelo
+relacional normalizado + script SQL
+Sprint 0
+Software del sistema
+funcionando
+Repositorio Git con instrucción de instalación
+(README) + video de máximo 5 min
+mostrando funcionalidades clave
+Sprint 4
+Reportes operativos y
+generales
+Al menos 3 reportes accesibles desde el
+panel de administrador (pantalla o
+exportables a PDF)
+Sprint 3
+Evidencia (según sílabo) Entregable concreto Sprint
+Evidencias de metodología
+ágil
+Backlog, sprints, actas de daily y
+retrospectivas (carpeta compartida)
+Todos
+los
+sprints
+6. Criterios de evaluación (basados en las matrices del sílabo)
+Competencia 1: Diseño de base de datos (20% de la nota del proyecto)
+Nivel Criterio
+Pre-formal Identifica tablas básicas pero sin relaciones claras.
+Receptivo Describe relaciones pero con errores de claves foráneas.
+Resolutivo Diseña modelo 3FN con tablas principales bien relacionadas.
+Autónomo Diseña modelo 3FN completo + índices + restricciones de integridad.
+Estratégico
+Modelo 3FN + vistas materializadas + procedimientos almacenados
+(opcional pero valorado).
+Competencia 2: Desarrollo del sistema con metodología ágil (40% de la nota del
+proyecto)
+Nivel Criterio
+Pre-formal Código desordenado, sin separación de capas, sin Scrum.
+Receptivo Intenta aplicar MVC pero mezcla lógica, Scrum mínimo.
+Resolutivo Arquitectura clara (Laravel API + Angular), Scrum parcialmente aplicado.
+Autónomo
+Arquitectura limpia, Scrum completo (todos los artefactos), pruebas
+básicas.
+Nivel Criterio
+Estratégico
++ Pruebas unitarias, + CI/CD, + buenas prácticas de seguridad (ej.
+validación, sanitización).
+Competencia 3: Diseño e implementación de reportes (40% de la nota del proyecto)
+Nivel Criterio
+Pre-formal Reconoce qué es un reporte pero no lo implementa.
+Receptivo Interpreta datos pero muestra información sin filtros.
+Resolutivo Configura reportes simples (listados planos).
+Autónomo Reportes con filtros (fechas, tipo de suscripción) + exportación.
+Estratégico Reportes dinámicos + gráficos + insight para toma de decisiones.
+7. Condiciones de entrega y defensa
+• Fecha límite: Al finalizar el sprint 4 (semana 4).
+• Forma de entrega:
+o Enlace al repositorio Git (debe estar actualizado hasta el último commit antes
+de la defensa).
+o Documento PDF con: modelo de BD, capturas de pantalla del sistema,
+evidencia de Scrum (backlog, retrospectivas).
+o Video demostrativo (máx. 5 min) mostrando todas las funcionalidades.
+• Defensa presencial: Cada equipo tendrá 10 minutos de demostración en vivo + 5
+minutos de preguntas del docente.
+• Evaluación individual: El docente podrá preguntar a cada miembro sobre su rol y
+aporte específico. Se penalizará a integrantes que no demuestren participación
+activa.
+8. Recomendaciones para los equipos
+1. No intenten abarcar todo desde el inicio. Enfoquen el Sprint 0 en tener la base de
+datos bien definida y el entorno funcionando.
+2. Usen Laravel Sanctum o Passport para autenticación con token (API).
+3. En Angular, usen servicios e interceptores para manejar el token JWT.
+4. Simulen pagos con Stripe Checkout (modo test) o una pasarela falsa local.
+5. Documenten las decisiones técnicas en el README del repositorio.
+6. La comunicación diaria en el equipo es más importante que el código avanzado.
+9. Escala de calificación del proyecto (sobre 100 puntos)
+Rango Concepto Equivalencia
+85 – 100 Estratégico Excelente – supera expectativas
+70 – 84 Autónomo Bueno – cumple todo lo obligatorio
+51 – 69 Resolutivo Suficiente – cumple lo mínimo pero con fallas
+25 – 50 Receptivo Insuficiente – incompleto
+1 – 24 Pre-formal Muy deficiente – no funcional
+10. Anexo: ejemplo de estructura de base de datos (nivel conceptual)
+Tablas sugeridas (mínimo):
+• users (id, name, email, password, role)
+• courses (id, title, description, duration, level, subscription_plan_required)
+• subscription_plans (id, name, price, duration_days, max_courses)
+• user_subscriptions (id, user_id, plan_id, start_date, end_date, status)
+• payments (id, user_id, subscription_id, amount, payment_date, transaction_id, status)
+• course_enrollments (id, user_id, course_id, enrollment_date, progress)
