@@ -1,4 +1,4 @@
-# Historias de Usuario – CodeCore
+# Historias de Usuario – KernelCrew
 
 ## Epic 1: Módulo de Usuarios y Autenticación
 
