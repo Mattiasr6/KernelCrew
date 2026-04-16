@@ -312,9 +312,9 @@ export class AdminUsersComponent implements OnInit {
       })
       .subscribe({
         next: (response) => {
-          this.users.set(response.data);
-          this.dataSource.data = response.data;
-          this.totalItems = response.meta.total;
+          this.users.set(response.data.users);
+          this.dataSource.data = response.data.users;
+          this.totalItems = response.data.meta.total;
           this.loading = false;
         },
         error: () => {

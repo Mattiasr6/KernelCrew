@@ -44,11 +44,13 @@ import { Course } from '../../../core/models';
             <p class="short-description">{{ course()!.short_description }}</p>
 
             <div class="meta-info">
-              <span><mat-icon>schedule</mat-icon> {{ course()!.duration }} horas</span>
+              <span><mat-icon>schedule</mat-icon> {{ course()!.duration_hours || course()!.duration }} horas</span>
               <span
                 ><mat-icon>person</mat-icon> {{ course()!.instructor_name || 'Instructor' }}</span
               >
-              <span class="price">\${{ course()!.price }}</span>
+              @if (course()!.subscription_required) {
+                <span class="plan-badge">{{ course()!.subscription_required }} plan</span>
+              }
             </div>
 
             @if (!enrolled) {
@@ -170,10 +172,13 @@ import { Course } from '../../../core/models';
             gap: 8px;
             color: #666;
           }
-          .price {
-            font-size: 28px;
+          .price, .plan-badge {
+            font-size: 14px;
             font-weight: bold;
             color: #1976d2;
+            background: #e3f2fd;
+            padding: 4px 12px;
+            border-radius: 16px;
           }
         }
       }
@@ -226,7 +231,7 @@ export class CourseDetailComponent implements OnInit {
   loadCourse(id: number): void {
     this.courseService.getCourse(id).subscribe({
       next: (response) => {
-        this.course.set(response);
+        this.course.set(response.data.course);
         this.loading = false;
       },
       error: () => {

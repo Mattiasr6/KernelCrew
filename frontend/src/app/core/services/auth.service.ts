@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { User, LoginRequest, RegisterRequest, AuthResponse } from '../models';
+import { User, LoginRequest, RegisterRequest, AuthResponse, AuthData } from '../models';
 import { tap } from 'rxjs';
 
 @Injectable({
@@ -35,29 +35,33 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.api.post<AuthResponse>('login', credentials).pipe(
+    return this.api.post<AuthResponse>('auth/login', credentials).pipe(
       tap((response) => {
-        this.tokenSignal.set(response.token);
-        this.userSignal.set(response.user);
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        if (response.success && response.data) {
+          this.tokenSignal.set(response.data.token);
+          this.userSignal.set(response.data.user);
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
       }),
     );
   }
 
   register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.api.post<AuthResponse>('register', data).pipe(
+    return this.api.post<AuthResponse>('auth/register', data).pipe(
       tap((response) => {
-        this.tokenSignal.set(response.token);
-        this.userSignal.set(response.user);
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        if (response.success && response.data) {
+          this.tokenSignal.set(response.data.token);
+          this.userSignal.set(response.data.user);
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
       }),
     );
   }
 
   logout(): void {
-    this.api.post('logout', {}).subscribe({
+    this.api.post('auth/logout', {}).subscribe({
       complete: () => this.clearSession(),
     });
     this.clearSession();

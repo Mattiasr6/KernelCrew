@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Course, CourseListResponse } from '../models';
+import { Course, CoursesResponse, CourseResponse, CreateCourseRequest, UpdateCourseRequest } from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -15,23 +15,37 @@ export class CourseService {
     level?: string;
     category?: string;
     search?: string;
-  }): Observable<CourseListResponse> {
-    return this.api.get<CourseListResponse>('courses', params as Record<string, string | number>);
+  }): Observable<CoursesResponse> {
+    return this.api.get<CoursesResponse>('courses', params as Record<string, string | number>);
   }
 
-  getCourse(id: number): Observable<Course> {
-    return this.api.get<Course>(`courses/${id}`);
+  getCourse(id: number): Observable<CourseResponse> {
+    return this.api.get<CourseResponse>(`courses/${id}`);
   }
 
-  createCourse(course: Partial<Course>): Observable<Course> {
-    return this.api.post<Course>('courses', course);
+  createCourse(course: CreateCourseRequest): Observable<CourseResponse> {
+    return this.api.post<CourseResponse>('instructor/courses', course);
   }
 
-  updateCourse(id: number, course: Partial<Course>): Observable<Course> {
-    return this.api.put<Course>(`courses/${id}`, course);
+  updateCourse(id: number, course: UpdateCourseRequest): Observable<CourseResponse> {
+    return this.api.put<CourseResponse>(`instructor/courses/${id}`, course);
   }
 
-  deleteCourse(id: number): Observable<void> {
-    return this.api.delete<void>(`courses/${id}`);
+  deleteCourse(id: number): Observable<{ success: boolean; message: string }> {
+    return this.api.delete<{ success: boolean; message: string }>(`instructor/courses/${id}`);
+  }
+
+  // Admin methods
+  getAllCourses(params?: {
+    page?: number;
+    per_page?: number;
+    search?: string;
+    is_published?: boolean;
+  }): Observable<CoursesResponse> {
+    return this.api.get<CoursesResponse>('admin/courses', params as Record<string, string | number>);
+  }
+
+  publishCourse(id: number, isPublished: boolean): Observable<{ success: boolean; message: string }> {
+    return this.api.patch<{ success: boolean; message: string }>(`admin/courses/${id}/publish`, { is_published: isPublished });
   }
 }
