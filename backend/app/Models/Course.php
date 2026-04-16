@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Course extends Model
 {
@@ -27,10 +28,20 @@ class Course extends Model
         return $this->belongsTo(User::class, 'instructor_id');
     }
 
-    public function enrollments(): BelongsToMany
+    public function students(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'course_enrollments')
             ->withPivot('enrollment_date', 'progress', 'completed_at')
             ->withTimestamps();
+    }
+
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(CourseEnrollment::class, 'course_id');
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->is_published === true;
     }
 }
