@@ -11,7 +11,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { CourseService } from '../../../core/services/course.service';
-import { Course, CourseListResponse } from '../../../core/models';
+import { Course, CoursesResponse } from '../../../core/models';
 
 @Component({
   selector: 'app-course-list',
@@ -91,8 +91,7 @@ import { Course, CourseListResponse } from '../../../core/models';
                 <h3>{{ course.title }}</h3>
                 <p class="description">{{ course.short_description || course.description }}</p>
                 <div class="course-info">
-                  <span>{{ course.duration }} horas</span>
-                  <span class="price">\${{ course.price }}</span>
+                  <span>{{ course.duration_hours || course.duration }} horas</span>
                 </div>
               </mat-card-content>
             </mat-card>
@@ -236,8 +235,8 @@ export class CourseListComponent implements OnInit {
       })
       .subscribe({
         next: (response) => {
-          this.courses.set(response.data);
-          this.totalItems.set(response.meta.total);
+          this.courses.set(response.data.courses);
+          this.totalItems.set(response.data.meta.total);
           this.loading = false;
         },
         error: () => {
