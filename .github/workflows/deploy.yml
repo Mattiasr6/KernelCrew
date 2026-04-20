@@ -1,0 +1,33 @@
+name: Deploy a KernelServer
+
+on:
+  push:
+    branches: [ "develop" ] # Se activa solo cuando subes algo a develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Conectar a Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Ejecutar comandos en el servidor via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/kernellearn/KernelCrew
+            git pull origin develop
+            cd backend
+            composer install --no-dev
+            php artisan migrate --force
+            php artisan cache:clear
+            php artisan config:cache
+            php artisan route:cache
