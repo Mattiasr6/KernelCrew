@@ -71,29 +71,15 @@ export interface ForgotPasswordResponse {
 export interface Course {
   id: number;
   title: string;
+  slug: string;
   description: string;
-  short_description?: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
-  category: string;
-  duration_hours: number;
-  duration?: number; // Alias for backward compatibility
-  price?: number; // Alias for backward compatibility
-  instructor_name?: string;
+  price: number;
+  instructor_id: number;
+  status: 'draft' | 'published';
   instructor?: Instructor;
-  is_published: boolean;
-  subscription_required?: string;
-  is_enrolled?: boolean;
-  can_enroll?: boolean;
-  syllabus?: string;
-  requirements?: string;
-  thumbnail?: string;
   created_at: string;
   updated_at?: string;
-}
-
-export interface CourseFilters {
-  levels: string[];
-  categories: string[];
+  deleted_at?: string;
 }
 
 export interface CoursesMeta {
@@ -105,18 +91,15 @@ export interface CoursesMeta {
 
 export interface CoursesResponse {
   success: boolean;
-  data: {
-    courses: Course[];
-    meta: CoursesMeta;
-    filters?: CourseFilters;
-  };
+  message: string;
+  data: Course[];
+  meta: CoursesMeta;
 }
 
 export interface CourseResponse {
   success: boolean;
-  data: {
-    course: Course;
-  };
+  message: string;
+  data: Course;
 }
 
 // Course payloads
