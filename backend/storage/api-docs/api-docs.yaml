@@ -1,0 +1,159 @@
+openapi: 3.0.0
+info:
+  title: KernelLearn API
+  version: 1.0.0
+  description: |
+    API del proyecto KernelLearn - Sprint 1
+  
+servers:
+  - url: http://100.107.236.28/api/v1
+    description: KernelLearn Production Server
+  - url: http://localhost:8000/api/v1
+    description: Local Development
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Autenticación
+      summary: Registrar nuevo usuario
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - password_confirmation
+              properties:
+                name:
+                  type: string
+                  example: "Juan Pérez"
+                email:
+                  type: string
+                  format: email
+                  example: "juan@ejemplo.com"
+                password:
+                  type: string
+                  format: password
+                  example: "Password123"
+                password_confirmation:
+                  type: string
+                  format: password
+                  example: "Password123"
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Usuario registrado exitosamente"
+                  data:
+                    type: object
+        '422':
+          description: Error de validación
+
+  /auth/login:
+    post:
+      tags:
+        - Autenticación
+      summary: Iniciar sesión
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "admin@kernellearn.com"
+                password:
+                  type: string
+                  format: password
+                  example: "admin123"
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Credenciales inválidas
+
+  /courses:
+    get:
+      tags:
+        - Cursos
+      summary: Listar cursos publicados
+      operationId: getCourses
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Cursos obtenidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  meta:
+                    type: object
+
+  /courses/{id}:
+    get:
+      tags:
+        - Cursos
+      summary: Ver detalle de curso
+      operationId: getCourse
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Curso obtenido
+        '404':
+          description: Curso no encontrado
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Token de Sanctum (sin前缀 Bearer)
