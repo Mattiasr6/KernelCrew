@@ -1,65 +1,43 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-
-export interface Course {
-  id: number;
-  title: string;
-  slug: string;
-  description: string;
-  price: number;
-  instructor_id: number;
-  status: 'draft' | 'published';
-  instructor?: {
-    id: number;
-    name: string;
-  };
-  created_at: string;
-  updated_at?: string;
-  deleted_at?: string;
-}
-
-export interface CourseMeta {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-}
-
-export interface CourseListResponse {
-  success: boolean;
-  message: string;
-  data: Course[];
-  meta: CourseMeta;
-}
-
-export interface CourseDetailResponse {
-  success: boolean;
-  message: string;
-  data: Course;
-}
+import { ApiService } from './api.service';
+import { CourseResponse, CoursesResponse, CourseFilters } from '../models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CourseService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/courses`;
+  private readonly api = inject(ApiService);
 
-  getCourses(page: number = 1, perPage: number = 10): Observable<CourseListResponse> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('per_page', perPage.toString());
+  getCourses(filters?: CourseFilters): Observable<CoursesResponse> {
+    const params: Record<string, string | number> = {};
+    
+    if (filters?.page) params.page = filters.page;
+    if (filters?.per_page) params.per_page = filters.per_page;
+    if (filters?.search) params.search = filters.search;
+    if (filters?.min_price !== undefined) params.min_price = filters.min_price;
+    if (filters?.max_price !== undefined) params.max_price = filters.max_price;
 
-    return this.http.get<CourseListResponse>(this.apiUrl, { params });
+    return this.api.get<CoursesResponse>('courses', params);
   }
 
-  getCourse(id: number): Observable<CourseDetailResponse> {
-    return this.http.get<CourseDetailResponse>(`${this.apiUrl}/${id}`);
+  getCourse(id: number): Observable<CourseResponse> {
+    return this.api.get<CourseResponse>(`courses/${id}`);
   }
 
-  getCourseBySlug(slug: string): Observable<CourseDetailResponse> {
-    return this.http.get<CourseDetailResponse>(`${this.apiUrl}/${slug}`);
+  createCourse(course: { title: string; description: string; price: number }): Observable<CourseResponse> {
+    return this.api.post<CourseResponse>('courses', course);
+  }
+
+  updateCourse(id: number, course: { title?: string; description?: string; price?: number; status?: string }): Observable<CourseResponse> {
+    return this.api.put<CourseResponse>(`courses/${id}`, course);
+  }
+
+  deleteCourse(id: number): Observable<{ success: boolean; message: string }> {
+    return this.api.delete<{ success: boolean; message: string }>(`courses/${id}`);
+  }
+
+  restoreCourse(id: number): Observable<{ success: boolean; message: string }> {
+    return this.api.patch<{ success: boolean; message: string }>(`courses/${id}/restore`, {});
   }
 }
