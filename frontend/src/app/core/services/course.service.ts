@@ -1,51 +1,65 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from './api.service';
-import { Course, CoursesResponse, CourseResponse, CreateCourseRequest, UpdateCourseRequest } from '../models';
+import { environment } from '../../../environments/environment';
+
+export interface Course {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  price: number;
+  instructor_id: number;
+  status: 'draft' | 'published';
+  instructor?: {
+    id: number;
+    name: string;
+  };
+  created_at: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export interface CourseMeta {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+}
+
+export interface CourseListResponse {
+  success: boolean;
+  message: string;
+  data: Course[];
+  meta: CourseMeta;
+}
+
+export interface CourseDetailResponse {
+  success: boolean;
+  message: string;
+  data: Course;
+}
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class CourseService {
-  private api = inject(ApiService);
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/courses`;
 
-  getCourses(params?: {
-    page?: number;
-    per_page?: number;
-    level?: string;
-    category?: string;
-    search?: string;
-  }): Observable<CoursesResponse> {
-    return this.api.get<CoursesResponse>('courses', params as Record<string, string | number>);
+  getCourses(page: number = 1, perPage: number = 10): Observable<CourseListResponse> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('per_page', perPage.toString());
+
+    return this.http.get<CourseListResponse>(this.apiUrl, { params });
   }
 
-  getCourse(id: number): Observable<CourseResponse> {
-    return this.api.get<CourseResponse>(`courses/${id}`);
+  getCourse(id: number): Observable<CourseDetailResponse> {
+    return this.http.get<CourseDetailResponse>(`${this.apiUrl}/${id}`);
   }
 
-  createCourse(course: CreateCourseRequest): Observable<CourseResponse> {
-    return this.api.post<CourseResponse>('instructor/courses', course);
-  }
-
-  updateCourse(id: number, course: UpdateCourseRequest): Observable<CourseResponse> {
-    return this.api.put<CourseResponse>(`instructor/courses/${id}`, course);
-  }
-
-  deleteCourse(id: number): Observable<{ success: boolean; message: string }> {
-    return this.api.delete<{ success: boolean; message: string }>(`instructor/courses/${id}`);
-  }
-
-  // Admin methods
-  getAllCourses(params?: {
-    page?: number;
-    per_page?: number;
-    search?: string;
-    is_published?: boolean;
-  }): Observable<CoursesResponse> {
-    return this.api.get<CoursesResponse>('admin/courses', params as Record<string, string | number>);
-  }
-
-  publishCourse(id: number, isPublished: boolean): Observable<{ success: boolean; message: string }> {
-    return this.api.patch<{ success: boolean; message: string }>(`admin/courses/${id}/publish`, { is_published: isPublished });
+  getCourseBySlug(slug: string): Observable<CourseDetailResponse> {
+    return this.http.get<CourseDetailResponse>(`${this.apiUrl}/${slug}`);
   }
 }
