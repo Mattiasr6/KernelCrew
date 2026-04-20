@@ -14,20 +14,13 @@ return new class extends Migration
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('slug')->unique();
             $table->text('description');
-            $table->text('syllabus')->nullable();
-            $table->integer('duration_hours')->default(0);
-            $table->enum('level', ['beginner', 'intermediate', 'advanced']);
-            $table->string('category');
-            $table->string('requirements')->nullable();
-            $table->string('instructor_name');
-            $table->foreignId('instructor_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->boolean('is_published')->default(false);
+            $table->decimal('price', 8, 2)->default(0);
+            $table->foreignId('instructor_id')->constrained('users')->cascadeOnDelete();
+            $table->enum('status', ['draft', 'published'])->default('draft');
             $table->timestamps();
             $table->softDeletes();
-
-            $table->index(['level', 'category']);
-            $table->index('is_published');
         });
     }
 

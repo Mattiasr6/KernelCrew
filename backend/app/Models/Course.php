@@ -13,14 +13,12 @@ class Course extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'description', 'syllabus', 'duration_hours',
-        'level', 'category', 'requirements', 'instructor_name',
-        'instructor_id', 'is_published',
+        'title', 'slug', 'description', 'price',
+        'instructor_id', 'status',
     ];
 
     protected $casts = [
-        'duration_hours' => 'integer',
-        'is_published' => 'boolean',
+        'price' => 'decimal:2',
     ];
 
     public function instructor(): BelongsTo
