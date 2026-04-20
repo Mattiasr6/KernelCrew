@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCourseRequest;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 /**
@@ -20,7 +22,7 @@ class CourseController extends Controller
      *     path="/api/v1/courses",
      *     tags={"Cursos"},
      *     summary="Listar cursos publicados",
-     *     description="Retorna lista paginada de cursos publicados",
+     *     description="Retorna lista paginada de cursos publicados con filtros",
      *     operationId="getCourses",
      *     @OA\Parameter(
      *         name="page",
@@ -34,6 +36,24 @@ class CourseController extends Controller
      *         description="Elementos por página",
      *         @OA\Schema(type="integer", default=10)
      *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Buscar en título o descripción",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="min_price",
+     *         in="query",
+     *         description="Precio mínimo",
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Parameter(
+     *         name="max_price",
+     *         in="query",
+     *         description="Precio máximo",
+     *         @OA\Schema(type="number")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Cursos obtenidos",
@@ -46,11 +66,34 @@ class CourseController extends Controller
      * )
      */
     #[OA\Get(path: '/api/v1/courses', tags: ['Cursos'], summary: 'Listar cursos publicados')]
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $courses = Course::with('instructor')
-            ->where('status', 'published')
-            ->paginate(10);
+        $search = $request->query('search');
+        $minPrice = $request->query('min_price');
+        $maxPrice = $request->query('max_price');
+        $status = $request->query('status');
+        $perPage = $request->query('per_page', 10);
+
+        $user = $request->user();
+        $isAdminOrInstructor = $user && ($user->hasRole('admin') || $user->hasRole('instructor'));
+
+        $query = Course::with('instructor');
+
+        if (!$isAdminOrInstructor) {
+            $query->published();
+        } elseif ($status) {
+            $query->status($status);
+        }
+
+        if ($search) {
+            $query->search($search);
+        }
+
+        if ($minPrice !== null || $maxPrice !== null) {
+            $query->priceBetween((float) $minPrice, (float) $maxPrice);
+        }
+
+        $courses = $query->paginate((int) $perPage);
 
         return response()->json([
             'success' => true,
@@ -63,6 +106,59 @@ class CourseController extends Controller
                 'total' => $courses->total(),
             ],
         ], 200);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/courses",
+     *     tags={"Cursos"},
+     *     summary="Crear curso",
+     *     description="Crea un nuevo curso (solo instructor/admin)",
+     *     operationId="createCourse",
+     *     security={{"sanctum": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"title", "description", "price"},
+     *             @OA\Property(property="title", type="string", example="Curso de PHP"),
+     *             @OA\Property(property="description", type="string", example="Descripción del curso..."),
+     *             @OA\Property(property="price", type="number", example=299.99)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Curso creado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="No autorizado"),
+     *     @OA\Response(response=422, description="Error de validación")
+     * )
+     */
+    #[OA\Post(path: '/api/v1/courses', tags: ['Cursos'], summary: 'Crear curso')]
+    public function store(StoreCourseRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $slug = Course::generateSlug($validated['title']);
+
+        $course = Course::create([
+            'title' => $validated['title'],
+            'slug' => $slug,
+            'description' => $validated['description'],
+            'price' => $validated['price'],
+            'instructor_id' => $request->user()->id,
+            'status' => 'draft',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Curso creado exitosamente',
+            'data' => $course,
+        ], 201);
     }
 
     public function show(int $id): JsonResponse
@@ -81,6 +177,179 @@ class CourseController extends Controller
             'success' => true,
             'message' => 'Curso obtenido exitosamente',
             'data' => $course,
+        ], 200);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/v1/courses/{id}",
+     *     tags={"Cursos"},
+     *     summary="Actualizar curso",
+     *     description="Actualiza un curso existente (solo instructor/admin)",
+     *     operationId="updateCourse",
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="id", in="path", @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         @OA\JsonContent(
+     *             @OA\Property(property="title", type="string"),
+     *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="price", type="number"),
+     *             @OA\Property(property="status", type="string", enum={"draft", "published"})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Curso actualizado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean"),
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="No autorizado"),
+     *     @OA\Response(response=404, description="Curso no encontrado")
+     * )
+     */
+    #[OA\Put(path: '/api/v1/courses/{id}', tags: ['Cursos'], summary: 'Actualizar curso')]
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $course = Course::withTrashed()->find($id);
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Curso no encontrado',
+                'data' => null,
+            ], 404);
+        }
+
+        $user = $request->user();
+        $isOwner = $course->instructor_id === $user->id;
+        $isAdmin = $user->hasRole('admin');
+
+        if (!$isOwner && !$isAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para editar este curso',
+                'data' => null,
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'title' => ['sometimes', 'string', 'max:255'],
+            'description' => ['sometimes', 'string', 'min:50'],
+            'price' => ['sometimes', 'numeric', 'min:0'],
+            'status' => ['sometimes', 'string', 'in:draft,published'],
+        ]);
+
+        if (isset($validated['title']) && $validated['title'] !== $course->title) {
+            $validated['slug'] = Course::generateSlug($validated['title']);
+        }
+
+        $course->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Curso actualizado exitosamente',
+            'data' => $course,
+        ], 200);
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/courses/{id}",
+     *     tags={"Cursos"},
+     *     summary="Eliminar curso",
+     *     description="SoftDelete de curso",
+     *     operationId="deleteCourse",
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="id", in="path", @OA\Schema(type="integer")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Curso eliminado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean"),
+     *             @OA\Property(property="message", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="No autorizado"),
+     *     @OA\Response(response=404, description="Curso no encontrado")
+     * )
+     */
+    #[OA\Delete(path: '/api/v1/courses/{id}', tags: ['Cursos'], summary: 'Eliminar curso')]
+    public function destroy(int $id): JsonResponse
+    {
+        $course = Course::withTrashed()->find($id);
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Curso no encontrado',
+                'data' => null,
+            ], 404);
+        }
+
+        $user = request()->user();
+        $isOwner = $course->instructor_id === $user->id;
+        $isAdmin = $user->hasRole('admin');
+
+        if (!$isOwner && !$isAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para eliminar este curso',
+                'data' => null,
+            ], 403);
+        }
+
+        if (!$course->trashed()) {
+            $course->delete();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Curso eliminado exitosamente',
+            'data' => null,
+        ], 200);
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/api/v1/courses/{id}/restore",
+     *     tags={"Cursos"},
+     *     summary="Restaurar curso",
+     *     description="Restaura un curso eliminado",
+     *     operationId="restoreCourse",
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="id", in="path", @OA\Schema(type="integer")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Curso restaurado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean"),
+     *             @OA\Property(property="message", type="string")
+     *         )
+     *     )
+     * )
+     */
+    #[OA\Patch(path: '/api/v1/courses/{id}/restore', tags: ['Cursos'], summary: 'Restaurar curso')]
+    public function restore(int $id): JsonResponse
+    {
+        $course = Course::onlyTrashed()->find($id);
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Curso no encontrado',
+                'data' => null,
+            ], 404);
+        }
+
+        $course->restore();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Curso restaurado exitosamente',
+            'data' => null,
         ], 200);
     }
 }
