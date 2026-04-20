@@ -13,6 +13,7 @@
         "spatie/laravel-permission": "*"
     },
     "require-dev": {
+        "darkaonline/l5-swagger": "*",
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.5",
         "laravel/pint": "^1.27",

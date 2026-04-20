@@ -134,6 +134,14 @@ export interface CourseFilterParams {
   instructor_id?: number;
 }
 
+export interface CourseFilters {
+  page?: number;
+  per_page?: number;
+  search?: string;
+  min_price?: number;
+  max_price?: number;
+}
+
 // User management (Admin)
 export interface UserListMeta {
   current_page: number;

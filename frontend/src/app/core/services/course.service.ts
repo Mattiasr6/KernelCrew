@@ -1,21 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Course, CourseResponse, CoursesResponse } from '../models';
-
-export interface CourseFilters {
-  page?: number;
-  per_page?: number;
-  search?: string;
-  min_price?: number;
-  max_price?: number;
-}
+import { CourseResponse, CoursesResponse, CourseFilters } from '../models';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class CourseService {
-  private api = inject(ApiService);
+  private readonly api = inject(ApiService);
 
   getCourses(filters?: CourseFilters): Observable<CoursesResponse> {
     const params: Record<string, string | number> = {};
@@ -46,6 +38,6 @@ export class CourseService {
   }
 
   restoreCourse(id: number): Observable<{ success: boolean; message: string }> {
-    return this.api.patch<{ success: boolean; message: string }>(`courses/${id}/restore`);
+    return this.api.patch<{ success: boolean; message: string }>(`courses/${id}/restore`, {});
   }
 }
