@@ -24,6 +24,9 @@ import { AuthService } from '../../../core/services/auth.service';
   ],
   template: `
     <div class="register-container">
+      <div class="brand-logo">
+        Kernel<span class="logo-accent">Learn</span>
+      </div>
       <mat-card class="register-card">
         <mat-card-header>
           <mat-card-title>Crear Cuenta</mat-card-title>
@@ -82,7 +85,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
             <button
               mat-raised-button
-              color="primary"
+              class="submit-btn"
               type="submit"
               class="full-width"
               [disabled]="loading || form.invalid"
@@ -106,16 +109,36 @@ import { AuthService } from '../../../core/services/auth.service';
     `
       .register-container {
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        background: #f5f5f5;
+        background: var(--bg-primary);
         padding: 20px;
+      }
+      .brand-logo {
+        font-size: 32px;
+        font-weight: bold;
+        color: var(--text-primary);
+        margin-bottom: 24px;
+      }
+      .logo-accent {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
       .register-card {
         max-width: 400px;
         width: 100%;
-        padding: 20px;
+        padding: 24px;
+        background: var(--glass-bg) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 16px !important;
+      }
+      mat-card-title {
+        color: var(--text-primary) !important;
+        margin-bottom: 24px !important;
       }
       .full-width {
         width: 100%;
@@ -125,14 +148,19 @@ import { AuthService } from '../../../core/services/auth.service';
         color: #f44336;
         margin-bottom: 16px;
         padding: 12px;
-        background: #ffebee;
+        background: rgba(244, 67, 54, 0.1);
         border-radius: 4px;
+        border: 1px solid rgba(244, 67, 54, 0.3);
+      }
+      .submit-btn {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+        color: white !important;
       }
       .links {
         text-align: center;
         margin-top: 16px;
         a {
-          color: #1976d2;
+          color: var(--accent-primary);
           text-decoration: none;
         }
       }
@@ -167,7 +195,14 @@ export class RegisterComponent {
   }
 
   onSubmit(): void {
-    if (this.form.invalid) return;
+    console.log('BOTÓN REGISTRO PRESIONADO: Iniciando petición...');
+    console.log('Nombre:', this.form.value.name);
+    console.log('Email:', this.form.value.email);
+    
+    if (this.form.invalid) {
+      console.log('FORMULARIO INVÁLIDO');
+      return;
+    }
 
     this.loading = true;
     this.error = '';

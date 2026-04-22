@@ -13,11 +13,13 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [CommonModule, RouterLink, MatCardModule, MatButtonModule, MatIconModule, MatListModule],
   template: `
     <div class="dashboard-container">
-      <h1>Bienvenido, {{ authService.user()?.name }}</h1>
-      <p class="role">Rol: {{ authService.user()?.role | titlecase }}</p>
+      <div class="dashboard-header">
+        <h1>Bienvenido, {{ authService.user()?.name }}</h1>
+        <p class="role">Rol: {{ authService.user()?.role | titlecase }}</p>
+      </div>
 
       <div class="cards-grid">
-        <mat-card class="dashboard-card">
+        <mat-card class="glass-card">
           <mat-card-header>
             <div mat-card-avatar class="icon-avatar">
               <mat-icon>school</mat-icon>
@@ -28,12 +30,12 @@ import { AuthService } from '../../core/services/auth.service';
             <p>Explora nuestro catálogo de cursos</p>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-button color="primary" routerLink="/courses">Ver Cursos</button>
+            <button mat-button routerLink="/courses">Ver Cursos</button>
           </mat-card-actions>
         </mat-card>
 
         @if (authService.isStudent()) {
-          <mat-card class="dashboard-card">
+          <mat-card class="glass-card">
             <mat-card-header>
               <div mat-card-avatar class="icon-avatar">
                 <mat-icon>card_membership</mat-icon>
@@ -44,11 +46,11 @@ import { AuthService } from '../../core/services/auth.service';
               <p>Gestiona tu plan de suscripción</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button color="primary" routerLink="/plans">Ver Planes</button>
+              <button mat-button routerLink="/plans">Ver Planes</button>
             </mat-card-actions>
           </mat-card>
 
-          <mat-card class="dashboard-card">
+          <mat-card class="glass-card">
             <mat-card-header>
               <div mat-card-avatar class="icon-avatar">
                 <mat-icon>play_circle</mat-icon>
@@ -59,13 +61,13 @@ import { AuthService } from '../../core/services/auth.service';
               <p>Continua aprendiendo</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button color="primary" routerLink="/my-courses">Mi Progreso</button>
+              <button mat-button routerLink="/my-courses">Mi Progreso</button>
             </mat-card-actions>
           </mat-card>
         }
 
         @if (authService.isAdmin()) {
-          <mat-card class="dashboard-card">
+          <mat-card class="glass-card">
             <mat-card-header>
               <div mat-card-avatar class="icon-avatar">
                 <mat-icon>people</mat-icon>
@@ -76,11 +78,11 @@ import { AuthService } from '../../core/services/auth.service';
               <p>Gestionar usuarios del sistema</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button color="primary" routerLink="/admin/users">Admin Users</button>
+              <button mat-button routerLink="/admin/users">Admin Users</button>
             </mat-card-actions>
           </mat-card>
 
-          <mat-card class="dashboard-card">
+          <mat-card class="glass-card">
             <mat-card-header>
               <div mat-card-avatar class="icon-avatar">
                 <mat-icon>analytics</mat-icon>
@@ -91,13 +93,13 @@ import { AuthService } from '../../core/services/auth.service';
               <p>Ver estadísticas y reportes</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button color="primary" routerLink="/admin/reports">Ver Reportes</button>
+              <button mat-button routerLink="/admin/reports">Ver Reportes</button>
             </mat-card-actions>
           </mat-card>
         }
 
         @if (authService.isInstructor()) {
-          <mat-card class="dashboard-card">
+          <mat-card class="glass-card">
             <mat-card-header>
               <div mat-card-avatar class="icon-avatar">
                 <mat-icon>add_circle</mat-icon>
@@ -108,7 +110,7 @@ import { AuthService } from '../../core/services/auth.service';
               <p>Crea un nuevo curso</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button color="primary" routerLink="/courses/create">Nuevo Curso</button>
+              <button mat-button routerLink="/courses/create">Nuevo Curso</button>
             </mat-card-actions>
           </mat-card>
         }
@@ -118,42 +120,67 @@ import { AuthService } from '../../core/services/auth.service';
   styles: [
     `
       .dashboard-container {
+        background: var(--bg-primary);
+        min-height: 100vh;
+        padding: 32px;
         max-width: 1200px;
         margin: 0 auto;
-        padding: 20px;
       }
-      h1 {
+      .dashboard-header {
+        margin-bottom: 32px;
+      }
+      .dashboard-header h1 {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
         margin-bottom: 8px;
-        color: #333;
       }
       .role {
-        color: #666;
-        margin-bottom: 32px;
+        color: var(--text-secondary);
       }
       .cards-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 24px;
+        grid-template-columns: repeat(1, 1fr);
       }
-      .dashboard-card {
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .cards-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (min-width: 1025px) {
+        .cards-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      .glass-card {
+        background: var(--glass-bg) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        backdrop-filter: blur(10px);
         cursor: pointer;
-        transition:
-          transform 0.2s,
-          box-shadow 0.2s;
       }
-      .dashboard-card:hover {
+      .glass-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 32px rgba(108, 99, 255, 0.2);
+        border-color: var(--accent-primary) !important;
       }
       .icon-avatar {
-        background-color: #1976d2;
-        color: white;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+        color: white !important;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 50%;
         width: 40px;
         height: 40px;
+      }
+      mat-card-content p {
+        color: var(--text-secondary) !important;
       }
     `,
   ],

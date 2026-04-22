@@ -22,22 +22,22 @@ import { AuthService } from '../../../core/services/auth.service';
     MatDividerModule,
   ],
   template: `
-    <mat-toolbar color="primary" class="navbar">
-      <a routerLink="/" class="logo">CodeCore</a>
+    <mat-toolbar class="navbar">
+      <a routerLink="/" class="logo">Kernel<span class="logo-accent">Learn</span></a>
 
       <span class="spacer"></span>
 
       @if (authService.isAuthenticated()) {
         <nav class="nav-links">
-          <a mat-button routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-          <a mat-button routerLink="/courses" routerLinkActive="active">Cursos</a>
+          <a mat-button routerLink="/dashboard" routerLinkActive="active-link">Dashboard</a>
+          <a mat-button routerLink="/courses" routerLinkActive="active-link">Cursos</a>
 
           @if (authService.isStudent()) {
-            <a mat-button routerLink="/plans" routerLinkActive="active">Planes</a>
+            <a mat-button routerLink="/plans" routerLinkActive="active-link">Planes</a>
           }
 
           @if (authService.isInstructor() || authService.isAdmin()) {
-            <a mat-button routerLink="/my-courses" routerLinkActive="active">Mis Cursos</a>
+            <a mat-button routerLink="/my-courses" routerLinkActive="active-link">Mis Cursos</a>
           }
         </nav>
 
@@ -64,7 +64,7 @@ import { AuthService } from '../../../core/services/auth.service';
         <nav class="nav-links">
           <a mat-button routerLink="/courses">Cursos</a>
           <a mat-button routerLink="/login">Iniciar Sesión</a>
-          <a mat-raised-button routerLink="/register">Registrarse</a>
+          <a mat-raised-button class="register-btn" routerLink="/register">Registrarse</a>
         </nav>
       }
     </mat-toolbar>
@@ -75,12 +75,21 @@ import { AuthService } from '../../../core/services/auth.service';
         position: sticky;
         top: 0;
         z-index: 1000;
+        background: rgba(26, 26, 46, 0.95);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--glass-border);
       }
       .logo {
         font-size: 24px;
         font-weight: bold;
-        color: white;
+        color: var(--text-primary);
         text-decoration: none;
+      }
+      .logo-accent {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
       .spacer {
         flex: 1;
@@ -90,8 +99,13 @@ import { AuthService } from '../../../core/services/auth.service';
         gap: 8px;
         margin-right: 16px;
       }
-      .nav-links a.active {
-        background: rgba(255, 255, 255, 0.15);
+      .nav-links a.active-link {
+        background: rgba(108, 99, 255, 0.2);
+        color: var(--accent-primary) !important;
+      }
+      .register-btn {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+        color: white !important;
       }
       .user-info {
         padding: 16px;
@@ -100,7 +114,7 @@ import { AuthService } from '../../../core/services/auth.service';
         gap: 4px;
       }
       .user-info small {
-        color: #666;
+        color: var(--text-secondary);
       }
     `,
   ],

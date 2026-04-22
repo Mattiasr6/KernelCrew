@@ -1,1 +1,381 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --bg-primary: #0f0f1a;
+  --bg-surface: #1a1a2e;
+  --accent-primary: #6c63ff;
+  --accent-secondary: #00d9ff;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+.cdk-overlay-container {
+  background: #1a1a2e !important;
+}
+
+.cdk-overlay-container .mat-mdc-select-panel,
+.cdk-overlay-container .mat-mdc-option,
+.cdk-overlay-container .mdc-list-item {
+  background: #1a1a2e !important;
+  color: #e0e0e0 !important;
+}
+
+.cdk-overlay-container .mat-mdc-option:hover,
+.cdk-overlay-container .mat-mdc-option:focus,
+.cdk-overlay-container .mat-mdc-option.mat-mdc-option-active {
+  background: rgba(108, 99, 255, 0.2) !important;
+}
+
+.cdk-overlay-container .mat-mdc-option.mat-mdc-selected {
+  background: rgba(108, 99, 255, 0.3) !important;
+}
+
+.cdk-overlay-container {
+  z-index: 9999 !important;
+  .mat-mdc-select-panel {
+    background-color: #1a1a2e !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+  .mat-mdc-option {
+    .mdc-list-item__primary-text { color: #e0e0e0 !important; }
+    &:hover:not(.mat-mdc-option-disabled) { background: rgba(108, 99, 255, 0.15) !important; }
+    &.mat-mdc-option-active { background: rgba(0, 217, 255, 0.2) !important; }
+  }
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.glass-card {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(108, 99, 255, 0.2);
+  border-color: var(--accent-primary) !important;
+}
+
+.dashboard-container {
+  background: var(--bg-primary);
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.dashboard-header {
+  margin-bottom: 32px;
+  
+  h1 {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+  }
+  
+  .role {
+    color: var(--text-secondary);
+  }
+}
+
+.courses-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(1, 1fr);
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (min-width: 1025px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.icon-avatar {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+  color: white !important;
+}
+
+:host ::ng-deep {
+  .mat-mdc-card {
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+  }
+  
+  .mat-mdc-card-content {
+    color: var(--text-primary) !important;
+  }
+  
+  .mat-mdc-card-title {
+    color: var(--text-primary) !important;
+  }
+  
+  .mat-mdc-card-subtitle {
+    color: var(--text-secondary) !important;
+  }
+  
+  .mat-mdc-form-field {
+    background: var(--bg-surface) !important;
+  }
+  
+  .mat-mdc-text-field-wrapper {
+    background: var(--bg-surface) !important;
+  }
+  
+  .mdc-text-field--outlined .mdc-notched-outline__leading,
+  .mdc-text-field--outlined .mdc-notched-outline__notch,
+  .mdc-text-field--outlined .mdc-notched-outline__trailing {
+    border-color: var(--glass-border) !important;
+  }
+  
+  .mat-mdc-form-field-flex {
+    color: var(--text-primary) !important;
+  }
+  
+  input {
+    color: var(--text-primary) !important;
+    caret-color: var(--accent-primary) !important;
+  }
+  
+  .mat-mdc-floating-label {
+    color: var(--text-secondary) !important;
+  }
+  
+  .mat-mdc-select-value {
+    color: var(--text-primary) !important;
+  }
+  
+  .mat-mdc-option {
+    color: var(--text-primary) !important;
+  }
+  
+  .mat-mdc-menu-panel {
+    background: var(--bg-surface) !important;
+  }
+  
+  .mat-mdc-menu-item {
+    color: var(--text-primary) !important;
+  }
+  
+  .mat-toolbar {
+    background: rgba(26, 26, 46, 0.8) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--glass-border);
+  }
+  
+  .mat-button, .mat-raised-button {
+    color: var(--text-primary) !important;
+  }
+  
+  .mat-mdc-icon-button {
+    color: var(--text-primary) !important;
+  }
+  
+  .navbar {
+    background: rgba(26, 26, 46, 0.95) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+  }
+  
+  .navbar a {
+    color: var(--text-primary) !important;
+  }
+  
+  .logo {
+    color: var(--text-primary);
+  }
+
+  .logo-accent {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .mat-mdc-select-panel,
+  .mat-mdc-option-list {
+    background: var(--bg-surface) !important;
+  }
+
+  .mat-mdc-option {
+    color: var(--text-primary) !important;
+  }
+
+  .mat-mdc-option:hover,
+  .mat-mdc-option:focus,
+  .mat-mdc-option.mat-mdc-option-active {
+    background: rgba(108, 99, 255, 0.2) !important;
+  }
+
+  .mat-mdc-option.mat-mdc-selected {
+    background: rgba(108, 99, 255, 0.3) !important;
+  }
+
+  .mat-mdc-option.mat-mdc-selected .mdc-list-item__primary-text {
+    color: var(--accent-primary) !important;
+  }
+
+  .cdk-overlay-pane .mat-mdc-select-panel {
+    background: var(--bg-surface) !important;
+  }
+
+  .mat-mdc-paginator {
+    background: var(--bg-surface) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .mat-mdc-paginator-container {
+    background: var(--bg-surface) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .mat-mdc-paginator-page-size-label,
+  .mat-mdc-paginator-range-label {
+    color: var(--text-primary) !important;
+  }
+
+  .mat-mdc-icon-button {
+    color: var(--text-primary) !important;
+  }
+
+  .mat-mdc-icon-button:disabled {
+    color: var(--text-secondary) !important;
+  }
+
+  .mat-mdc-select-panel {
+    background: var(--bg-surface) !important;
+  }
+
+  .mat-mdc-paginator-dropdown .mat-mdc-select-panel {
+    background: var(--bg-surface) !important;
+  }
+
+  .cdk-overlay-pane {
+    background: var(--bg-surface) !important;
+  }
+
+  .cdk-overlay-pane .mat-mdc-select-panel {
+    background: var(--bg-surface) !important;
+  }
+
+  .cdk-overlay-pane .mat-mdc-select-panel .mat-mdc-option {
+    color: var(--text-primary) !important;
+  }
+}
+
+.cdk-overlay-pane {
+  background: #1a1a2e !important;
+}
+.cdk-overlay-pane .mat-mdc-select-panel {
+  background: #1a1a2e !important;
+}
+
+app-profile .profile-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #0f0f1a;
+  padding: 20px;
+}
+app-profile .profile-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  width: 100%;
+  backdrop-filter: blur(10px);
+}
+app-profile .profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+app-profile .avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6c63ff, #00d9ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+app-profile .avatar mat-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+app-profile .profile-header h1 {
+  color: #e0e0e0;
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+}
+app-profile .role {
+  color: #6c63ff;
+  font-weight: 500;
+  background: rgba(108, 99, 255, 0.2);
+  padding: 4px 16px;
+  border-radius: 16px;
+}
+app-profile .info-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+app-profile .info-row mat-icon {
+  color: #a0a0a0;
+}
+app-profile .info-row:last-child {
+  border-bottom: none;
+}
+
+.mat-mdc-menu-panel {
+  background: #1a1a2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.mat-mdc-menu-item {
+  color: #e0e0e0 !important;
+}
+
+.mat-mdc-menu-item:hover {
+  background: rgba(108, 99, 255, 0.15) !important;
+}
+
+.mat-mdc-menu-item .mat-icon {
+  color: #a0a0a0 !important;
+}
+
+.user-info {
+  padding: 16px;
+}
+.user-info strong {
+  color: #e0e0e0 !important;
+  display: block;
+  margin-bottom: 4px;
+}
+.user-info small {
+  color: #a0a0a0 !important;
+}
+
+.mat-divider {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}

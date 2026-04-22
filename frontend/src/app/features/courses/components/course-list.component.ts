@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, Provider } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,15 +7,36 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatPaginatorModule, PageEvent, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { CourseService } from '../../../core/services/course.service';
 import { Course, CoursesResponse } from '../../../core/models';
 
+class SpanishPaginatorIntl extends MatPaginatorIntl {
+  override itemsPerPageLabel = 'Ítems por página';
+  override nextPageLabel = 'Siguiente página';
+  override previousPageLabel = 'Página anterior';
+  override firstPageLabel = 'Primera página';
+  override lastPageLabel = 'Última página';
+
+  override getRangeLabel = (page: number, pageSize: number, length: number): string => {
+    if (length === 0 || pageSize === 0) {
+      return `0 de ${length}`;
+    }
+    length = Math.max(length, 0);
+    const startIndex = page * pageSize;
+    const endIndex = startIndex + pageSize < length ? startIndex + pageSize : length;
+    return `${startIndex + 1} – ${endIndex} de ${length}`;
+  };
+}
+
 @Component({
   selector: 'app-course-list',
   standalone: true,
+  providers: [
+    { provide: MatPaginatorIntl, useClass: SpanishPaginatorIntl } as Provider,
+  ],
   imports: [
     CommonModule,
     RouterLink,
@@ -40,13 +61,13 @@ import { Course, CoursesResponse } from '../../../core/models';
             matInput
             [(ngModel)]="search"
             placeholder="Buscar cursos..."
-            (keyup.enter)="loadCourses()"
+            (input)="onSearch()"
           />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Nivel</mat-label>
-          <mat-select [(ngModel)]="level" (selectionChange)="loadCourses()">
+          <mat-select [(ngModel)]="level" (selectionChange)="onSearch()">
             <mat-option value="">Todos</mat-option>
             <mat-option value="beginner">Principiante</mat-option>
             <mat-option value="intermediate">Intermedio</mat-option>
@@ -56,7 +77,7 @@ import { Course, CoursesResponse } from '../../../core/models';
 
         <mat-form-field appearance="outline">
           <mat-label>Categoría</mat-label>
-          <mat-select [(ngModel)]="category" (selectionChange)="loadCourses()">
+          <mat-select [(ngModel)]="category" (selectionChange)="onSearch()">
             <mat-option value="">Todas</mat-option>
             @for (cat of categories; track cat) {
               <mat-option [value]="cat">{{ cat }}</mat-option>
@@ -64,7 +85,7 @@ import { Course, CoursesResponse } from '../../../core/models';
           </mat-select>
         </mat-form-field>
 
-        <button mat-raised-button color="primary" (click)="loadCourses()">Buscar</button>
+        <button mat-raised-button class="search-btn" (click)="loadCourses()">Buscar</button>
       </div>
 
       @if (loading) {
@@ -78,7 +99,7 @@ import { Course, CoursesResponse } from '../../../core/models';
       } @else {
         <div class="courses-grid">
           @for (course of courses(); track course.id) {
-            <mat-card class="course-card" [routerLink]="['/courses', course.id]">
+            <mat-card class="glass-card course-card" [routerLink]="['/courses', course.id]">
               <img
                 mat-card-image
                 [src]="course.thumbnail || 'https://placehold.co/600x400?text=Course'"
@@ -112,13 +133,19 @@ import { Course, CoursesResponse } from '../../../core/models';
   styles: [
     `
       .courses-container {
+        background: var(--bg-primary);
+        min-height: 100vh;
+        padding: 32px;
         max-width: 1200px;
         margin: 0 auto;
-        padding: 20px;
       }
       h1 {
         margin-bottom: 24px;
-        color: #333;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
       }
       .filters {
         display: flex;
@@ -135,26 +162,42 @@ import { Course, CoursesResponse } from '../../../core/models';
         display: flex;
         justify-content: center;
         padding: 60px;
+        color: var(--text-secondary);
       }
       .courses-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 24px;
+        grid-template-columns: repeat(1, 1fr);
         margin-bottom: 24px;
       }
-      .course-card {
-        cursor: pointer;
-        transition:
-          transform 0.2s,
-          box-shadow 0.2s;
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .courses-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
       }
-      .course-card:hover {
+      @media (min-width: 1025px) {
+        .courses-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      .glass-card {
+        background: var(--glass-bg) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+      }
+      .glass-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 32px rgba(108, 99, 255, 0.2);
+        border-color: var(--accent-primary) !important;
       }
       .course-card img {
         height: 180px;
         object-fit: cover;
+        border-radius: 16px 16px 0 0;
       }
       mat-card-content {
         padding: 16px;
@@ -177,10 +220,10 @@ import { Course, CoursesResponse } from '../../../core/models';
       h3 {
         margin: 8px 0;
         font-size: 18px;
-        color: #333;
+        color: var(--text-primary) !important;
       }
       .description {
-        color: #666;
+        color: var(--text-secondary);
         font-size: 14px;
         margin-bottom: 12px;
         display: -webkit-box;
@@ -192,13 +235,30 @@ import { Course, CoursesResponse } from '../../../core/models';
         display: flex;
         justify-content: space-between;
         align-items: center;
-        color: #666;
+        color: var(--text-secondary);
         font-size: 14px;
       }
       .price {
         font-weight: bold;
-        color: #1976d2;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         font-size: 18px;
+      }
+      mat-paginator {
+        background: var(--bg-surface) !important;
+        border-radius: 8px;
+        margin-top: 16px;
+      }
+      .search-btn {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+        color: white !important;
+        height: 56px;
+      }
+
+      .search-btn:hover {
+        box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
       }
     `,
   ],
@@ -220,6 +280,11 @@ export class CourseListComponent implements OnInit {
   categories = ['Desarrollo Web', 'Móvil', 'Data Science', 'DevOps', 'Diseño', 'Negocios'];
 
   ngOnInit(): void {
+    setTimeout(() => this.loadCourses(), 100);
+  }
+
+  onSearch(): void {
+    this.currentPage.set(1);
     this.loadCourses();
   }
 
