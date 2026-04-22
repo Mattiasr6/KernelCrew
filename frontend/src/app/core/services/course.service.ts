@@ -1,51 +1,43 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Course, CoursesResponse, CourseResponse, CreateCourseRequest, UpdateCourseRequest } from '../models';
+import { CourseResponse, CoursesResponse, CourseFilters } from '../models';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class CourseService {
-  private api = inject(ApiService);
+  private readonly api = inject(ApiService);
 
-  getCourses(params?: {
-    page?: number;
-    per_page?: number;
-    level?: string;
-    category?: string;
-    search?: string;
-  }): Observable<CoursesResponse> {
-    return this.api.get<CoursesResponse>('courses', params as Record<string, string | number>);
+  getCourses(filters?: CourseFilters): Observable<CoursesResponse> {
+    const params: Record<string, string | number> = {};
+    
+    if (filters?.page) params.page = filters.page;
+    if (filters?.per_page) params.per_page = filters.per_page;
+    if (filters?.search) params.search = filters.search;
+    if (filters?.min_price !== undefined) params.min_price = filters.min_price;
+    if (filters?.max_price !== undefined) params.max_price = filters.max_price;
+
+    return this.api.get<CoursesResponse>('courses', params);
   }
 
   getCourse(id: number): Observable<CourseResponse> {
     return this.api.get<CourseResponse>(`courses/${id}`);
   }
 
-  createCourse(course: CreateCourseRequest): Observable<CourseResponse> {
-    return this.api.post<CourseResponse>('instructor/courses', course);
+  createCourse(course: { title: string; description: string; price: number }): Observable<CourseResponse> {
+    return this.api.post<CourseResponse>('courses', course);
   }
 
-  updateCourse(id: number, course: UpdateCourseRequest): Observable<CourseResponse> {
-    return this.api.put<CourseResponse>(`instructor/courses/${id}`, course);
+  updateCourse(id: number, course: { title?: string; description?: string; price?: number; status?: string }): Observable<CourseResponse> {
+    return this.api.put<CourseResponse>(`courses/${id}`, course);
   }
 
   deleteCourse(id: number): Observable<{ success: boolean; message: string }> {
-    return this.api.delete<{ success: boolean; message: string }>(`instructor/courses/${id}`);
+    return this.api.delete<{ success: boolean; message: string }>(`courses/${id}`);
   }
 
-  // Admin methods
-  getAllCourses(params?: {
-    page?: number;
-    per_page?: number;
-    search?: string;
-    is_published?: boolean;
-  }): Observable<CoursesResponse> {
-    return this.api.get<CoursesResponse>('admin/courses', params as Record<string, string | number>);
-  }
-
-  publishCourse(id: number, isPublished: boolean): Observable<{ success: boolean; message: string }> {
-    return this.api.patch<{ success: boolean; message: string }>(`admin/courses/${id}/publish`, { is_published: isPublished });
+  restoreCourse(id: number): Observable<{ success: boolean; message: string }> {
+    return this.api.patch<{ success: boolean; message: string }>(`courses/${id}/restore`, {});
   }
 }

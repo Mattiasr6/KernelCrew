@@ -10,8 +10,8 @@ import * as mocks from '../mocks/api.mocks';
 })
 export class ApiService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://100.107.236.28/api/v1';
-  private useMocks = false; // Toggle para usar mocks o API real
+  private baseUrl = 'http://localhost:8000/api/v1';
+  private useMocks = true; // Toggle para usar mocks o API real
 
   get<T>(endpoint: string, params?: Record<string, string | number>): Observable<T> {
     if (this.useMocks) {

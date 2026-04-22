@@ -10,8 +10,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatPaginatorModule, PageEvent, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
 import { CourseService } from '../../../core/services/course.service';
-import { Course, CoursesResponse } from '../../../core/models';
+import { Course } from '../../../core/models';
 
 class SpanishPaginatorIntl extends MatPaginatorIntl {
   override itemsPerPageLabel = 'Ítems por página';
@@ -21,12 +22,10 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
   override lastPageLabel = 'Última página';
 
   override getRangeLabel = (page: number, pageSize: number, length: number): string => {
-    if (length === 0 || pageSize === 0) {
-      return `0 de ${length}`;
-    }
+    if (length === 0 || pageSize === 0) return `0 de ${length}`;
     length = Math.max(length, 0);
     const startIndex = page * pageSize;
-    const endIndex = startIndex + pageSize < length ? startIndex + pageSize : length;
+    const endIndex = Math.min(startIndex + pageSize, length);
     return `${startIndex + 1} – ${endIndex} de ${length}`;
   };
 }
@@ -34,21 +33,11 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
 @Component({
   selector: 'app-course-list',
   standalone: true,
-  providers: [
-    { provide: MatPaginatorIntl, useClass: SpanishPaginatorIntl } as Provider,
-  ],
+  providers: [{ provide: MatPaginatorIntl, useClass: SpanishPaginatorIntl } as Provider],
   imports: [
-    CommonModule,
-    RouterLink,
-    FormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatPaginatorModule,
-    MatProgressSpinnerModule,
-    MatChipsModule,
+    CommonModule, RouterLink, FormsModule, MatCardModule, MatFormFieldModule,
+    MatInputModule, MatSelectModule, MatButtonModule, MatPaginatorModule,
+    MatProgressSpinnerModule, MatChipsModule, MatIconModule,
   ],
   template: `
     <div class="courses-container">
@@ -57,12 +46,8 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
       <div class="filters">
         <mat-form-field appearance="outline">
           <mat-label>Buscar</mat-label>
-          <input
-            matInput
-            [(ngModel)]="search"
-            placeholder="Buscar cursos..."
-            (input)="onSearch()"
-          />
+          <input matInput [(ngModel)]="search" placeholder="Buscar cursos..." (input)="onSearch()" />
+          <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -85,7 +70,7 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
           </mat-select>
         </mat-form-field>
 
-        <button mat-raised-button class="search-btn" (click)="loadCourses()">Buscar</button>
+        <button mat-raised-button class="search-btn" (click)="loadCourses()">Actualizar</button>
       </div>
 
       @if (loading) {
@@ -113,6 +98,7 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
                 <p class="description">{{ course.short_description || course.description }}</p>
                 <div class="course-info">
                   <span>{{ course.duration_hours || course.duration }} horas</span>
+                  <span class="price">Bs. {{ course.price }}</span>
                 </div>
               </mat-card-content>
             </mat-card>
@@ -130,138 +116,34 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
       }
     </div>
   `,
-  styles: [
-    `
-      .courses-container {
-        background: var(--bg-primary);
-        min-height: 100vh;
-        padding: 32px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-      h1 {
-        margin-bottom: 24px;
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-size: 2rem;
-      }
-      .filters {
-        display: flex;
-        gap: 16px;
-        flex-wrap: wrap;
-        margin-bottom: 24px;
-      }
-      .filters mat-form-field {
-        flex: 1;
-        min-width: 200px;
-      }
-      .loading,
-      .no-courses {
-        display: flex;
-        justify-content: center;
-        padding: 60px;
-        color: var(--text-secondary);
-      }
-      .courses-grid {
-        display: grid;
-        gap: 24px;
-        grid-template-columns: repeat(1, 1fr);
-        margin-bottom: 24px;
-      }
-      @media (min-width: 769px) and (max-width: 1024px) {
-        .courses-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
-      @media (min-width: 1025px) {
-        .courses-grid {
-          grid-template-columns: repeat(3, 1fr);
-        }
-      }
-      .glass-card {
-        background: var(--glass-bg) !important;
-        border: 1px solid var(--glass-border) !important;
-        border-radius: 16px !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-        backdrop-filter: blur(10px);
-        cursor: pointer;
-      }
-      .glass-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 32px rgba(108, 99, 255, 0.2);
-        border-color: var(--accent-primary) !important;
-      }
-      .course-card img {
-        height: 180px;
-        object-fit: cover;
-        border-radius: 16px 16px 0 0;
-      }
-      mat-card-content {
-        padding: 16px;
-      }
-      mat-chip-set {
-        margin-bottom: 8px;
-      }
-      mat-chip.beginner {
-        background-color: #4caf50 !important;
-        color: white !important;
-      }
-      mat-chip.intermediate {
-        background-color: #ff9800 !important;
-        color: white !important;
-      }
-      mat-chip.advanced {
-        background-color: #f44336 !important;
-        color: white !important;
-      }
-      h3 {
-        margin: 8px 0;
-        font-size: 18px;
-        color: var(--text-primary) !important;
-      }
-      .description {
-        color: var(--text-secondary);
-        font-size: 14px;
-        margin-bottom: 12px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-      .course-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: var(--text-secondary);
-        font-size: 14px;
-      }
-      .price {
-        font-weight: bold;
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-size: 18px;
-      }
-      mat-paginator {
-        background: var(--bg-surface) !important;
-        border-radius: 8px;
-        margin-top: 16px;
-      }
-      .search-btn {
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
-        color: white !important;
-        height: 56px;
-      }
-
-      .search-btn:hover {
-        box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
-      }
-    `,
-  ],
+  styles: [`
+    .courses-container { background: var(--bg-primary); min-height: 100vh; padding: 32px; max-width: 1200px; margin: 0 auto; }
+    h1 { margin-bottom: 24px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2rem; }
+    .filters { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+    .filters mat-form-field { flex: 1; min-width: 200px; }
+    .loading, .no-courses { display: flex; justify-content: center; padding: 60px; color: var(--text-secondary); }
+    .courses-grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-bottom: 24px; }
+    
+    .glass-card { 
+      background: var(--glass-bg) !important; 
+      border: 1px solid var(--glass-border) !important; 
+      border-radius: 16px !important; 
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3); 
+      transition: transform 0.3s ease; 
+      backdrop-filter: blur(10px); 
+      cursor: pointer; 
+    }
+    .glass-card:hover { transform: translateY(-4px); border-color: var(--accent-primary) !important; }
+    
+    .course-card img { height: 180px; object-fit: cover; border-radius: 16px 16px 0 0; }
+    h3 { margin: 8px 0; font-size: 18px; color: var(--text-primary) !important; }
+    .description { color: var(--text-secondary); font-size: 14px; height: 3em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .course-info { display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary); }
+    .price { font-weight: bold; color: var(--accent-primary); font-size: 1.1rem; }
+    
+    mat-paginator { background: var(--bg-surface) !important; border-radius: 8px; margin-top: 16px; color: white !important; }
+    .search-btn { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important; color: white !important; height: 56px; }
+  `],
 })
 export class CourseListComponent implements OnInit {
   private courseService = inject(CourseService);
@@ -274,13 +156,12 @@ export class CourseListComponent implements OnInit {
   search = '';
   level = '';
   category = '';
-
   loading = false;
-
   categories = ['Desarrollo Web', 'Móvil', 'Data Science', 'DevOps', 'Diseño', 'Negocios'];
 
   ngOnInit(): void {
-    setTimeout(() => this.loadCourses(), 100);
+    // FIX DOBLE CLIC: Forzamos la carga al inicializar
+    setTimeout(() => this.loadCourses(), 150);
   }
 
   onSearch(): void {
@@ -299,9 +180,10 @@ export class CourseListComponent implements OnInit {
         search: this.search || undefined,
       })
       .subscribe({
-        next: (response) => {
-          this.courses.set(response.data.courses);
-          this.totalItems.set(response.data.meta.total);
+        next: (response: any) => {
+          // Ajustado a la estructura de tu API (data.courses)
+          this.courses.set(response.data.courses || response.data);
+          this.totalItems.set(response.data.meta?.total || response.meta?.total || 0);
           this.loading = false;
         },
         error: () => {

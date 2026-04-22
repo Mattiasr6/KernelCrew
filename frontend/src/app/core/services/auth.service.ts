@@ -67,7 +67,7 @@ export class AuthService {
     this.clearSession();
   }
 
-  private clearSession(): void {
+  clearSession(): void {
     this.tokenSignal.set(null);
     this.userSignal.set(null);
     localStorage.removeItem('token');
