@@ -30,7 +30,7 @@ class User extends Authenticatable
 
     public function rol(): BelongsTo
     {
-        return $this->belongsTo(Rol::class);
+        return $this->belongsTo(Rol::class, 'role_id');
     }
 
     public function enrolledCourses(): BelongsToMany
