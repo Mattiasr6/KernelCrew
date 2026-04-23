@@ -4,18 +4,18 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
-    protected $fillable = ['name', 'email', 'password', 'is_active'];
+    protected $fillable = ['name', 'email', 'password', 'is_active', 'role_id'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -26,6 +26,11 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function rol(): BelongsTo
+    {
+        return $this->belongsTo(Rol::class);
     }
 
     public function enrolledCourses(): BelongsToMany
@@ -54,21 +59,21 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->hasRole('admin');
+        return $this->rol && $this->rol->nombre === 'admin';
     }
 
     public function isInstructor(): bool
     {
-        return $this->hasRole('instructor');
+        return $this->rol && $this->rol->nombre === 'instructor';
     }
 
     public function isStudent(): bool
     {
-        return $this->hasRole('student');
+        return $this->rol && $this->rol->nombre === 'student';
     }
 
     public function getRoleName(): string
     {
-        return $this->getRoleNames()->first() ?? 'student';
+        return $this->rol?->nombre ?? 'student';
     }
 }
