@@ -13,7 +13,7 @@ export class UserService {
     page?: number;
     per_page?: number;
     search?: string;
-    role?: string;
+    role_id?: number;
   }): Observable<UsersResponse> {
     return this.api.get<UsersResponse>('admin/users', params as Record<string, string | number>);
   }

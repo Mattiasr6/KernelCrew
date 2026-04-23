@@ -372,7 +372,7 @@ export class AdminCoursesComponent implements OnInit {
         next: (response) => {
           this.courses.set(response.data.courses);
           this.dataSource.data = response.data.courses;
-          this.totalItems = response.data.meta.total;
+          this.totalItems = response.meta.total;
           this.loading = false;
         },
         error: () => {

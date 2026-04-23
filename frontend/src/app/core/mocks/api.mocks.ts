@@ -19,9 +19,9 @@ import {
 
 // Mock Users
 const mockUsers: User[] = [
-  { id: 1, name: 'Admin User', email: 'admin@kernellearn.com', role: 'admin', is_active: true, created_at: '2026-04-01T08:00:00Z' },
-  { id: 2, name: 'Carlos Instructor', email: 'carlos@ejemplo.com', role: 'instructor', is_active: true, created_at: '2026-04-05T10:00:00Z' },
-  { id: 3, name: 'Juan Estudiante', email: 'juan@ejemplo.com', role: 'student', is_active: true, created_at: '2026-04-10T08:00:00Z' },
+  { id: 1, name: 'Admin User', email: 'admin@kernellearn.com', role_id: 1, rol: { id: 1, nombre: 'admin', descripcion: 'Administrador del sistema' }, is_active: true, created_at: '2026-04-01T08:00:00Z' },
+  { id: 2, name: 'Carlos Instructor', email: 'carlos@ejemplo.com', role_id: 2, rol: { id: 2, nombre: 'instructor', descripcion: 'Instructor de cursos' }, is_active: true, created_at: '2026-04-05T10:00:00Z' },
+  { id: 3, name: 'Juan Estudiante', email: 'juan@ejemplo.com', role_id: 3, rol: { id: 3, nombre: 'student', descripcion: 'Estudiante' }, is_active: true, created_at: '2026-04-10T08:00:00Z' },
 ];
 
 // Mock Courses
@@ -34,6 +34,9 @@ const mockCourses: Course[] = [
     level: 'beginner',
     category: 'programming',
     duration_hours: 20,
+    price: 49,
+    instructor_id: 2,
+    status: 'published',
     instructor_name: 'Carlos Instructor',
     instructor: { id: 2, name: 'Carlos Instructor' },
     is_published: true,
@@ -51,6 +54,9 @@ const mockCourses: Course[] = [
     level: 'intermediate',
     category: 'programming',
     duration_hours: 30,
+    price: 79,
+    instructor_id: 2,
+    status: 'published',
     instructor_name: 'Carlos Instructor',
     instructor: { id: 2, name: 'Carlos Instructor' },
     is_published: true,
@@ -68,6 +74,9 @@ const mockCourses: Course[] = [
     level: 'advanced',
     category: 'programming',
     duration_hours: 25,
+    price: 99,
+    instructor_id: 2,
+    status: 'published',
     instructor_name: 'Carlos Instructor',
     instructor: { id: 2, name: 'Carlos Instructor' },
     is_published: true,
@@ -85,10 +94,16 @@ const mockCourses: Course[] = [
     level: 'beginner',
     category: 'design',
     duration_hours: 15,
+    price: 59,
+    instructor_id: 2,
+    status: 'draft',
     instructor_name: 'Carlos Instructor',
     instructor: { id: 2, name: 'Carlos Instructor' },
     is_published: false,
+    subscription_required: 'basic',
+    can_enroll: false,
     syllabus: '1. Principios de diseño\n2. Wireframes\n3. Prototipado\n4. Testing',
+    requirements: 'Ninguno',
     created_at: '2026-04-04T08:00:00Z'
   },
   {
@@ -99,9 +114,14 @@ const mockCourses: Course[] = [
     level: 'intermediate',
     category: 'data_science',
     duration_hours: 40,
+    price: 129,
+    instructor_id: 2,
+    status: 'published',
     instructor_name: 'Carlos Instructor',
     instructor: { id: 2, name: 'Carlos Instructor' },
     is_published: true,
+    subscription_required: 'premium',
+    can_enroll: true,
     syllabus: '1. Regresión\n2. Clasificación\n3. Redes neuronales\n4. Deep Learning',
     requirements: 'Conocimiento de Python y estadísticas',
     created_at: '2026-04-05T08:00:00Z'
@@ -126,7 +146,8 @@ export function mockRegister(data: RegisterRequest): Observable<AuthResponse> {
     id: mockUsers.length + 1,
     name: data.name,
     email: data.email,
-    role: 'student',
+    role_id: 3,
+    rol: { id: 3, nombre: 'student', descripcion: 'Estudiante' },
     is_active: true,
     created_at: new Date().toISOString()
   };
@@ -234,18 +255,15 @@ export function mockGetCourses(params?: {
 
   return of({
     success: true,
+    message: 'Cursos obtenidos exitosamente',
     data: {
-      courses: paginatedCourses,
-      meta: {
-        current_page: page,
-        last_page: Math.ceil(courses.length / perPage),
-        per_page: perPage,
-        total: courses.length
-      },
-      filters: {
-        levels: ['beginner', 'intermediate', 'advanced'],
-        categories: ['programming', 'design', 'data_science']
-      }
+      courses: paginatedCourses
+    },
+    meta: {
+      current_page: page,
+      last_page: Math.ceil(courses.length / perPage),
+      per_page: perPage,
+      total: courses.length
     }
   }).pipe(delay(800));
 }
@@ -264,6 +282,7 @@ export function mockGetCourse(id: number): Observable<CourseResponse> {
 
   return of({
     success: true,
+    message: 'Curso obtenido exitosamente',
     data: { course }
   }).pipe(delay(500));
 }
@@ -278,9 +297,14 @@ export function mockCreateCourse(data: CreateCourseRequest): Observable<CourseRe
     level: data.level,
     category: data.category,
     duration_hours: data.duration_hours,
+    price: 0,
+    instructor_id: 2,
+    status: 'draft',
     instructor_name: 'Carlos Instructor',
     instructor: { id: 2, name: 'Carlos Instructor' },
     is_published: false,
+    subscription_required: 'basic',
+    can_enroll: false,
     syllabus: data.syllabus,
     requirements: data.requirements,
     created_at: new Date().toISOString()
@@ -358,14 +382,15 @@ export function mockGetAllCourses(params?: {
 
   return of({
     success: true,
+    message: 'Cursos obtenidos exitosamente',
     data: {
-      courses: paginatedCourses,
-      meta: {
-        current_page: page,
-        last_page: Math.ceil(courses.length / perPage),
-        per_page: perPage,
-        total: courses.length
-      }
+      courses: paginatedCourses
+    },
+    meta: {
+      current_page: page,
+      last_page: Math.ceil(courses.length / perPage),
+      per_page: perPage,
+      total: courses.length
     }
   }).pipe(delay(800));
 }
@@ -397,7 +422,7 @@ export function mockGetUsers(params?: {
   page?: number;
   per_page?: number;
   search?: string;
-  role?: string;
+  role_id?: number;
 }): Observable<UsersResponse> {
   let users = [...mockUsers];
   
@@ -407,8 +432,8 @@ export function mockGetUsers(params?: {
       u.email.toLowerCase().includes(params.search!.toLowerCase())
     );
   }
-  if (params?.role) {
-    users = users.filter(u => u.role === params.role);
+  if (params?.role_id) {
+    users = users.filter(u => u.role_id === params.role_id);
   }
 
   const page = params?.page || 1;
@@ -419,13 +444,13 @@ export function mockGetUsers(params?: {
   return of({
     success: true,
     data: {
-      users: paginatedUsers,
-      meta: {
-        current_page: page,
-        last_page: Math.ceil(users.length / perPage),
-        per_page: perPage,
-        total: users.length
-      }
+      users: paginatedUsers
+    },
+    meta: {
+      current_page: page,
+      last_page: Math.ceil(users.length / perPage),
+      per_page: perPage,
+      total: users.length
     }
   }).pipe(delay(800));
 }
@@ -446,7 +471,7 @@ export function mockCreateUser(data: CreateUserRequest): Observable<UserResponse
     id: mockUsers.length + 1,
     name: data.name,
     email: data.email,
-    role: data.role,
+    role_id: data.role_id,
     is_active: true,
     created_at: new Date().toISOString()
   };

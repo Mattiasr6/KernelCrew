@@ -181,9 +181,8 @@ export class CourseListComponent implements OnInit {
       })
       .subscribe({
         next: (response: any) => {
-          // Ajustado a la estructura de tu API (data.courses)
           this.courses.set(response.data.courses || response.data);
-          this.totalItems.set(response.data.meta?.total || response.meta?.total || 0);
+          this.totalItems.set(response.meta.total || 0);
           this.loading = false;
         },
         error: () => {

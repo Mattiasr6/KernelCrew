@@ -97,7 +97,7 @@ import { User } from '../../../core/models';
           <ng-container matColumnDef="role">
             <th mat-header-cell *matHeaderCellDef>Rol</th>
             <td mat-cell *matCellDef="let user">
-              <mat-chip [class]="'role-' + user.role">{{ user.role }}</mat-chip>
+              <mat-chip [class]="'role-' + user.rol?.nombre">{{ user.rol?.nombre }}</mat-chip>
             </td>
           </ng-container>
 
@@ -284,7 +284,7 @@ export class AdminUsersComponent implements OnInit {
   pageSize = 10;
 
   search = '';
-  roleFilter = '';
+  roleFilter: number | null = null;
   loading = false;
   saving = false;
 
@@ -294,7 +294,7 @@ export class AdminUsersComponent implements OnInit {
     name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     password: [''],
-    role: ['student', Validators.required],
+    role_id: [3, Validators.required],
   });
 
   ngOnInit(): void {
@@ -308,13 +308,13 @@ export class AdminUsersComponent implements OnInit {
         page: this.currentPage,
         per_page: this.pageSize,
         search: this.search || undefined,
-        role: this.roleFilter || undefined,
+        role_id: this.roleFilter || undefined,
       })
       .subscribe({
         next: (response) => {
           this.users.set(response.data.users);
           this.dataSource.data = response.data.users;
-          this.totalItems = response.data.meta.total;
+          this.totalItems = response.meta.total;
           this.loading = false;
         },
         error: () => {
@@ -336,10 +336,10 @@ export class AdminUsersComponent implements OnInit {
       this.form.patchValue({
         name: user.name,
         email: user.email,
-        role: user.role,
+        role_id: user.role_id,
       });
     } else {
-      this.form.reset({ role: 'student' });
+      this.form.reset({ role_id: 3 });
     }
     this.showDialog = true;
   }
@@ -347,7 +347,7 @@ export class AdminUsersComponent implements OnInit {
   closeDialog(): void {
     this.showDialog = false;
     this.editingUser = null;
-    this.form.reset({ role: 'student' });
+    this.form.reset({ role_id: 3 });
   }
 
   saveUser(): void {

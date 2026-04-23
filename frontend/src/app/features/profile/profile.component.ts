@@ -17,7 +17,7 @@ import { AuthService } from '../../core/services/auth.service';
             <mat-icon>person</mat-icon>
           </div>
           <h1>{{ authService.user()?.name || 'Usuario' }}</h1>
-          <span class="role">{{ authService.user()?.role | titlecase }}</span>
+          <span class="role">{{ authService.user()?.rol?.nombre | titlecase }}</span>
         </div>
         
         <mat-card-content>

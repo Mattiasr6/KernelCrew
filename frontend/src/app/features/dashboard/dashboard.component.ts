@@ -15,7 +15,7 @@ import { AuthService } from '../../core/services/auth.service';
     <div class="dashboard-container">
       <div class="dashboard-header">
         <h1>Bienvenido, {{ authService.user()?.name }}</h1>
-        <p class="role">Rol: {{ authService.user()?.role | titlecase }}</p>
+        <p class="role">Rol: {{ authService.user()?.rol?.nombre | titlecase }}</p>
       </div>
 
       <div class="cards-grid">

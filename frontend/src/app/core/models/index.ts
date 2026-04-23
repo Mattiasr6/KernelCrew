@@ -7,11 +7,18 @@ export interface ApiResponse<T> {
 }
 
 // User models
+export interface Rol {
+  id: number;
+  nombre: 'admin' | 'instructor' | 'student';
+  descripcion: string;
+}
+
 export interface User {
   id: number;
   name: string;
   email: string;
-  role: 'admin' | 'instructor' | 'student';
+  rol?: Rol;
+  role_id?: number;
   is_active?: boolean;
   created_at: string;
   updated_at?: string;
@@ -71,7 +78,7 @@ export interface ForgotPasswordResponse {
 export interface Course {
   id: number;
   title: string;
-  slug: string;
+  slug?: string;
   description: string;
   price: number;
   instructor_id: number;
@@ -80,6 +87,18 @@ export interface Course {
   created_at: string;
   updated_at?: string;
   deleted_at?: string;
+  short_description?: string;
+  level?: string;
+  category?: string;
+  is_published?: boolean;
+  duration_hours?: number;
+  duration?: number;
+  instructor_name?: string;
+  subscription_required?: string | boolean;
+  thumbnail?: string;
+  can_enroll?: boolean;
+  syllabus?: string;
+  requirements?: string;
 }
 
 export interface CoursesMeta {
@@ -91,15 +110,19 @@ export interface CoursesMeta {
 
 export interface CoursesResponse {
   success: boolean;
-  message: string;
-  data: Course[];
+  message?: string;
+  data: {
+    courses: Course[];
+  };
   meta: CoursesMeta;
 }
 
 export interface CourseResponse {
   success: boolean;
-  message: string;
-  data: Course;
+  message?: string;
+  data: {
+    course: Course;
+  };
 }
 
 // Course payloads
@@ -140,6 +163,8 @@ export interface CourseFilters {
   search?: string;
   min_price?: number;
   max_price?: number;
+  level?: string;
+  category?: string;
 }
 
 // User management (Admin)
@@ -154,8 +179,8 @@ export interface UsersResponse {
   success: boolean;
   data: {
     users: User[];
-    meta: UserListMeta;
   };
+  meta: UserListMeta;
 }
 
 export interface UserResponse {
@@ -171,13 +196,13 @@ export interface CreateUserRequest {
   email: string;
   password: string;
   password_confirmation: string;
-  role: 'admin' | 'instructor' | 'student';
+  role_id: number;
 }
 
 export interface UpdateUserRequest {
   name?: string;
   email?: string;
-  role?: 'admin' | 'instructor' | 'student';
+  role_id?: number;
   is_active?: boolean;
 }
 

@@ -177,9 +177,9 @@ export class LoginComponent {
     this.authService.login(this.form.value).subscribe({
       next: () => {
         const user = this.authService.user();
-        if (user?.role === 'admin') {
+        if (user?.rol?.nombre === 'admin') {
           this.router.navigate(['/admin']);
-        } else if (user?.role === 'instructor') {
+        } else if (user?.rol?.nombre === 'instructor') {
           this.router.navigate(['/my-courses']);
         } else {
           this.router.navigate(['/dashboard']);

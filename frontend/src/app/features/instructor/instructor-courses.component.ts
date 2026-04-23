@@ -319,7 +319,7 @@ export class InstructorCoursesComponent implements OnInit {
 
   loadMyCourses(): void {
     this.loading = true;
-    this.courseService.getAllCourses({ per_page: 100 }).subscribe({
+    this.courseService.getCourses({ per_page: 100 }).subscribe({
       next: (response) => {
         this.courses.set(response.data.courses);
         this.dataSource.data = response.data.courses;

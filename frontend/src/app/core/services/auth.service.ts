@@ -17,9 +17,9 @@ export class AuthService {
 
   user = computed(() => this.userSignal());
   isAuthenticated = computed(() => !!this.tokenSignal());
-  isAdmin = computed(() => this.userSignal()?.role === 'admin');
-  isInstructor = computed(() => this.userSignal()?.role === 'instructor');
-  isStudent = computed(() => this.userSignal()?.role === 'student');
+  isAdmin = computed(() => this.userSignal()?.rol?.nombre === 'admin');
+  isInstructor = computed(() => this.userSignal()?.rol?.nombre === 'instructor');
+  isStudent = computed(() => this.userSignal()?.rol?.nombre === 'student');
 
   constructor() {
     this.loadFromStorage();
