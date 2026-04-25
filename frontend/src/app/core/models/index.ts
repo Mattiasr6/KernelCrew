@@ -268,6 +268,15 @@ export interface DashboardData {
   recent_activity: Activity[];
 }
 
+export interface Certificate {
+  id: number;
+  user_id: number;
+  course_id: number;
+  certificate_code: string;
+  issued_at: string;
+  course?: Course;
+}
+
 export interface SubscriptionPlan {
   id: number;
   name: string;
