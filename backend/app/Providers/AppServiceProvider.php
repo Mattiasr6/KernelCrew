@@ -23,5 +23,10 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production', 'local')) {
             URL::forceScheme('https');
         }
+
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Events\CoursePublished::class,
+            \App\Listeners\AwardInstructorCredits::class
+        );
     }
 }

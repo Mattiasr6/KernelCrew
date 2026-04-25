@@ -1,9 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './core/guards/admin.guard';
 import { instructorGuard } from './core/guards/instructor.guard';
-
-// Nota: authGuard y guestGuard deberían moverse a sus propios archivos también por consistencia
-// Por ahora los mantengo si existen, pero priorizo la nueva arquitectura de Admin
 import { authGuard, guestGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -49,6 +46,14 @@ export const routes: Routes = [
         (m) => m.CourseDetailComponent,
       ),
   },
+  {
+    path: 'become-teacher',
+    loadComponent: () =>
+      import('./features/student/instructor-application.component').then(
+        (m) => m.InstructorApplicationComponent,
+      ),
+    canActivate: [authGuard],
+  },
 
   // --- ARQUITECTURA SPRINT 2: ADMIN DASHBOARD ---
   {
@@ -74,8 +79,8 @@ export const routes: Routes = [
       {
         path: 'applications',
         loadComponent: () =>
-          import('./features/admin/dashboard/dashboard.component').then(
-            (m) => m.DashboardComponent, // Temporalmente redirige al dashboard
+          import('./features/admin/admin-applications.component').then(
+            (m) => m.AdminApplicationsComponent,
           ),
       }
     ],
@@ -87,16 +92,18 @@ export const routes: Routes = [
     canActivate: [authGuard, instructorGuard],
     children: [
         {
+            path: '',
+            loadComponent: () =>
+              import('./features/instructor/instructor-dashboard.component').then(
+                (m) => m.InstructorDashboardComponent,
+              ),
+        },
+        {
             path: 'courses',
             loadComponent: () =>
               import('./features/instructor/instructor-courses.component').then(
                 (m) => m.InstructorCoursesComponent,
               ),
-        },
-        {
-            path: '',
-            redirectTo: 'courses',
-            pathMatch: 'full'
         }
     ]
   },

@@ -80,4 +80,24 @@ export class AuthService {
   getToken(): string | null {
     return this.tokenSignal();
   }
+
+  /**
+   * Refresca los datos del usuario actual desde el servidor.
+   * Vital para detectar cambios de rol (ej. tras aprobación) en tiempo real.
+   */
+  refreshUserSession(): void {
+    this.api.get<any>('auth/me').subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          const updatedUser = response.data;
+          this.userSignal.set(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      },
+      error: (err) => {
+        console.error('Error al refrescar la sesión:', err);
+        if (err.status === 401) this.clearSession();
+      }
+    });
+  }
 }

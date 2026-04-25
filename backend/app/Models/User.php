@@ -15,7 +15,32 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
-    protected $fillable = ['name', 'email', 'password', 'is_active', 'role_id'];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'is_active',
+        'role_id',
+        'provider',
+        'provider_id',
+        'avatar',
+        'enrollment_credits'
+    ];
+
+    public function instructorApplication(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(InstructorApplication::class, 'user_id');
+    }
+
+    public function reviewedApplications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(InstructorApplication::class, 'reviewed_by');
+    }
+
+    public function courses(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Course::class, 'instructor_id');
+    }
 
     protected $hidden = ['password', 'remember_token'];
 
