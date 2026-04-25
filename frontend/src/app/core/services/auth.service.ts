@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { User, LoginRequest, RegisterRequest, AuthResponse, AuthData } from '../models';
+import { User, LoginRequest, RegisterRequest, AuthResponse } from '../models';
 import { tap } from 'rxjs';
 
 @Injectable({
@@ -12,14 +12,16 @@ export class AuthService {
   private api = inject(ApiService);
   private router = inject(Router);
 
-  private userSignal = signal<User | null>(null);
+  // Expuesto como signal pública para consumo en Guards y Components (Solicitud Tech Lead)
+  public userSignal = signal<User | null>(null);
   private tokenSignal = signal<string | null>(null);
 
+  // Computeds basados en role_id (RBAC Custom 3FN)
   user = computed(() => this.userSignal());
   isAuthenticated = computed(() => !!this.tokenSignal());
-  isAdmin = computed(() => this.userSignal()?.rol?.nombre === 'admin');
-  isInstructor = computed(() => this.userSignal()?.rol?.nombre === 'instructor');
-  isStudent = computed(() => this.userSignal()?.rol?.nombre === 'student');
+  isAdmin = computed(() => this.userSignal()?.role_id === 1);
+  isInstructor = computed(() => this.userSignal()?.role_id === 2);
+  isStudent = computed(() => this.userSignal()?.role_id === 3);
 
   constructor() {
     this.loadFromStorage();
@@ -63,8 +65,8 @@ export class AuthService {
   logout(): void {
     this.api.post('auth/logout', {}).subscribe({
       complete: () => this.clearSession(),
+      error: () => this.clearSession(),
     });
-    this.clearSession();
   }
 
   clearSession(): void {
@@ -72,7 +74,7 @@ export class AuthService {
     this.userSignal.set(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    this.router.navigate(['/login']);
+    this.router.navigate(['/auth/login']);
   }
 
   getToken(): string | null {
