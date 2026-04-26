@@ -115,6 +115,14 @@ class AdminUserController extends Controller
             ], 404);
         }
 
+        // Aplicar UserPolicy para evitar Admin-Kill
+        if (request()->user()->cannot('delete', $user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para eliminar a otro administrador',
+            ], 403);
+        }
+
         if (!$user->trashed()) {
             $user->delete();
         }

@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, adminGuard, instructorGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
+import { instructorGuard } from './core/guards/instructor.guard';
+import { authGuard, guestGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -14,37 +16,20 @@ export const routes: Routes = [
     canActivate: [guestGuard],
   },
   {
+    path: 'auth/callback',
+    loadComponent: () =>
+      import('./features/auth/components/auth-callback.component').then((m) => m.AuthCallbackComponent),
+  },
+  {
     path: 'register',
     loadComponent: () =>
       import('./features/auth/components/register.component').then((m) => m.RegisterComponent),
     canActivate: [guestGuard],
   },
   {
-    path: 'forgot-password',
-    loadComponent: () =>
-      import('./features/auth/components/forgot-password.component').then(
-        (m) => m.ForgotPasswordComponent,
-      ),
-    canActivate: [guestGuard],
-  },
-  {
-    path: 'reset-password',
-    loadComponent: () =>
-      import('./features/auth/components/reset-password.component').then(
-        (m) => m.ResetPasswordComponent,
-      ),
-    canActivate: [guestGuard],
-  },
-  {
     path: 'dashboard',
     loadComponent: () =>
       import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
-    canActivate: [authGuard],
-  },
-  {
-    path: 'profile',
-    loadComponent: () =>
-      import('./features/profile/profile.component').then((m) => m.ProfileComponent),
     canActivate: [authGuard],
   },
   {
@@ -62,38 +47,67 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'my-courses',
+    path: 'become-teacher',
     loadComponent: () =>
-      import('./features/instructor/instructor-courses.component').then(
-        (m) => m.InstructorCoursesComponent,
+      import('./features/student/instructor-application.component').then(
+        (m) => m.InstructorApplicationComponent,
       ),
-    canActivate: [authGuard, instructorGuard],
+    canActivate: [authGuard],
   },
+
+  // --- ARQUITECTURA SPRINT 2: ADMIN DASHBOARD ---
   {
     path: 'admin',
+    loadComponent: () => 
+      import('./layouts/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     canActivate: [authGuard, adminGuard],
     children: [
       {
+        path: '',
+        loadComponent: () =>
+          import('./features/admin/dashboard/dashboard.component').then(
+            (m) => m.DashboardComponent,
+          ),
+      },
+      {
         path: 'users',
         loadComponent: () =>
-          import('./features/admin/components/admin-users.component').then(
-            (m) => m.AdminUsersComponent,
+          import('./features/admin/user-management/user-management.component').then(
+            (m) => m.UserManagementComponent,
           ),
       },
       {
-        path: 'courses',
+        path: 'applications',
         loadComponent: () =>
-          import('./features/admin/components/admin-courses.component').then(
-            (m) => m.AdminCoursesComponent,
+          import('./features/admin/admin-applications.component').then(
+            (m) => m.AdminApplicationsComponent,
           ),
-      },
-      {
-        path: '',
-        redirectTo: 'users',
-        pathMatch: 'full',
-      },
+      }
     ],
   },
+
+  // --- ARQUITECTURA SPRINT 2: INSTRUCTOR DASHBOARD ---
+  {
+    path: 'instructor',
+    canActivate: [authGuard, instructorGuard],
+    children: [
+        {
+            path: '',
+            loadComponent: () =>
+              import('./features/instructor/instructor-dashboard.component').then(
+                (m) => m.InstructorDashboardComponent,
+              ),
+        },
+        {
+            path: 'courses',
+            loadComponent: () =>
+              import('./features/instructor/instructor-courses.component').then(
+                (m) => m.InstructorCoursesComponent,
+              ),
+        }
+    ]
+  },
+
   {
     path: '**',
     redirectTo: 'courses',

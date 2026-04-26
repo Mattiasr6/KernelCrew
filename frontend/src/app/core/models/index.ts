@@ -175,6 +175,28 @@ export interface UserListMeta {
   total: number;
 }
 
+export interface InstructorApplication {
+  id: number;
+  user_id: number;
+  experience_summary: string;
+  portfolio_url?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewed_by?: number;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApplicationPayload {
+  experience_summary: string;
+  portfolio_url?: string;
+}
+
 export interface UsersResponse {
   success: boolean;
   data: {
@@ -221,6 +243,31 @@ export interface PaginationParams {
 }
 
 // Subscription models (for Sprint 2)
+// Activity and Dashboard models
+export interface Activity {
+  id: number;
+  user_id: number;
+  type: 'course_published' | 'credit_earned' | 'application_approved' | string;
+  subject_id?: number;
+  subject_type?: string;
+  description: string;
+  created_at: string;
+}
+
+export interface DashboardData {
+  credits_available: number;
+  gamification: {
+    progress_current: number;
+    progress_target: number;
+    total_history: number;
+  };
+  stats: {
+    courses_count: number;
+    active_students: number;
+  };
+  recent_activity: Activity[];
+}
+
 export interface SubscriptionPlan {
   id: number;
   name: string;

@@ -15,8 +15,13 @@ class Course extends Model
 
     protected $fillable = [
         'title', 'slug', 'description', 'price',
-        'instructor_id', 'status',
+        'instructor_id', 'status', 'is_credit_counted'
     ];
+
+    public function activities(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Activity::class, 'subject');
+    }
 
     protected $casts = [
         'price' => 'decimal:2',

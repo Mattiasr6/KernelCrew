@@ -1,0 +1,46 @@
+<div class="admin-container">
+  <!-- Sidebar con Glassmorphism -->
+  <aside [class.collapsed]="isCollapsed()">
+    <div class="sidebar-header">
+      <span class="logo" *ngIf="!isCollapsed()">CodeCore Admin</span>
+      <button (click)="toggleSidebar()" class="toggle-btn" [title]="isCollapsed() ? 'Expandir' : 'Colapsar'">
+        {{ isCollapsed() ? '→' : '←' }}
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" [class.centered]="isCollapsed()">
+        <i class="icon">📊</i>
+        <span *ngIf="!isCollapsed()">Dashboard</span>
+      </a>
+      <a routerLink="/admin/users" routerLinkActive="active" [class.centered]="isCollapsed()">
+        <i class="icon">👥</i>
+        <span *ngIf="!isCollapsed()">Usuarios</span>
+      </a>
+      <a routerLink="/admin/applications" routerLinkActive="active" [class.centered]="isCollapsed()">
+        <i class="icon">📝</i>
+        <span *ngIf="!isCollapsed()">Postulaciones</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <button (click)="logout()" class="logout-btn" [class.centered]="isCollapsed()">
+            <i class="icon">🚪</i>
+            <span *ngIf="!isCollapsed()">Cerrar Sesión</span>
+        </button>
+    </div>
+  </aside>
+
+  <!-- Contenido Principal -->
+  <main>
+    <header class="top-bar">
+      <div class="breadcrumb">Panel de Administración / {{ currentUser()?.name }}</div>
+      <div class="user-info">
+        <span class="role-badge">Admin</span>
+      </div>
+    </header>
+    <section class="content">
+      <router-outlet></router-outlet>
+    </section>
+  </main>
+</div>

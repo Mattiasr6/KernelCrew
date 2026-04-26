@@ -10,11 +10,14 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+  // Guardar URL de destino (ej. para pagos/checkout)
+  localStorage.setItem('returnUrl', state.url);
+  
+  router.navigate(['/login']);
   return false;
 };
 
-export const guestGuard: CanActivateFn = (route, state) => {
+export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -26,7 +29,7 @@ export const guestGuard: CanActivateFn = (route, state) => {
   return false;
 };
 
-export const adminGuard: CanActivateFn = (route, state) => {
+export const adminGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -38,11 +41,11 @@ export const adminGuard: CanActivateFn = (route, state) => {
   return false;
 };
 
-export const instructorGuard: CanActivateFn = (route, state) => {
+export const instructorGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isInstructor() || authService.isAdmin()) {
+  if (authService.isInstructor()) {
     return true;
   }
 

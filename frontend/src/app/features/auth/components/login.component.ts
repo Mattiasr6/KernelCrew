@@ -39,17 +39,11 @@ import { AuthService } from '../../../core/services/auth.service';
               @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
                 <mat-error>El email es requerido</mat-error>
               }
-              @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
-                <mat-error>Ingresa un email válido</mat-error>
-              }
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Contraseña</mat-label>
               <input matInput type="password" formControlName="password" />
-              @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
-                <mat-error>La contraseña es requerida</mat-error>
-              }
             </mat-form-field>
 
             @if (error) {
@@ -58,9 +52,8 @@ import { AuthService } from '../../../core/services/auth.service';
 
             <button
               mat-raised-button
-              class="submit-btn"
+              class="submit-btn full-width"
               type="submit"
-              class="full-width"
               [disabled]="loading || form.invalid"
             >
               @if (loading) {
@@ -70,6 +63,19 @@ import { AuthService } from '../../../core/services/auth.service';
               }
             </button>
           </form>
+
+          <div class="social-divider">
+            <span>O continúa con</span>
+          </div>
+
+          <div class="social-buttons">
+            <button type="button" class="social-btn google" (click)="loginWithProvider('google')">
+                <i class="icon">G</i> Google
+            </button>
+            <button type="button" class="social-btn github" (click)="loginWithProvider('github')">
+                <i class="icon">Git</i> GitHub
+            </button>
+          </div>
 
           <div class="links">
             <a routerLink="/register">¿No tienes cuenta? Regístrate</a>
@@ -86,60 +92,79 @@ import { AuthService } from '../../../core/services/auth.service';
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        background: var(--bg-primary);
+        background: #0f172a;
         padding: 20px;
       }
       .brand-logo {
         font-size: 32px;
         font-weight: bold;
-        color: var(--text-primary);
+        color: white;
         margin-bottom: 24px;
       }
       .logo-accent {
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        background-clip: text;
       }
       .login-card {
         max-width: 400px;
         width: 100%;
         padding: 24px;
-        background: var(--glass-bg) !important;
-        border: 1px solid var(--glass-border) !important;
+        background: rgba(30, 30, 50, 0.6) !important;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 16px !important;
-      }
-      mat-card-title {
-        color: var(--text-primary) !important;
-        margin-bottom: 24px !important;
-      }
-      .full-width {
-        width: 100%;
-        margin-bottom: 16px;
-      }
-      .error-message {
-        color: #f44336;
-        margin-bottom: 16px;
-        padding: 12px;
-        background: rgba(244, 67, 54, 0.1);
-        border-radius: 4px;
-        border: 1px solid rgba(244, 67, 54, 0.3);
-      }
-      .submit-btn {
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
         color: white !important;
       }
-      .links {
+      mat-card-title { color: white !important; margin-bottom: 24px !important; }
+      .full-width { width: 100%; margin-bottom: 16px; }
+      .submit-btn {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+        color: white !important;
+        height: 48px;
+      }
+
+      .social-divider {
+        display: flex;
+        align-items: center;
         text-align: center;
-        margin-top: 16px;
-        a {
-          color: var(--accent-primary);
-          text-decoration: none;
+        margin: 20px 0;
+        color: rgba(255,255,255,0.4);
+        font-size: 0.8rem;
+        &::before, &::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
+        span { padding: 0 10px; }
       }
-      button mat-spinner {
-        display: inline-block;
+
+      .social-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
       }
+
+      .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.05);
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+
+        &:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .icon { font-style: normal; font-weight: bold; }
+      }
+
+      .links { text-align: center; margin-top: 16px; a { color: #60a5fa; text-decoration: none; font-size: 0.9rem; } }
     `,
   ],
 })
@@ -157,38 +182,25 @@ export class LoginComponent {
   loading = false;
   error = '';
 
-  get returnUrl(): string {
-    return this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+  onSubmit(): void {
+    if (this.form.invalid) return;
+    this.loading = true;
+    this.authService.login(this.form.value).subscribe({
+      next: (res) => this.router.navigate([this.getRedirectByRole(res.data.user.role_id)]),
+      error: (err) => { this.loading = false; this.error = 'Credenciales inválidas'; }
+    });
   }
 
-  onSubmit(): void {
-    console.log('BOTÓN PRESIONADO: Iniciando petición...');
-    console.log('Email:', this.form.value.email);
-    console.log('Password:', this.form.value.password);
-    
-    if (this.form.invalid) {
-      console.log('FORMULARIO INVÁLIDO');
-      return;
+  loginWithProvider(provider: string): void {
+    // Redirección al backend (IP .28 solicitada)
+    window.location.href = `http://192.168.1.28:8000/api/v1/auth/${provider}/redirect`;
+  }
+
+  private getRedirectByRole(roleId: number): string {
+    switch (roleId) {
+      case 1: return '/admin';
+      case 2: return '/instructor';
+      default: return '/dashboard';
     }
-
-    this.loading = true;
-    this.error = '';
-
-    this.authService.login(this.form.value).subscribe({
-      next: () => {
-        const user = this.authService.user();
-        if (user?.rol?.nombre === 'admin') {
-          this.router.navigate(['/admin']);
-        } else if (user?.rol?.nombre === 'instructor') {
-          this.router.navigate(['/my-courses']);
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
-      },
-      error: (err) => {
-        this.loading = false;
-        this.error = err.error?.message || 'Error al iniciar sesión';
-      },
-    });
   }
 }
