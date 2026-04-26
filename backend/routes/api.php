@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Api\V1\Auth\SocialAuthController;
+use App\Http\Controllers\Api\V1\CertificateController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\Instructor\InstructorDashboardController;
@@ -38,6 +39,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
         
+        // Certificados
+        Route::get('/certificates', [CertificateController::class, 'index']);
+        Route::get('/certificates/{uuid}/download', [CertificateController::class, 'download']);
+
         // Postulación de Estudiantes (Rol 3)
         Route::post('/instructor-applications', [InstructorApplicationController::class, 'store']);
 
