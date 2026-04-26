@@ -54,6 +54,14 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard],
   },
+  {
+    path: 'my-certificates',
+    loadComponent: () =>
+      import('./features/student/student-certificates.component').then(
+        (m) => m.StudentCertificatesComponent,
+      ),
+    canActivate: [authGuard],
+  },
 
   // --- ARQUITECTURA SPRINT 2: ADMIN DASHBOARD ---
   {

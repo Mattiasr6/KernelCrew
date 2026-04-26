@@ -30,6 +30,10 @@ import { RouterLink } from '@angular/router';
             <span class="material-symbols-outlined text-[20px]">home</span>
             <span class="font-medium text-sm">Home</span>
           </a>
+          <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all font-inter" routerLink="/my-certificates">
+            <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
+            <span class="font-medium text-sm">Mis Certificados</span>
+          </a>
           <a class="flex items-center gap-3 px-4 py-3 bg-white/10 text-blue-400 border-l-4 border-blue-500 rounded-r-lg font-inter">
             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">school</span>
             <span class="font-semibold text-sm">Become a Teacher</span>
