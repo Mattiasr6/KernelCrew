@@ -126,15 +126,16 @@ export class StudentCertificatesComponent implements OnInit {
   }
 
   loadCertificates() {
-    this.isLoading.set(true);
-    this.certService.getMyCertificates().subscribe({
-      next: (res) => {
-        this.certificates.set(res.data);
-        this.isLoading.set(false);
-      },
-      error: () => this.isLoading.set(false)
-    });
-  }
+  this.isLoading.set(true);
+  this.certService.getMyCertificates().subscribe({
+    next: (res) => {
+      // Usamos '?? []' para asegurar que siempre haya una lista
+      this.certificates.set(res.data ?? []);
+      this.isLoading.set(false);
+    },
+    error: () => this.isLoading.set(false)
+  });
+}
 
   download(cert: Certificate) {
     this.downloadingUuid.set(cert.certificate_code);

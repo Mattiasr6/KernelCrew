@@ -173,14 +173,15 @@ export class InstructorDashboardComponent implements OnInit {
   }
 
   loadStats() {
-    this.isLoading.set(true);
-    this.dashboardService.getInstructorStats().subscribe({
-      next: (res) => {
-        this.dashboardData.set(res.data);
-        this.isLoading.set(false);
-      },
-      error: () => this.isLoading.set(false)
-    });
+  this.isLoading.set(true);
+  this.dashboardService.getInstructorStats().subscribe({
+    next: (res) => {
+      // Usamos '?? null' para que nunca sea undefined
+      this.dashboardData.set(res.data ?? null);
+      this.isLoading.set(false);
+    },
+    error: () => this.isLoading.set(false)
+  });
   }
 
   getActivityConfig(type: string) {

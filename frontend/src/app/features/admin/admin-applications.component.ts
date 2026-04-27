@@ -46,7 +46,7 @@ import { InstructorApplication } from '../../core/models';
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
                       <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold border border-white/10">
-                        {{ app.user?.name?.substring(0,2).toUpperCase() }}
+                        {{ (app.user?.name || "").substring(0,2).toUpperCase() }}
                       </div>
                       <span class="text-slate-200 font-medium">{{ app.user?.name }}</span>
                     </div>
