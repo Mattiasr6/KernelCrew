@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -194,7 +195,7 @@ export class LoginComponent {
 
   loginWithProvider(provider: string): void {
     // Redirección al backend (IP .28 solicitada)
-    window.location.href = `http://192.168.1.28:8000/api/v1/auth/${provider}/redirect`;
+    window.location.href = `${environment.apiUrl}/auth/${provider}/redirect`;
   }
 
   private getRedirectByRole(roleId: number): string {
