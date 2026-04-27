@@ -184,17 +184,22 @@ export class LoginComponent {
   error = '';
 
   onSubmit(): void {
-  if (this.form.invalid) return;
-  this.loading = true;
-  this.authService.login(this.form.value).subscribe({
-    // Agregamos el '!' después de role_id
-    next: (res) => this.router.navigate([this.getRedirectByRole(res.data.user.role_id!)]),
-    error: (err) => { this.loading = false; this.error = 'Credenciales inválidas'; }
-  });
+    if (this.form.invalid) return;
+    this.loading = true;
+    this.authService.login(this.form.value).subscribe({
+      next: (res) => {
+        const roleId = res.data.user.role_id;
+        this.router.navigate([this.getRedirectByRole(roleId)]);
+      },
+      error: (err) => { 
+        this.loading = false; 
+        this.error = 'Credenciales inválidas'; 
+      }
+    });
   }
 
   loginWithProvider(provider: string): void {
-    // Redirección al backend (IP .28 solicitada)
+    // Redirección al backend usando environment.apiUrl
     window.location.href = `${environment.apiUrl}/auth/${provider}/redirect`;
   }
 
