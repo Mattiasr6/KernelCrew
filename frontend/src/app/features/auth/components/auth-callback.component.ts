@@ -10,7 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   imports: [MatProgressSpinnerModule],
   template: `
     <div class="callback-container">
-      <mat-spinner></mat-spinner>
+      <mat-spinner diameter="50"></mat-spinner>
       <p>Finalizando autenticación...</p>
     </div>
   `,
@@ -34,23 +34,29 @@ export class AuthCallbackComponent implements OnInit {
   private api = inject(ApiService);
 
   ngOnInit() {
-    const token = this.route.snapshot.queryParamMap.get('token');
-
-    if (token) {
-      // Guardar token para que el interceptor lo use en auth/me
-      localStorage.setItem('token', token);
+    // 1. Capturar token y decodificar caracteres especiales (ej: %7C -> |)
+    const rawToken = this.route.snapshot.queryParamMap.get('token');
+    
+    if (rawToken) {
+      const decodedToken = decodeURIComponent(rawToken);
       
-      // Obtener datos completos del usuario
+      // 2. Establecer token para que el interceptor lo reconozca inmediatamente
+      this.authService.setToken(decodedToken);
+      
+      // 3. Forzar comunicación con la API Real (desactivar mocks)
+      this.api.setMockMode(false);
+      
+      // 4. Obtener datos completos del usuario
       this.api.get<any>('auth/me').subscribe({
         next: (response) => {
-          if (response.success) {
+          if (response.success && response.data) {
             const user = response.data;
-            localStorage.setItem('user', JSON.stringify(user));
             
-            // Actualizar el estado global en el AuthService
+            // Guardar datos y actualizar señal reactiva
+            localStorage.setItem('user', JSON.stringify(user));
             this.authService.userSignal.set(user);
             
-            // Lógica de Redirección Inteligente
+            // 5. Redirección inteligente
             const returnUrl = localStorage.getItem('returnUrl');
             if (returnUrl) {
                 localStorage.removeItem('returnUrl');
@@ -58,11 +64,14 @@ export class AuthCallbackComponent implements OnInit {
             } else {
                 this.router.navigate([this.getRedirectByRole(user.role_id)]);
             }
+          } else {
+            console.error('Callback fallido:', response.message);
+            this.handleError();
           }
         },
-        error: () => {
-            localStorage.removeItem('token');
-            this.router.navigate(['/login']);
+        error: (err) => {
+          console.error('Error de red en el callback:', err);
+          this.handleError();
         }
       });
     } else {
@@ -70,8 +79,13 @@ export class AuthCallbackComponent implements OnInit {
     }
   }
 
+  private handleError() {
+    this.authService.clearSession();
+    this.router.navigate(['/login']);
+  }
+
   private getRedirectByRole(roleId: number): string {
-    switch (roleId) {
+    switch (Number(roleId)) {
       case 1: return '/admin';
       case 2: return '/instructor';
       default: return '/dashboard';

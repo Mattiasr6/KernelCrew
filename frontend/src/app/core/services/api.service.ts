@@ -3,6 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
+import { environment } from '../../../environments/environment';
+
 import * as mocks from '../mocks/api.mocks';
 
 @Injectable({
@@ -10,7 +12,7 @@ import * as mocks from '../mocks/api.mocks';
 })
 export class ApiService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:8000/api/v1';
+  private baseUrl = environment.apiUrl;
   private useMocks = true; // Toggle para usar mocks o API real
 
   get<T>(endpoint: string, params?: Record<string, string | number>): Observable<T> {

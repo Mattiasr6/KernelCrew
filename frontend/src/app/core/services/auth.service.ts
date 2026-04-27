@@ -77,6 +77,15 @@ export class AuthService {
     this.router.navigate(['/auth/login']);
   }
 
+  /**
+   * Establece el token de sesión y actualiza la señal reactiva.
+   * Vital para que el interceptor añada el header Authorization.
+   */
+  setToken(token: string): void {
+    this.tokenSignal.set(token);
+    localStorage.setItem('token', token);
+  }
+
   getToken(): string | null {
     return this.tokenSignal();
   }
