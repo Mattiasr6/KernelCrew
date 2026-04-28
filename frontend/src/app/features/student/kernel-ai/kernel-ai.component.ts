@@ -1,8 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AiService, AiMessage } from '../../../../core/services/ai.service';
-import { NotificationService } from '../../../../core/services/notification.service';
+import { AiService, AiMessage } from '../../../core/services/ai.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
@@ -189,11 +189,11 @@ export class KernelAIComponent {
     this.isThinking.set(true);
 
     this.aiService.chat(context).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.messages.update(m => [...m, res.data]);
         this.isThinking.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isThinking.set(false);
         this.notification.error(err.error?.message || 'Error en el asistente de IA');
       }

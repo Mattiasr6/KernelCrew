@@ -174,7 +174,9 @@ export class CourseDetailComponent implements OnInit {
   loadCourse(id: number): void {
     this.courseService.getCourse(id).subscribe({
       next: (response) => {
-        this.course.set(response.data.course);
+        if (response.data) {
+          this.course.set(response.data.course);
+        }
         this.loading = false;
       },
       error: () => {
@@ -204,12 +206,12 @@ export class CourseDetailComponent implements OnInit {
       next: (res) => {
         this.isEnrolling.set(false);
         this.enrolled.set(true);
-        this.snackBar.open(res.message, '¡Genial!', { duration: 5000 });
+        this.snackBar.open(res.message || '¡Genial!', '¡Genial!', { duration: 5000 });
       },
       error: (err) => {
         this.isEnrolling.set(false);
         if (err.status === 403) {
-          this.snackBar.open(err.error.message, 'Ver Planes', { duration: 5000 })
+          this.snackBar.open(err.error.message || 'Error de suscripción', 'Ver Planes', { duration: 5000 })
             .onAction().subscribe(() => this.router.navigate(['/subscriptions']));
         } else {
           this.snackBar.open(err.error?.message || 'Error al inscribirse', 'Cerrar');

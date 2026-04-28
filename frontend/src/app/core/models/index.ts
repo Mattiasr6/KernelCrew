@@ -4,6 +4,7 @@ export interface ApiResponse<T> {
   message?: string;
   data?: T;
   errors?: Record<string, string[]>;
+  meta?: any;
 }
 
 // User models
@@ -100,6 +101,8 @@ export interface Course {
   can_enroll?: boolean;
   syllabus?: string;
   requirements?: string;
+  average_rating?: string | number;
+  reviews_count?: number;
 }
 
 export interface CoursesMeta {

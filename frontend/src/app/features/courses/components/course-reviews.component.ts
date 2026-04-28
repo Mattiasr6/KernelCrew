@@ -24,7 +24,7 @@ import { CourseReview } from '../../../core/models';
             {{ reviewData()?.average_rating || 0 }}
           </span>
           <div class="flex text-yellow-400">
-             <span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">star</span>
+             <span class="material-symbols-outlined text-[32px]" [style.font-variation-settings]="'\\'FILL\\' 1'">star</span>
           </div>
         </div>
       </div>
@@ -47,7 +47,7 @@ import { CourseReview } from '../../../core/models';
                   class="star-btn transition-transform active:scale-90"
                   [class.active]="star <= currentRating()">
                   <span class="material-symbols-outlined text-[36px]" 
-                        [style.font-variation-settings]="'\'FILL\' ' + (star <= currentRating() ? 1 : 0)">
+                        [style.font-variation-settings]="getStarFill(star)">
                     star
                   </span>
                 </button>
@@ -92,7 +92,7 @@ import { CourseReview } from '../../../core/models';
               <div class="flex text-yellow-400 gap-0.5 scale-75 origin-right">
                 @for (s of [1,2,3,4,5]; track s) {
                   <span class="material-symbols-outlined text-sm" 
-                        [style.font-variation-settings]="'\'FILL\' ' + (s <= review.rating ? 1 : 0)">
+                        [style.font-variation-settings]="review.rating >= s ? '\\'FILL\\' 1' : '\\'FILL\\' 0'">
                     star
                   </span>
                 }
@@ -139,8 +139,12 @@ export class CourseReviewsComponent implements OnInit {
 
   loadReviews() {
     this.reviewService.getReviews(this.courseId()).subscribe({
-      next: (res) => this.reviewData.set(res.data)
+      next: (res: any) => this.reviewData.set(res.data)
     });
+  }
+
+  getStarFill(star: number): string {
+    return star <= this.currentRating() ? "'FILL' 1" : "'FILL' 0";
   }
 
   setRating(rating: number) {
@@ -153,13 +157,13 @@ export class CourseReviewsComponent implements OnInit {
 
     this.isSubmitting.set(true);
     this.reviewService.submitReview(this.courseId(), this.reviewForm.value).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.notification.success('¡Gracias por tu opinión!');
         this.isSubmitting.set(false);
         this.showForm.set(false);
         this.loadReviews();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isSubmitting.set(false);
         this.notification.error(err.error?.message || 'Error al enviar la reseña');
       }

@@ -370,9 +370,10 @@ export class AdminCoursesComponent implements OnInit {
       })
       .subscribe({
         next: (response) => {
-          this.courses.set(response.data.courses);
-          this.dataSource.data = response.data.courses;
-          this.totalItems = response.meta.total;
+          const courses = response.data?.courses || [];
+          this.courses.set(courses);
+          this.dataSource.data = courses;
+          this.totalItems = response.meta?.total || 0;
           this.loading = false;
         },
         error: () => {

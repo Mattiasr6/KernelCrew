@@ -16,7 +16,6 @@ import { ApiService } from '../../../core/services/api.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,

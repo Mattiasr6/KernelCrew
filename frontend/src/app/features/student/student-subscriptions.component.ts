@@ -251,7 +251,7 @@ export class StudentSubscriptionsComponent implements OnInit {
     this.isLoading.set(true);
     this.subscriptionService.getPlans().subscribe({
       next: (res) => {
-        this.plans.set(res.data);
+        this.plans.set(res.data || []);
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false)
