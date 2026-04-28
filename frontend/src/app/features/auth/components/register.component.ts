@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -36,61 +36,52 @@ import { AuthService } from '../../../core/services/auth.service';
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Nombre completo</mat-label>
               <input matInput formControlName="name" placeholder="Juan Pérez" />
-              @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
-                <mat-error>El nombre es requerido</mat-error>
+              @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                <mat-error>{{ getErrorMessage('name') }}</mat-error>
               }
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Email</mat-label>
               <input matInput type="email" formControlName="email" placeholder="tu@email.com" />
-              @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
-                <mat-error>El email es requerido</mat-error>
-              }
-              @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
-                <mat-error>Ingresa un email válido</mat-error>
+              @if (form.get('email')?.invalid && form.get('email')?.touched) {
+                <mat-error>{{ getErrorMessage('email') }}</mat-error>
               }
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Contraseña</mat-label>
               <input matInput type="password" formControlName="password" />
-              @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
-                <mat-error>La contraseña es requerida</mat-error>
-              }
-              @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
-                <mat-error>Mínimo 8 caracteres</mat-error>
+              @if (form.get('password')?.invalid && form.get('password')?.touched) {
+                <mat-error>{{ getErrorMessage('password') }}</mat-error>
               }
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Confirmar contraseña</mat-label>
               <input matInput type="password" formControlName="password_confirmation" />
-              @if (
-                form.get('password_confirmation')?.hasError('required') &&
-                form.get('password_confirmation')?.touched
-              ) {
-                <mat-error>Confirma tu contraseña</mat-error>
+              @if (form.get('password_confirmation')?.invalid && form.get('password_confirmation')?.touched) {
+                <mat-error>{{ getErrorMessage('password_confirmation') }}</mat-error>
               }
-              @if (
-                form.hasError('passwordMismatch') && form.get('password_confirmation')?.touched
-              ) {
+              @if (form.hasError('passwordMismatch') && form.get('password_confirmation')?.touched) {
                 <mat-error>Las contraseñas no coinciden</mat-error>
               }
             </mat-form-field>
 
-            @if (error) {
-              <div class="error-message">{{ error }}</div>
+            @if (errorMessage()) {
+                <div class="error-banner">
+                    <span class="material-symbols-outlined">error</span>
+                    {{ errorMessage() }}
+                </div>
             }
 
             <button
               mat-raised-button
-              class="submit-btn"
+              class="submit-btn full-width"
               type="submit"
-              class="full-width"
-              [disabled]="loading || form.invalid"
+              [disabled]="isLoading() || form.invalid"
             >
-              @if (loading) {
+              @if (isLoading()) {
                 <mat-spinner diameter="20"></mat-spinner>
               } @else {
                 Crear Cuenta
@@ -113,56 +104,57 @@ import { AuthService } from '../../../core/services/auth.service';
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        background: var(--bg-primary);
+        background: #0f172a;
         padding: 20px;
       }
       .brand-logo {
         font-size: 32px;
         font-weight: bold;
-        color: var(--text-primary);
+        color: white;
         margin-bottom: 24px;
       }
       .logo-accent {
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        background-clip: text;
       }
       .register-card {
         max-width: 400px;
         width: 100%;
         padding: 24px;
-        background: var(--glass-bg) !important;
-        border: 1px solid var(--glass-border) !important;
+        background: rgba(30, 30, 50, 0.6) !important;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 16px !important;
-      }
-      mat-card-title {
-        color: var(--text-primary) !important;
-        margin-bottom: 24px !important;
-      }
-      .full-width {
-        width: 100%;
-        margin-bottom: 16px;
-      }
-      .error-message {
-        color: #f44336;
-        margin-bottom: 16px;
-        padding: 12px;
-        background: rgba(244, 67, 54, 0.1);
-        border-radius: 4px;
-        border: 1px solid rgba(244, 67, 54, 0.3);
-      }
-      .submit-btn {
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
         color: white !important;
       }
+      mat-card-title { color: white !important; margin-bottom: 24px !important; }
+      .full-width { width: 100%; margin-bottom: 16px; }
+      
+      .submit-btn {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+        color: white !important;
+        height: 48px;
+        border-radius: 12px !important;
+      }
+
+      .error-banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+      }
+
       .links {
         text-align: center;
         margin-top: 16px;
-        a {
-          color: var(--accent-primary);
-          text-decoration: none;
-        }
+        a { color: #60a5fa; text-decoration: none; font-size: 0.9rem; }
       }
     `,
   ],
@@ -182,8 +174,8 @@ export class RegisterComponent {
     { validators: this.passwordMatchValidator },
   );
 
-  loading = false;
-  error = '';
+  isLoading = signal(false);
+  errorMessage = signal<string | null>(null);
 
   passwordMatchValidator(form: FormGroup) {
     const password = form.get('password');
@@ -195,26 +187,46 @@ export class RegisterComponent {
   }
 
   onSubmit(): void {
-    console.log('BOTÓN REGISTRO PRESIONADO: Iniciando petición...');
-    console.log('Nombre:', this.form.value.name);
-    console.log('Email:', this.form.value.email);
-    
-    if (this.form.invalid) {
-      console.log('FORMULARIO INVÁLIDO');
-      return;
-    }
+    if (this.form.invalid) return;
 
-    this.loading = true;
-    this.error = '';
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
 
     this.authService.register(this.form.value).subscribe({
       next: () => {
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        this.loading = false;
-        this.error = err.error?.message || 'Error al registrar usuario';
+        this.isLoading.set(false);
+        this.handleBackendErrors(err);
       },
     });
+  }
+
+  private handleBackendErrors(err: any): void {
+    const errorResponse = err.error;
+    
+    if (err.status === 422 && errorResponse.errors) {
+      Object.keys(errorResponse.errors).forEach(key => {
+        const control = this.form.get(key);
+        if (control) {
+          control.setErrors({ serverError: errorResponse.errors[key][0] });
+        }
+      });
+    } else {
+      this.errorMessage.set(errorResponse.message || 'Error al procesar el registro');
+    }
+  }
+
+  getErrorMessage(controlName: string): string {
+    const control = this.form.get(controlName);
+    if (!control) return '';
+
+    if (control.hasError('required')) return 'Este campo es obligatorio';
+    if (control.hasError('email')) return 'Ingresa un email válido';
+    if (control.hasError('minlength')) return 'Mínimo 8 caracteres';
+    if (control.hasError('serverError')) return control.getError('serverError');
+    
+    return '';
   }
 }

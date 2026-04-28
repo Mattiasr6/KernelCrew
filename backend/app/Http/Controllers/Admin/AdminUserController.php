@@ -61,10 +61,7 @@ class AdminUserController extends Controller
         $query = User::withTrashed();
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'ilike', "%{$search}%")
-                  ->orWhere('email', 'ilike', "%{$search}%");
-            });
+            $query->search($search);
         }
 
         $users = $query->paginate((int) $perPage);

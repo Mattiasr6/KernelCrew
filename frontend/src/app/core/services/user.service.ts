@@ -17,6 +17,20 @@ export class UserService {
   }
 
   /**
+   * Crear un nuevo usuario
+   */
+  createUser(data: any): Observable<ApiResponse<User>> {
+    return this.api.post<ApiResponse<User>>('admin/users', data);
+  }
+
+  /**
+   * Actualizar un usuario existente
+   */
+  updateUser(id: number, data: any): Observable<ApiResponse<User>> {
+    return this.api.put<ApiResponse<User>>(`admin/users/${id}`, data);
+  }
+
+  /**
    * Eliminar un usuario
    */
   deleteUser(id: number): Observable<ApiResponse<null>> {
