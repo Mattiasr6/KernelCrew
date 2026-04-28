@@ -2,12 +2,12 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CertificateService } from '../../core/services/certificate.service';
 import { Certificate } from '../../core/models';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-student-certificates',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="bg-background text-on-background min-h-screen flex font-body-md overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
       

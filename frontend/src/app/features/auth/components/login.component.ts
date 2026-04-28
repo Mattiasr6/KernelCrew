@@ -188,7 +188,7 @@ export class LoginComponent {
     this.loading = true;
     this.authService.login(this.form.value).subscribe({
       next: (res) => {
-        const roleId = res.data.user.role_id;
+        const roleId = res.data.user.role_id ?? 3;
         this.router.navigate([this.getRedirectByRole(roleId)]);
       },
       error: (err) => { 
