@@ -72,5 +72,5 @@
     - *Resultado esperado:* Gráficos y tarjetas de stats actualizadas con datos 100% reales de la base de datos.
 
 ---
-**Firma del Tester:** ___________________________  
+**Firma del Tester:** ________Pedrop-23___________________  
 **Estado Final del UAT:** [ ] APROBADO / [ ] RECHAZADO
