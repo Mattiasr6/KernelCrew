@@ -94,6 +94,10 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
                 <mat-chip-set>
                   <mat-chip [class]="course.level">{{ course.level }}</mat-chip>
                 </mat-chip-set>
+                <div class="flex items-center gap-1 mt-2 text-yellow-500">
+                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                    <span class="text-white text-xs font-bold">{{ course.average_rating || '4.5' }}</span>
+                </div>
                 <h3>{{ course.title }}</h3>
                 <p class="description">{{ course.short_description || course.description }}</p>
                 <div class="course-info">

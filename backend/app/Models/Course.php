@@ -23,6 +23,11 @@ class Course extends Model
         return $this->morphMany(Activity::class, 'subject');
     }
 
+    public function reviews(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CourseReview::class);
+    }
+
     protected $casts = [
         'price' => 'decimal:2',
     ];
