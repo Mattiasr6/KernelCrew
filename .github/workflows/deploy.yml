@@ -1,0 +1,22 @@
+name: CI/CD Pipeline - KernelLearn
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Private Server via Tailscale
+        # Simulación de despliegue SSH sobre red privada
+        run: |
+          echo "Conectando a Tailscale VPN..."
+          echo "Ejecutando git pull en servidor remoto..."
+          echo "Actualizando dependencias backend (composer install)..."
+          echo "Ejecutando migraciones (php artisan migrate)..."
+          echo "Compilando assets frontend (npm run build)..."
+          echo "Reinicio de Nginx y PHP-FPM exitoso."

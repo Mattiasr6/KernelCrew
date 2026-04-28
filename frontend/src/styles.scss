@@ -1,1 +1,45 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0f0f1a;
+  --bg-surface: #1a1a2e;
+  --accent-primary: #6c63ff;
+  --accent-secondary: #00d9ff;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+
+  /* Stitch Colors (Mapeados a variables para uso en SCSS si es necesario) */
+  --background: #0e141a;
+  --on-background: #dde3eb;
+  --surface-container-high: rgba(36, 43, 49, 0.6);
+  --primary: #adc6ff;
+  --primary-container: #4d8eff;
+  --on-surface: #dde3eb;
+  --on-surface-variant: #c2c6d6;
+  --error: #ffb4ab;
+  --outline: #8c909f;
+  --inverse-primary: #005ac2;
+  --secondary-container: #6f00be;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.glass-card {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+// ... Resto de tus estilos existentes ...
