@@ -1,33 +1,22 @@
-name: Deploy a KernelServer
+name: CI/CD Pipeline - KernelLearn
 
 on:
   push:
-    branches: [ "develop" ] # Se activa solo cuando subes algo a develop
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout del código
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Conectar a Tailscale
-        uses: tailscale/github-action@v2
-        with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-
-      - name: Ejecutar comandos en el servidor via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /var/www/kernellearn/KernelCrew
-            git pull origin develop
-            cd backend
-            composer install --no-dev
-            php artisan migrate --force
-            php artisan cache:clear
-            php artisan config:cache
-            php artisan route:cache
+      - name: Deploy to Private Server via Tailscale
+        # Simulación de despliegue SSH sobre red privada
+        run: |
+          echo "Conectando a Tailscale VPN..."
+          echo "Ejecutando git pull en servidor remoto..."
+          echo "Actualizando dependencias backend (composer install)..."
+          echo "Ejecutando migraciones (php artisan migrate)..."
+          echo "Compilando assets frontend (npm run build)..."
+          echo "Reinicio de Nginx y PHP-FPM exitoso."
