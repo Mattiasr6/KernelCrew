@@ -186,6 +186,7 @@ export class LoginComponent {
   onSubmit(): void {
     if (this.form.invalid) return;
     this.loading = true;
+    console.log('Payload a enviar:', this.form.value);
     this.authService.login(this.form.value).subscribe({
       next: (res) => {
         const roleId = res.data.user.role_id ?? 3;
