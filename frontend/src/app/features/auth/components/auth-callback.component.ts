@@ -43,9 +43,6 @@ export class AuthCallbackComponent implements OnInit {
       // 2. Establecer token para que el interceptor lo reconozca inmediatamente
       this.authService.setToken(decodedToken);
       
-      // 3. Forzar comunicación con la API Real (desactivar mocks)
-      this.api.setMockMode(false);
-      
       // 4. Obtener datos completos del usuario
       this.api.get<any>('auth/me').subscribe({
         next: (response) => {
