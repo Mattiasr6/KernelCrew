@@ -186,11 +186,14 @@ export class LoginComponent {
   onSubmit(): void {
     if (this.form.invalid) return;
     this.loading = true;
-    console.log('Payload a enviar:', this.form.value);
     this.authService.login(this.form.value).subscribe({
       next: (res) => {
-        const roleId = res.data.user.role_id ?? 3;
-        this.router.navigate([this.getRedirectByRole(roleId)]);
+        // Blindamos el acceso al role_id buscando en data.user o directamente en el objeto (compatibilidad)
+        const user = res.data?.user || (res as any).user;
+        const roleId = user?.role_id ?? 3;
+        
+        console.log('Login exitoso. Usuario:', user);
+        this.router.navigate([this.getRedirectByRole(Number(roleId))]);
       },
       error: (err) => { 
         this.loading = false; 
