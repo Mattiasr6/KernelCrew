@@ -42,6 +42,25 @@ class User extends Authenticatable
         return $this->hasMany(Course::class, 'instructor_id');
     }
 
+    /**
+     * Scope para búsqueda blindada de usuarios (US-03)
+     */
+    public function scopeSearch($query, $term)
+    {
+        return $query->where(function ($q) use ($term) {
+            $q->where('name', 'ilike', "%{$term}%")
+              ->orWhere('email', 'ilike', "%{$term}%");
+        });
+    }
+
+    /**
+     * Enviar notificación de restablecimiento de contraseña (CA-11)
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
+
     protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array

@@ -303,18 +303,22 @@ export class AdminUsersComponent implements OnInit {
 
   loadUsers(): void {
     this.loading = true;
+    const params: Record<string, string | number> = {
+      page: this.currentPage,
+      per_page: this.pageSize
+    };
+
+    if (this.search) params['search'] = this.search;
+    if (this.roleFilter) params['role_id'] = this.roleFilter;
+
     this.userService
-      .getUsers({
-        page: this.currentPage,
-        per_page: this.pageSize,
-        search: this.search || undefined,
-        role_id: this.roleFilter || undefined,
-      })
+      .getUsers(params)
       .subscribe({
-        next: (response) => {
-          this.users.set(response.data.users);
-          this.dataSource.data = response.data.users;
-          this.totalItems = response.meta.total;
+        next: (response: any) => {
+          const data = response.data?.users || response.data || [];
+          this.users.set(data);
+          this.dataSource.data = data;
+          this.totalItems = response.meta?.total || data.length;
           this.loading = false;
         },
         error: () => {

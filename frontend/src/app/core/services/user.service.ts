@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { User, UsersResponse, CreateUserRequest, UpdateUserRequest, UserResponse } from '../models';
+import { ApiResponse, User } from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -9,28 +9,38 @@ import { User, UsersResponse, CreateUserRequest, UpdateUserRequest, UserResponse
 export class UserService {
   private api = inject(ApiService);
 
-  getUsers(params?: {
-    page?: number;
-    per_page?: number;
-    search?: string;
-    role_id?: number;
-  }): Observable<UsersResponse> {
-    return this.api.get<UsersResponse>('admin/users', params as Record<string, string | number>);
+  /**
+   * Obtener lista de usuarios (Admin only)
+   */
+  getUsers(params?: Record<string, string | number>): Observable<ApiResponse<{ users: User[] }>> {
+    return this.api.get<ApiResponse<{ users: User[] }>>('admin/users', params);
   }
 
-  getUser(id: number): Observable<UserResponse> {
-    return this.api.get<UserResponse>(`admin/users/${id}`);
+  /**
+   * Crear un nuevo usuario
+   */
+  createUser(data: any): Observable<ApiResponse<User>> {
+    return this.api.post<ApiResponse<User>>('admin/users', data);
   }
 
-  createUser(user: CreateUserRequest): Observable<UserResponse> {
-    return this.api.post<UserResponse>('admin/users', user);
+  /**
+   * Actualizar un usuario existente
+   */
+  updateUser(id: number, data: any): Observable<ApiResponse<User>> {
+    return this.api.put<ApiResponse<User>>(`admin/users/${id}`, data);
   }
 
-  updateUser(id: number, user: UpdateUserRequest): Observable<UserResponse> {
-    return this.api.put<UserResponse>(`admin/users/${id}`, user);
+  /**
+   * Eliminar un usuario
+   */
+  deleteUser(id: number): Observable<ApiResponse<null>> {
+    return this.api.delete<ApiResponse<null>>(`admin/users/${id}`);
   }
 
-  deleteUser(id: number): Observable<{ success: boolean; message: string }> {
-    return this.api.delete<{ success: boolean; message: string }>(`admin/users/${id}`);
+  /**
+   * Activar/Desactivar usuario
+   */
+  toggleStatus(id: number): Observable<ApiResponse<null>> {
+    return this.api.patch<ApiResponse<null>>(`admin/users/${id}/toggle-status`);
   }
 }

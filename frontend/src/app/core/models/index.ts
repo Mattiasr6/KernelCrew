@@ -17,6 +17,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  role?: string;
   rol?: Rol;
   role_id?: number;
   is_active?: boolean;
@@ -275,6 +276,20 @@ export interface Certificate {
   certificate_code: string;
   issued_at: string;
   course?: Course;
+}
+
+export interface CourseReview {
+  id: number;
+  user_id: number;
+  course_id: number;
+  rating: number;
+  comment?: string;
+  user?: {
+    id: number;
+    name: string;
+    avatar?: string;
+  };
+  created_at: string;
 }
 
 export interface SubscriptionPlan {

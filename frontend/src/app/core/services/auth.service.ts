@@ -16,12 +16,12 @@ export class AuthService {
   public userSignal = signal<User | null>(null);
   private tokenSignal = signal<string | null>(null);
 
-  // Computeds basados en role_id (RBAC Custom 3FN)
+  // Computeds basados en el nombre del rol (RBAC Custom)
   user = computed(() => this.userSignal());
   isAuthenticated = computed(() => !!this.tokenSignal());
-  isAdmin = computed(() => this.userSignal()?.role_id === 1);
-  isInstructor = computed(() => this.userSignal()?.role_id === 2);
-  isStudent = computed(() => this.userSignal()?.role_id === 3);
+  isAdmin = computed(() => this.userSignal()?.role === 'admin');
+  isInstructor = computed(() => this.userSignal()?.role === 'instructor' || this.userSignal()?.role === 'docente');
+  isStudent = computed(() => this.userSignal()?.role === 'student');
 
   constructor() {
     this.loadFromStorage();

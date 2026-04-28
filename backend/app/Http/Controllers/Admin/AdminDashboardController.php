@@ -3,53 +3,49 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\Course;
+use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
-/**
- * @OA\Tag(
- *     name="Administración - Dashboard",
- *     description="Estadísticas globales para el administrador"
- * )
- */
-#[OA\Tag(name: 'Administración - Dashboard', description: 'Estadísticas globales para el administrador')]
 class AdminDashboardController extends Controller
 {
     /**
-     * @OA\Get(
-     *     path="/api/v1/admin/dashboard",
-     *     tags={"Administración - Dashboard"},
-     *     summary="Obtener estadísticas globales",
-     *     security={{"sanctum": {}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Estadísticas obtenidas",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="total_users", type="integer", example=150),
-     *                 @OA\Property(property="active_students", type="integer", example=120),
-     *                 @OA\Property(property="total_courses", type="integer", example=45),
-     *                 @OA\Property(property="total_revenue", type="number", example=1500.50)
-     *             )
-     *         )
-     *     )
-     * )
+     * Obtener estadísticas globales de negocio (Epic 6)
      */
-    #[OA\Get(path: '/api/v1/admin/dashboard', tags: ['Administración - Dashboard'], summary: 'Obtener estadísticas globales')]
-    public function index(): JsonResponse
+    public function stats(): JsonResponse
     {
-        // TODO: Implementar consultas reales con Eloquent en la siguiente iteración
+        // Total de usuarios
+        $totalUsers = User::count();
+
+        // Estudiantes activos (con suscripción activa)
+        $activeStudents = User::whereHas('subscriptions', function($q) {
+            $q->where('status', 'active');
+        })->count();
+
+        // Ingresos totales
+        $totalRevenue = Payment::where('status', 'completed')->sum('amount');
+
+        // Total cursos
+        $totalCourses = Course::count();
+
         return response()->json([
             'success' => true,
-            'message' => 'Estadísticas globales obtenidas',
             'data' => [
-                'total_users' => 150,
-                'active_students' => 120,
-                'total_courses' => 45,
-                'total_revenue' => 1500.50,
-                'recent_registrations' => 15,
+                'total_users' => (int) $totalUsers,
+                'active_students' => (int) $activeStudents,
+                'inactive_students' => (int) ($totalUsers - $activeStudents),
+                'total_revenue' => (float) $totalRevenue,
+                'total_courses' => (int) $totalCourses,
+                'retention_rate' => $totalUsers > 0 ? round(($activeStudents / $totalUsers) * 100, 2) : 0
             ]
         ], 200);
+    }
+
+    public function index(): JsonResponse
+    {
+        return $this->stats();
     }
 }

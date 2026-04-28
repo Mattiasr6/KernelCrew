@@ -8,7 +8,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -19,7 +18,6 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CourseService } from '../../core/services/course.service';
-import { AuthService } from '../../core/services/auth.service';
 import { Course } from '../../core/models';
 
 @Component({
@@ -30,7 +28,6 @@ import { Course } from '../../core/models';
     FormsModule,
     ReactiveFormsModule,
     MatTableModule,
-    MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -42,105 +39,110 @@ import { Course } from '../../core/models';
     MatSlideToggleModule,
   ],
   template: `
-    <div class="instructor-container">
-      <div class="header">
-        <h1>Mis Cursos</h1>
-        <button mat-raised-button color="primary" (click)="openDialog()">
-          <mat-icon>add</mat-icon>
+    <div class="instructor-courses-container animate-fade-in">
+      <div class="header-section">
+        <div>
+          <h1 class="text-3xl font-bold text-white">Gestión de Cursos</h1>
+          <p class="text-slate-400 mt-1">Crea y administra tus contenidos educativos.</p>
+        </div>
+        <button class="add-btn" (click)="openDialog()">
+          <span class="material-symbols-outlined">add_circle</span>
           Nuevo Curso
         </button>
       </div>
 
-      @if (loading) {
-        <div class="loading">
-          <mat-spinner diameter="40"></mat-spinner>
+      <div class="table-card glass-card">
+        @if (isLoading()) {
+          <div class="loading-overlay">
+            <mat-spinner diameter="50"></mat-spinner>
+          </div>
+        }
+
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Estado</th>
+                <th>Título</th>
+                <th>Nivel</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (course of courses(); track course.id) {
+                <tr class="hover-row">
+                  <td>
+                    <span class="status-badge" [class.published]="course.status === 'published'">
+                      {{ course.status === 'published' ? 'Publicado' : 'Borrador' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="font-semibold text-slate-200">{{ course.title }}</span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="'badge-' + course.level">
+                      {{ course.level | uppercase }}
+                    </span>
+                  </td>
+                  <td class="text-slate-300">{{ course.category }}</td>
+                  <td class="font-mono text-emerald-400">\${{ course.price }}</td>
+                  <td class="text-right">
+                    <div class="action-group">
+                      <button class="icon-btn edit" (click)="openDialog(course)" title="Editar">
+                        <span class="material-symbols-outlined">edit</span>
+                      </button>
+                      <button class="icon-btn delete" (click)="deleteCourse(course)" title="Eliminar">
+                        <span class="material-symbols-outlined">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="empty-state">
+                    <span class="material-symbols-outlined text-5xl mb-3 block">menu_book</span>
+                    Aún no has creado ningún curso.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
-      } @else if (courses().length === 0) {
-        <div class="empty-state">
-          <mat-icon>school</mat-icon>
-          <p>No tienes cursos creados</p>
-          <button mat-raised-button color="primary" (click)="openDialog()">
-            Crear mi primer curso
-          </button>
-        </div>
-      } @else {
-        <table mat-table [dataSource]="dataSource" class="courses-table">
-          <ng-container matColumnDef="title">
-            <th mat-header-cell *matHeaderCellDef>Título</th>
-            <td mat-cell *matCellDef="let course">{{ course.title }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="level">
-            <th mat-header-cell *matHeaderCellDef>Nivel</th>
-            <td mat-cell *matCellDef="let course">
-              <mat-chip [class]="'level-' + course.level">{{ course.level }}</mat-chip>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="category">
-            <th mat-header-cell *matHeaderCellDef>Categoría</th>
-            <td mat-cell *matCellDef="let course">{{ course.category }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="price">
-            <th mat-header-cell *matHeaderCellDef>Precio</th>
-            <td mat-cell *matCellDef="let course">\${{ course.price }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="published">
-            <th mat-header-cell *matHeaderCellDef>Publicado</th>
-            <td mat-cell *matCellDef="let course">
-              <mat-slide-toggle [checked]="course.is_published" (change)="togglePublished(course)">
-              </mat-slide-toggle>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Acciones</th>
-            <td mat-cell *matCellDef="let course">
-              <button mat-icon-button color="primary" (click)="openDialog(course)">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="deleteCourse(course)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-        </table>
-      }
+      </div>
     </div>
 
+    <!-- Modal de Creación/Edición -->
     @if (showDialog) {
       <div class="dialog-overlay" (click)="closeDialog()">
-        <div class="dialog-content" (click)="$event.stopPropagation()">
-          <h2>{{ editingCourse ? 'Editar' : 'Nuevo' }} Curso</h2>
-          <form [formGroup]="form" (ngSubmit)="saveCourse()">
+        <div class="dialog-content glass-card" (click)="$event.stopPropagation()">
+          <h2 class="text-2xl font-bold text-white mb-6">
+            {{ editingCourse ? 'Editar' : 'Crear Nuevo' }} Curso
+          </h2>
+          
+          <form [formGroup]="form" (ngSubmit)="saveCourse()" class="space-y-4">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Título</mat-label>
-              <input matInput formControlName="title" />
-              @if (form.get('title')?.hasError('required') && form.get('title')?.touched) {
-                <mat-error>El título es requerido</mat-error>
+              <mat-label>Título del Curso</mat-label>
+              <input matInput formControlName="title" placeholder="Ej: Master en Angular" />
+              @if (form.get('title')?.invalid && form.get('title')?.touched) {
+                <mat-error>{{ getErrorMessage('title') }}</mat-error>
               }
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Descripción corta</mat-label>
-              <textarea matInput formControlName="short_description" rows="2"></textarea>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Descripción completa</mat-label>
-              <textarea matInput formControlName="description" rows="4"></textarea>
+              <mat-label>Descripción</mat-label>
+              <textarea matInput formControlName="description" rows="3"></textarea>
+              @if (form.get('description')?.invalid && form.get('description')?.touched) {
+                <mat-error>{{ getErrorMessage('description') }}</mat-error>
+              }
             </mat-form-field>
 
             <div class="form-row">
               <mat-form-field appearance="outline">
                 <mat-label>Nivel</mat-label>
                 <mat-select formControlName="level">
-                  <mat-option value="beginner">Principiante</mat-option>
+                  <mat-option value="beginner">Básico</mat-option>
                   <mat-option value="intermediate">Intermedio</mat-option>
                   <mat-option value="advanced">Avanzado</mat-option>
                 </mat-select>
@@ -158,8 +160,8 @@ import { Course } from '../../core/models';
 
             <div class="form-row">
               <mat-form-field appearance="outline">
-                <mat-label>Duración (horas)</mat-label>
-                <input matInput type="number" formControlName="duration" />
+                <mat-label>Duración (Horas)</mat-label>
+                <input matInput type="number" formControlName="duration_hours" />
               </mat-form-field>
 
               <mat-form-field appearance="outline">
@@ -168,23 +170,24 @@ import { Course } from '../../core/models';
               </mat-form-field>
             </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>URL de imagen</mat-label>
-              <input matInput formControlName="thumbnail" placeholder="https://..." />
-            </mat-form-field>
+            @if (errorMessage()) {
+              <div class="error-banner">
+                <span class="material-symbols-outlined">error</span>
+                {{ errorMessage() }}
+              </div>
+            }
 
             <div class="dialog-actions">
-              <button mat-button type="button" (click)="closeDialog()">Cancelar</button>
+              <button mat-button type="button" (click)="closeDialog()" class="cancel-btn">Cancelar</button>
               <button
-                mat-raised-button
-                color="primary"
+                class="save-btn"
                 type="submit"
-                [disabled]="form.invalid || saving"
+                [disabled]="form.invalid || isSaving()"
               >
-                @if (saving) {
+                @if (isSaving()) {
                   <mat-spinner diameter="20"></mat-spinner>
                 } @else {
-                  Guardar
+                  {{ editingCourse ? 'Actualizar' : 'Publicar Curso' }}
                 }
               </button>
             </div>
@@ -193,124 +196,194 @@ import { Course } from '../../core/models';
       </div>
     }
   `,
-  styles: [
-    `
-      .instructor-container {
-        padding: 20px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-      .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        h1 {
-          margin: 0;
-        }
-      }
-      .loading {
-        display: flex;
-        justify-content: center;
-        padding: 40px;
-      }
-      .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 60px;
-        color: #666;
-        mat-icon {
-          font-size: 64px;
-          width: 64px;
-          height: 64px;
-          margin-bottom: 16px;
-        }
-      }
-      .courses-table {
-        width: 100%;
-      }
-      mat-chip.level-beginner {
-        background-color: #4caf50 !important;
-        color: white !important;
-      }
-      mat-chip.level-intermediate {
-        background-color: #ff9800 !important;
-        color: white !important;
-      }
-      mat-chip.level-advanced {
-        background-color: #f44336 !important;
-        color: white !important;
-      }
-      .dialog-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-      }
-      .dialog-content {
-        background: white;
-        padding: 24px;
-        border-radius: 8px;
-        width: 600px;
-        max-width: 95%;
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-      .full-width {
-        width: 100%;
-        margin-bottom: 16px;
-      }
-      .form-row {
-        display: flex;
-        gap: 16px;
-      }
-      .form-row mat-form-field {
-        flex: 1;
-      }
-      .dialog-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        margin-top: 16px;
-      }
-    `,
-  ],
+  styles: [`
+    .instructor-courses-container {
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .add-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      padding: 10px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      border: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      cursor: pointer;
+    }
+
+    .add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
+
+    .table-card {
+      position: relative;
+      min-height: 400px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .data-table th {
+      padding: 16px 24px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #94a3b8;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .data-table td {
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+    }
+
+    .hover-row:hover { background: rgba(255, 255, 255, 0.02); }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .status-badge.published {
+      background: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; }
+    .badge-beginner { background: #064e3b; color: #6ee7b7; }
+    .badge-intermediate { background: #78350f; color: #fcd34d; }
+    .badge-advanced { background: #7f1d1d; color: #fca5a5; }
+
+    .action-group { display: flex; justify-content: flex-end; gap: 8px; }
+    
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
+    .icon-btn.delete:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: #f8717144; }
+
+    .dialog-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .dialog-content {
+      width: 600px;
+      max-width: 95%;
+      padding: 32px;
+      border-radius: 24px;
+      background: #0f172a;
+    }
+
+    .full-width { width: 100%; }
+    .form-row { display: flex; gap: 16px; }
+    .form-row mat-form-field { flex: 1; }
+
+    .save-btn {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      padding: 12px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
+    .error-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.4);
+      z-index: 10;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px !important;
+      color: #64748b;
+    }
+  `]
 })
 export class InstructorCoursesComponent implements OnInit {
   private courseService = inject(CourseService);
-  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
 
-  displayedColumns = ['title', 'level', 'category', 'price', 'published', 'actions'];
-  dataSource = new MatTableDataSource<Course>();
-
   courses = signal<Course[]>([]);
-  loading = false;
-  saving = false;
+  isLoading = signal(true);
+  isSaving = signal(false);
+  errorMessage = signal<string | null>(null);
 
   showDialog = false;
   editingCourse: Course | null = null;
 
-  categories = ['Desarrollo Web', 'Móvil', 'Data Science', 'DevOps', 'Diseño', 'Negocios'];
+  categories = ['Desarrollo Web', 'Móvil', 'Data Science', 'DevOps', 'Diseño', 'IA'];
 
   form: FormGroup = this.fb.group({
-    title: ['', Validators.required],
-    short_description: [''],
-    description: [''],
+    title: ['', [Validators.required, Validators.minLength(5)]],
+    description: ['', [Validators.required]],
     level: ['beginner', Validators.required],
     category: ['', Validators.required],
-    duration: [0],
-    price: [0],
-    thumbnail: [''],
-    is_published: [false],
+    duration_hours: [0, [Validators.required, Validators.min(1)]],
+    price: [0, [Validators.required, Validators.min(0)]],
   });
 
   ngOnInit(): void {
@@ -318,32 +391,23 @@ export class InstructorCoursesComponent implements OnInit {
   }
 
   loadMyCourses(): void {
-    this.loading = true;
-    this.courseService.getCourses({ per_page: 100 }).subscribe({
-      next: (response) => {
-        this.courses.set(response.data.courses);
-        this.dataSource.data = response.data.courses;
-        this.loading = false;
+    this.isLoading.set(true);
+    this.courseService.getInstructorCourses().subscribe({
+      next: (res: any) => {
+        this.courses.set(res.data?.courses || res.data || []);
+        this.isLoading.set(false);
       },
-      error: () => {
-        this.loading = false;
-        this.snackBar.open('Error al cargar cursos', 'Cerrar', { duration: 3000 });
-      },
+      error: () => this.isLoading.set(false)
     });
   }
 
   openDialog(course?: Course): void {
     this.editingCourse = course || null;
+    this.errorMessage.set(null);
     if (course) {
       this.form.patchValue(course);
     } else {
-      this.form.reset({
-        level: 'beginner',
-        category: '',
-        duration: 0,
-        price: 0,
-        is_published: false,
-      });
+      this.form.reset({ level: 'beginner', duration_hours: 0, price: 0 });
     }
     this.showDialog = true;
   }
@@ -351,70 +415,60 @@ export class InstructorCoursesComponent implements OnInit {
   closeDialog(): void {
     this.showDialog = false;
     this.editingCourse = null;
-    this.form.reset({ level: 'beginner' });
+    this.form.reset();
   }
 
   saveCourse(): void {
     if (this.form.invalid) return;
 
-    this.saving = true;
+    this.isSaving.set(true);
+    this.errorMessage.set(null);
     const data = this.form.value;
 
-    if (this.editingCourse) {
-      this.courseService.updateCourse(this.editingCourse.id, data).subscribe({
-        next: () => {
-          this.snackBar.open('Curso actualizado', 'Cerrar', { duration: 3000 });
-          this.closeDialog();
-          this.loadMyCourses();
-          this.saving = false;
-        },
-        error: () => {
-          this.saving = false;
-          this.snackBar.open('Error al actualizar curso', 'Cerrar', { duration: 3000 });
-        },
-      });
-    } else {
-      this.courseService.createCourse(data).subscribe({
-        next: () => {
-          this.snackBar.open('Curso creado', 'Cerrar', { duration: 3000 });
-          this.closeDialog();
-          this.loadMyCourses();
-          this.saving = false;
-        },
-        error: () => {
-          this.saving = false;
-          this.snackBar.open('Error al crear curso', 'Cerrar', { duration: 3000 });
-        },
-      });
-    }
-  }
+    const request = this.editingCourse 
+      ? this.courseService.updateCourse(this.editingCourse.id, data)
+      : this.courseService.createCourse(data);
 
-  togglePublished(course: Course): void {
-    this.courseService.updateCourse(course.id, { is_published: !course.is_published }).subscribe({
+    request.subscribe({
       next: () => {
-        this.snackBar.open(
-          course.is_published ? 'Curso despublicado' : 'Curso publicado',
-          'Cerrar',
-          { duration: 2000 },
-        );
+        this.snackBar.open(`Curso ${this.editingCourse ? 'actualizado' : 'creado'} con éxito`, 'OK', { duration: 3000 });
+        this.isSaving.set(false);
+        this.closeDialog();
         this.loadMyCourses();
       },
-      error: () => {
-        this.snackBar.open('Error al cambiar estado', 'Cerrar', { duration: 3000 });
-      },
+      error: (err) => {
+        this.isSaving.set(false);
+        this.handleBackendErrors(err);
+      }
     });
   }
 
+  private handleBackendErrors(err: any): void {
+    if (err.status === 422 && err.error.errors) {
+      Object.keys(err.error.errors).forEach(key => {
+        const control = this.form.get(key);
+        if (control) control.setErrors({ serverError: err.error.errors[key][0] });
+      });
+    } else {
+      this.errorMessage.set(err.error?.message || 'Error al procesar el curso');
+    }
+  }
+
+  getErrorMessage(controlName: string): string {
+    const control = this.form.get(controlName);
+    if (!control) return '';
+    if (control.hasError('required')) return 'Este campo es obligatorio';
+    if (control.hasError('serverError')) return control.getError('serverError');
+    return '';
+  }
+
   deleteCourse(course: Course): void {
-    if (confirm(`¿Eliminar curso "${course.title}"?`)) {
+    if (confirm(`¿Estás seguro de eliminar "${course.title}"?`)) {
       this.courseService.deleteCourse(course.id).subscribe({
         next: () => {
-          this.snackBar.open('Curso eliminado', 'Cerrar', { duration: 3000 });
+          this.snackBar.open('Curso eliminado', 'OK', { duration: 3000 });
           this.loadMyCourses();
-        },
-        error: () => {
-          this.snackBar.open('Error al eliminar curso', 'Cerrar', { duration: 3000 });
-        },
+        }
       });
     }
   }

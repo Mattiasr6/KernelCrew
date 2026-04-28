@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/services/auth.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -37,27 +38,37 @@ import { environment } from '../../../../environments/environment';
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Email</mat-label>
               <input matInput type="email" formControlName="email" placeholder="tu@email.com" />
-              @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
-                <mat-error>El email es requerido</mat-error>
+              @if (form.get('email')?.invalid && form.get('email')?.touched) {
+                <mat-error>
+                  {{ getErrorMessage('email') }}
+                </mat-error>
               }
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Contraseña</mat-label>
               <input matInput type="password" formControlName="password" />
+              @if (form.get('password')?.invalid && form.get('password')?.touched) {
+                <mat-error>
+                  {{ getErrorMessage('password') }}
+                </mat-error>
+              }
             </mat-form-field>
 
-            @if (error) {
-              <div class="error-message">{{ error }}</div>
+            @if (errorMessage()) {
+              <div class="error-banner">
+                <span class="material-symbols-outlined">error</span>
+                {{ errorMessage() }}
+              </div>
             }
 
             <button
               mat-raised-button
               class="submit-btn full-width"
               type="submit"
-              [disabled]="loading || form.invalid"
+              [disabled]="isLoading() || form.invalid"
             >
-              @if (loading) {
+              @if (isLoading()) {
                 <mat-spinner diameter="20"></mat-spinner>
               } @else {
                 Iniciar Sesión
@@ -78,8 +89,9 @@ import { environment } from '../../../../environments/environment';
             </button>
           </div>
 
-          <div class="links">
-            <a routerLink="/register">¿No tienes cuenta? Regístrate</a>
+          <div class="links mt-6 flex flex-col gap-2 text-center">
+            <a routerLink="/auth/forgot-password" class="text-slate-400 text-sm hover:text-blue-400">¿Olvidaste tu contraseña?</a>
+            <a routerLink="/register" class="text-blue-400 text-sm hover:underline">¿No tienes cuenta? Regístrate</a>
           </div>
         </mat-card-content>
       </mat-card>
@@ -123,6 +135,20 @@ import { environment } from '../../../../environments/environment';
         background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
         color: white !important;
         height: 48px;
+        border-radius: 12px !important;
+      }
+
+      .error-banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
       }
 
       .social-divider {
@@ -172,41 +198,74 @@ import { environment } from '../../../../environments/environment';
 export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private notification = inject(NotificationService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
 
   form: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
   });
 
-  loading = false;
-  error = '';
+  isLoading = signal(false);
+  errorMessage = signal<string | null>(null);
 
   onSubmit(): void {
     if (this.form.invalid) return;
-    this.loading = true;
+    
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
     this.authService.login(this.form.value).subscribe({
       next: (res) => {
-        const roleId = res.data.user.role_id ?? 3;
-        this.router.navigate([this.getRedirectByRole(roleId)]);
+        const user = res.data?.user || (res as any).user;
+        const userRole = user?.role || 'student';
+        this.notification.success(`¡Bienvenido de nuevo, ${user.name}!`);
+        this.router.navigate([this.getRedirectByRole(userRole)]);
       },
       error: (err) => { 
-        this.loading = false; 
-        this.error = 'Credenciales inválidas'; 
+        this.isLoading.set(false);
+        this.handleBackendErrors(err);
       }
     });
   }
 
+  private handleBackendErrors(err: any): void {
+    const errorResponse = err.error;
+    
+    if (err.status === 422 && errorResponse.errors) {
+      // Mapeo estricto de errores de validación (Laravel FormRequests)
+      Object.keys(errorResponse.errors).forEach(key => {
+        const control = this.form.get(key);
+        if (control) {
+          control.setErrors({ serverError: errorResponse.errors[key][0] });
+        }
+      });
+    } else {
+      // Errores generales (401, 500, etc.)
+      this.errorMessage.set(errorResponse.message || 'Credenciales inválidas o error de servidor');
+    }
+  }
+
+  getErrorMessage(controlName: string): string {
+    const control = this.form.get(controlName);
+    if (!control) return '';
+
+    if (control.hasError('required')) return 'Este campo es obligatorio';
+    if (control.hasError('email')) return 'Ingresa un email válido';
+    if (control.hasError('serverError')) return control.getError('serverError');
+    
+    return '';
+  }
+
   loginWithProvider(provider: string): void {
-    // Redirección al backend usando environment.apiUrl
     window.location.href = `${environment.apiUrl}/auth/${provider}/redirect`;
   }
 
-  private getRedirectByRole(roleId: number): string {
-    switch (roleId) {
-      case 1: return '/admin';
-      case 2: return '/instructor';
+  private getRedirectByRole(role: string): string {
+    switch (role.toLowerCase()) {
+      case 'admin': return '/admin';
+      case 'instructor': return '/instructor';
+      case 'docente': return '/instructor';
       default: return '/dashboard';
     }
   }

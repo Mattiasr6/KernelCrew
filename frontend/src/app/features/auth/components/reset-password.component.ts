@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../core/services/notification.service';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -22,24 +22,25 @@ import { ApiService } from '../../../core/services/api.service';
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,
   ],
   template: `
-    <div class="reset-container">
-      <mat-card class="reset-card">
+    <div class="auth-container animate-fade-in">
+      <div class="brand-logo">Kernel<span class="logo-accent">Learn</span></div>
+      <mat-card class="auth-card glass-card">
         <mat-card-header>
           <mat-card-title>Nueva Contraseña</mat-card-title>
-          <mat-card-subtitle>Ingresa tu nueva contraseña</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email" readonly />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
               <mat-label>Nueva Contraseña</mat-label>
               <input matInput type="password" formControlName="password" />
-              @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
-                <mat-error>La contraseña es requerida</mat-error>
-              }
-              @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
+              @if (form.get('password')?.invalid && form.get('password')?.touched) {
                 <mat-error>Mínimo 8 caracteres</mat-error>
               }
             </mat-form-field>
@@ -47,141 +48,83 @@ import { ApiService } from '../../../core/services/api.service';
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Confirmar Contraseña</mat-label>
               <input matInput type="password" formControlName="password_confirmation" />
-              @if (
-                form.get('password_confirmation')?.hasError('required') &&
-                form.get('password_confirmation')?.touched
-              ) {
-                <mat-error>Confirma tu contraseña</mat-error>
-              }
-              @if (
-                form.hasError('passwordMismatch') && form.get('password_confirmation')?.touched
-              ) {
+              @if (form.get('password_confirmation')?.touched && form.hasError('mismatch')) {
                 <mat-error>Las contraseñas no coinciden</mat-error>
               }
             </mat-form-field>
 
-            @if (error) {
-              <div class="error-message">{{ error }}</div>
-            }
-
             <button
               mat-raised-button
-              color="primary"
+              class="submit-btn full-width"
               type="submit"
-              class="full-width"
-              [disabled]="loading || form.invalid"
+              [disabled]="isLoading() || form.invalid"
             >
-              @if (loading) {
+              @if (isLoading()) {
                 <mat-spinner diameter="20"></mat-spinner>
               } @else {
-                Restablecer Contraseña
+                Actualizar Contraseña
               }
             </button>
           </form>
-
-          <div class="links">
-            <a routerLink="/login">Volver a Iniciar Sesión</a>
-          </div>
         </mat-card-content>
       </mat-card>
     </div>
   `,
-  styles: [
-    `
-      .reset-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background: #f5f5f5;
-        padding: 20px;
-      }
-      .reset-card {
-        max-width: 400px;
-        width: 100%;
-        padding: 20px;
-      }
-      mat-card-subtitle {
-        margin-bottom: 20px;
-      }
-      .full-width {
-        width: 100%;
-        margin-bottom: 16px;
-      }
-      .error-message {
-        color: #f44336;
-        margin-bottom: 16px;
-        padding: 12px;
-        background: #ffebee;
-        border-radius: 4px;
-      }
-      .links {
-        text-align: center;
-        margin-top: 16px;
-        a {
-          color: #1976d2;
-          text-decoration: none;
-        }
-      }
-    `,
-  ],
+  styles: [`
+    .auth-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; padding: 20px; }
+    .brand-logo { font-size: 32px; font-weight: bold; color: white; margin-bottom: 24px; }
+    .logo-accent { background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .auth-card { max-width: 400px; width: 100%; padding: 24px; color: white !important; border-radius: 16px !important; }
+    .full-width { width: 100%; margin-bottom: 16px; }
+    .submit-btn { background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important; color: white !important; height: 48px; border-radius: 12px !important; }
+  `]
 })
 export class ResetPasswordComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private api = inject(ApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private api = inject(ApiService);
+  private notification = inject(NotificationService);
 
-  form: FormGroup = this.fb.group(
-    {
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      password_confirmation: ['', [Validators.required]],
-    },
-    { validators: this.passwordMatchValidator },
-  );
+  form: FormGroup = this.fb.group({
+    token: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
+    password_confirmation: ['', [Validators.required]],
+  }, { validators: this.passwordMatchValidator });
 
-  loading = false;
-  error = '';
-  token = '';
-
-  passwordMatchValidator(form: FormGroup) {
-    const password = form.get('password');
-    const confirm = form.get('password_confirmation');
-    if (password && confirm && password.value !== confirm.value) {
-      return { passwordMismatch: true };
-    }
-    return null;
-  }
+  isLoading = signal(false);
 
   ngOnInit(): void {
-    this.token = this.route.snapshot.queryParams['token'] || '';
-    if (!this.token) {
-      this.error = 'Token de recuperación inválido';
+    const token = this.route.snapshot.paramMap.get('token');
+    const email = this.route.snapshot.queryParamMap.get('email');
+    
+    if (token && email) {
+      this.form.patchValue({ token, email });
+    } else {
+      this.notification.error('Enlace de recuperación inválido');
+      this.router.navigate(['/login']);
     }
+  }
+
+  passwordMatchValidator(g: FormGroup) {
+    return g.get('password')?.value === g.get('password_confirmation')?.value ? null : { mismatch: true };
   }
 
   onSubmit(): void {
-    if (this.form.invalid || !this.token) return;
+    if (this.form.invalid) return;
+    this.isLoading.set(true);
 
-    this.loading = true;
-    this.error = '';
-
-    this.api
-      .post('password/reset', {
-        token: this.token,
-        password: this.form.value.password,
-        password_confirmation: this.form.value.password_confirmation,
-      })
-      .subscribe({
-        next: () => {
-          this.snackBar.open('Contraseña restablecida correctamente', 'Cerrar', { duration: 3000 });
-          this.router.navigate(['/login']);
-        },
-        error: (err) => {
-          this.loading = false;
-          this.error = err.error?.message || 'Error al restablecer contraseña';
-        },
-      });
+    this.api.post<any>('auth/reset-password', this.form.value).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        this.notification.success(res.message);
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.notification.error(err.error?.message || 'Token expirado o inválido');
+      }
+    });
   }
 }
