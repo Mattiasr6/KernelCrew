@@ -278,6 +278,20 @@ export interface Certificate {
   course?: Course;
 }
 
+export interface CourseReview {
+  id: number;
+  user_id: number;
+  course_id: number;
+  rating: number;
+  comment?: string;
+  user?: {
+    id: number;
+    name: string;
+    avatar?: string;
+  };
+  created_at: string;
+}
+
 export interface SubscriptionPlan {
   id: number;
   name: string;

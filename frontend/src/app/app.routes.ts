@@ -21,6 +21,18 @@ export const routes: Routes = [
       import('./features/auth/components/auth-callback.component').then((m) => m.AuthCallbackComponent),
   },
   {
+    path: 'auth/forgot-password',
+    loadComponent: () =>
+      import('./features/auth/components/forgot-password.component').then((m) => m.ForgotPasswordComponent),
+    canActivate: [guestGuard],
+  },
+  {
+    path: 'auth/reset-password/:token',
+    loadComponent: () =>
+      import('./features/auth/components/reset-password.component').then((m) => m.ResetPasswordComponent),
+    canActivate: [guestGuard],
+  },
+  {
     path: 'register',
     loadComponent: () =>
       import('./features/auth/components/register.component').then((m) => m.RegisterComponent),
@@ -47,6 +59,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'courses/:id/learn',
+    loadComponent: () =>
+      import('./features/student/course-player.component').then(
+        (m) => m.CoursePlayerComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'become-teacher',
     loadComponent: () =>
       import('./features/student/instructor-application.component').then(
@@ -59,6 +79,22 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/student/student-certificates.component').then(
         (m) => m.StudentCertificatesComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'ai',
+    loadComponent: () =>
+      import('./features/student/kernel-ai/kernel-ai.component').then(
+        (m) => m.KernelAIComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'subscriptions',
+    loadComponent: () =>
+      import('./features/student/student-subscriptions.component').then(
+        (m) => m.StudentSubscriptionsComponent,
       ),
     canActivate: [authGuard],
   },
