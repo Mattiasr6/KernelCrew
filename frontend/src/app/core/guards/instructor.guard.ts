@@ -7,8 +7,8 @@ export const instructorGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const user = authService.userSignal();
 
-  // Instructor role_id es 2 según arquitectura blindada
-  if (user && user.role_id === 2) {
+  // Validación basada en el nombre del rol (string)
+  if (user && (user.role === 'instructor' || user.role === 'docente')) {
     return true;
   }
 

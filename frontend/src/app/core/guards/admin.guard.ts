@@ -7,8 +7,8 @@ export const adminGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const user = authService.userSignal();
 
-  // Admin role_id es 1 según arquitectura blindada
-  if (user && user.role_id === 1) {
+  // Validación basada en el nombre del rol (string)
+  if (user && user.role === 'admin') {
     return true;
   }
 

@@ -188,12 +188,11 @@ export class LoginComponent {
     this.loading = true;
     this.authService.login(this.form.value).subscribe({
       next: (res) => {
-        // Blindamos el acceso al role_id buscando en data.user o directamente en el objeto (compatibilidad)
         const user = res.data?.user || (res as any).user;
-        const roleId = user?.role_id ?? 3;
+        const userRole = user?.role || 'student';
         
-        console.log('Login exitoso. Usuario:', user);
-        this.router.navigate([this.getRedirectByRole(Number(roleId))]);
+        console.log('Login exitoso. Rol:', userRole);
+        this.router.navigate([this.getRedirectByRole(userRole)]);
       },
       error: (err) => { 
         this.loading = false; 
@@ -207,10 +206,11 @@ export class LoginComponent {
     window.location.href = `${environment.apiUrl}/auth/${provider}/redirect`;
   }
 
-  private getRedirectByRole(roleId: number): string {
-    switch (roleId) {
-      case 1: return '/admin';
-      case 2: return '/instructor';
+  private getRedirectByRole(role: string): string {
+    switch (role.toLowerCase()) {
+      case 'admin': return '/admin';
+      case 'instructor': return '/instructor';
+      case 'docente': return '/instructor'; // Soporte para alias 'docente'
       default: return '/dashboard';
     }
   }
