@@ -189,8 +189,10 @@ export class LoginComponent {
     this.authService.login(this.form.value).subscribe({
       next: (res) => {
         const roleId = res.data.user.role_id;
+        if (roleId) {
         this.router.navigate([this.getRedirectByRole(roleId)]);
-      },
+       }
+    },
       error: (err) => { 
         this.loading = false; 
         this.error = 'Credenciales inválidas'; 

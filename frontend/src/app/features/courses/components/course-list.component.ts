@@ -2,167 +2,174 @@ import { Component, inject, OnInit, signal, Provider } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
 import { MatPaginatorModule, PageEvent, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { CourseService } from '../../../core/services/course.service';
 import { Course } from '../../../core/models';
 
 class SpanishPaginatorIntl extends MatPaginatorIntl {
-  override itemsPerPageLabel = 'Ítems por página';
-  override nextPageLabel = 'Siguiente página';
-  override previousPageLabel = 'Página anterior';
-  override firstPageLabel = 'Primera página';
-  override lastPageLabel = 'Última página';
-
-  override getRangeLabel = (page: number, pageSize: number, length: number): string => {
+  override itemsPerPageLabel = 'Ver:';
+  override nextPageLabel = 'Sig.';
+  override previousPageLabel = 'Ant.';
+  override getRangeLabel = (page: number, pageSize: number, length: number) => {
     if (length === 0 || pageSize === 0) return `0 de ${length}`;
-    length = Math.max(length, 0);
-    const startIndex = page * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, length);
-    return `${startIndex + 1} – ${endIndex} de ${length}`;
+    return `${page + 1} de ${Math.ceil(length / pageSize)}`;
   };
 }
 
 @Component({
   selector: 'app-course-list',
   standalone: true,
-  providers: [{ provide: MatPaginatorIntl, useClass: SpanishPaginatorIntl } as Provider],
+  providers: [{ provide: MatPaginatorIntl, useClass: SpanishPaginatorIntl }],
   imports: [
-    CommonModule, RouterLink, FormsModule, MatCardModule, MatFormFieldModule,
-    MatInputModule, MatSelectModule, MatButtonModule, MatPaginatorModule,
-    MatProgressSpinnerModule, MatChipsModule, MatIconModule,
+    CommonModule, RouterLink, FormsModule, MatSelectModule, 
+    MatPaginatorModule, MatProgressSpinnerModule, MatIconModule,
   ],
   template: `
-    <div class="courses-container">
-      <h1>Catálogo de Cursos</h1>
+    <div class="min-h-screen bg-[#050510] text-white p-4 md:p-10">
+      
+      <div class="text-center mb-16 animate-fade-in-down">
+        <h1 class="text-5xl md:text-7xl font-black uppercase italic tracking-tighter bg-gradient-to-b from-white via-cyan-300 to-cyan-600 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(0,217,255,0.6)]">
+          Catálogo
+        </h1>
+        <div class="h-1 w-24 bg-cyan-500 mx-auto rounded-full shadow-[0_0_10px_#00d9ff] mt-2 mb-2"></div>
+        <p class="text-cyan-400/40 font-mono text-[10px] tracking-[0.4em]">DATABASE_ACCESS_GRANTED</p>
+      </div>
 
-      <div class="filters">
-        <mat-form-field appearance="outline">
-          <mat-label>Buscar</mat-label>
-          <input matInput [(ngModel)]="search" placeholder="Buscar cursos..." (input)="onSearch()" />
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
+      <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 p-6 mb-12 bg-[#0a0a1f]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl shadow-2xl">
+        <div class="flex flex-col gap-1">
+          <span class="text-[9px] font-bold text-cyan-500 uppercase ml-1">Search</span>
+          <input [(ngModel)]="search" (input)="onSearch()" placeholder="Buscar..." class="bg-black/40 border border-cyan-500/30 rounded p-2.5 text-sm outline-none focus:border-cyan-400 transition-all text-white placeholder:text-cyan-900" />
+        </div>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Nivel</mat-label>
-          <mat-select [(ngModel)]="level" (selectionChange)="onSearch()">
+        <div class="flex flex-col gap-1">
+          <span class="text-[9px] font-bold text-cyan-500 uppercase ml-1">Level</span>
+          <mat-select [(ngModel)]="level" (selectionChange)="onSearch()" class="custom-neon-select bg-black/40 border border-cyan-500/30 rounded p-1.5 text-sm">
             <mat-option value="">Todos</mat-option>
             <mat-option value="beginner">Principiante</mat-option>
             <mat-option value="intermediate">Intermedio</mat-option>
             <mat-option value="advanced">Avanzado</mat-option>
           </mat-select>
-        </mat-form-field>
+        </div>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Categoría</mat-label>
-          <mat-select [(ngModel)]="category" (selectionChange)="onSearch()">
+        <div class="flex flex-col gap-1">
+          <span class="text-[9px] font-bold text-cyan-500 uppercase ml-1">Category</span>
+          <mat-select [(ngModel)]="category" (selectionChange)="onSearch()" class="custom-neon-select bg-black/40 border border-cyan-500/30 rounded p-1.5 text-sm">
             <mat-option value="">Todas</mat-option>
-            @for (cat of categories; track cat) {
-              <mat-option [value]="cat">{{ cat }}</mat-option>
-            }
+            @for (cat of categories; track cat) { <mat-option [value]="cat">{{ cat }}</mat-option> }
           </mat-select>
-        </mat-form-field>
+        </div>
 
-        <button mat-raised-button class="search-btn" (click)="loadCourses()">Actualizar</button>
+        <button (click)="loadCourses()" class="h-[42px] self-end bg-cyan-600 hover:bg-cyan-500 text-black font-bold rounded text-xs tracking-widest transition-all uppercase shadow-[0_0_15px_rgba(0,217,255,0.3)] active:scale-95">
+          Actualizar
+        </button>
       </div>
 
       @if (loading) {
-        <div class="loading">
-          <mat-spinner diameter="40"></mat-spinner>
-        </div>
-      } @else if (courses().length === 0) {
-        <div class="no-courses">
-          <p>No se encontraron cursos</p>
+        <div class="flex flex-col items-center py-40 gap-4">
+          <mat-spinner diameter="50" class="custom-spinner"></mat-spinner>
+          <span class="text-cyan-400 font-mono text-xs animate-pulse">SYNCHRONIZING...</span>
         </div>
       } @else {
-        <div class="courses-grid">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
           @for (course of courses(); track course.id) {
-            <mat-card class="glass-card course-card" [routerLink]="['/courses', course.id]">
-              <img
-                mat-card-image
-                [src]="course.thumbnail || 'https://placehold.co/600x400?text=Course'"
-                [alt]="course.title"
-              />
-              <mat-card-content>
-                <mat-chip-set>
-                  <mat-chip [class]="course.level">{{ course.level }}</mat-chip>
-                </mat-chip-set>
-                <h3>{{ course.title }}</h3>
-                <p class="description">{{ course.short_description || course.description }}</p>
-                <div class="course-info">
-                  <span>{{ course.duration_hours || course.duration }} horas</span>
-                  <span class="price">Bs. {{ course.price }}</span>
+            <div [routerLink]="['/courses', course.id]" class="group flex flex-col bg-[#131325] border border-white/5 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all duration-500 hover:shadow-[0_0_40px_rgba(0,0,0,0.7)] hover:-translate-y-2">
+              
+              <div class="relative h-48 overflow-hidden">
+                <img [src]="course.thumbnail || 'https://placehold.co/600x400/0a0a1f/00d9ff?text=CodeCore'" 
+                     class="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                
+                <div class="absolute top-4 left-4">
+                  <span class="text-[10px] px-3 py-1 rounded-lg border border-white/20 bg-black/40 backdrop-blur-md text-white font-medium tracking-tight">
+                    {{ course.level }}
+                  </span>
                 </div>
-              </mat-card-content>
-            </mat-card>
+              </div>
+
+              <div class="p-6 flex flex-col flex-grow">
+                <h3 class="text-lg font-bold text-white mb-1 group-hover:text-cyan-400 transition-colors">
+                  {{ course.title }}
+                </h3>
+                
+                <p class="text-gray-500 text-xs mb-8">
+                  {{ course.short_description || 'CodeCore Academy' }}
+                </p>
+
+                <div class="mt-auto flex justify-between items-center">
+                  <span class="text-gray-400 text-xs font-medium">
+                    {{ course.duration_hours || course.duration }} horas
+                  </span>
+                  <span class="text-cyan-400 font-bold text-sm">
+                    Bs. {{ course.price }}
+                  </span>
+                </div>
+              </div>
+            </div>
           }
         </div>
 
-        <mat-paginator
-          [length]="totalItems()"
-          [pageSize]="pageSize"
-          [pageIndex]="currentPage() - 1"
-          [pageSizeOptions]="[10, 20, 50]"
-          (page)="onPageChange($event)"
-        >
-        </mat-paginator>
+        <div class="max-w-4xl mx-auto paginator-container p-2 rounded-full border border-cyan-500/10 bg-[#0a0a1f]/80 backdrop-blur-md shadow-2xl">
+          <mat-paginator
+            [length]="totalItems()" 
+            [pageSize]="pageSize"
+            [pageIndex]="currentPage() - 1" 
+            [pageSizeOptions]="[8, 16, 32]"
+            (page)="onPageChange($event)"
+            class="neon-paginator">
+          </mat-paginator>
+        </div>
       }
     </div>
   `,
   styles: [`
-    .courses-container { background: var(--bg-primary); min-height: 100vh; padding: 32px; max-width: 1200px; margin: 0 auto; }
-    h1 { margin-bottom: 24px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2rem; }
-    .filters { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
-    .filters mat-form-field { flex: 1; min-width: 200px; }
-    .loading, .no-courses { display: flex; justify-content: center; padding: 60px; color: var(--text-secondary); }
-    .courses-grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-bottom: 24px; }
-    
-    .glass-card { 
-      background: var(--glass-bg) !important; 
-      border: 1px solid var(--glass-border) !important; 
-      border-radius: 16px !important; 
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3); 
-      transition: transform 0.3s ease; 
-      backdrop-filter: blur(10px); 
-      cursor: pointer; 
+    /* Animación */
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-down { animation: fadeInDown 0.6s ease-out; }
+
+    /* Estilo Neón para Selects */
+    :host ::ng-deep .custom-neon-select .mat-mdc-select-value { color: #00d9ff !important; font-weight: bold; }
+    ::ng-deep .mat-mdc-select-panel { background: #0a0a1f !important; border: 1px solid #00d9ff !important; }
+    ::ng-deep .mat-mdc-option { color: #9ca3af !important; font-size: 13px !important; }
+    ::ng-deep .mat-mdc-option:hover { background: rgba(0, 217, 255, 0.1) !important; color: #00d9ff !important; }
+
+    /* Paginación Neón */
+    :host ::ng-deep .neon-paginator {
+      background: transparent !important;
+      color: #00d9ff !important;
+      display: flex;
+      justify-content: center;
     }
-    .glass-card:hover { transform: translateY(-4px); border-color: var(--accent-primary) !important; }
-    
-    .course-card img { height: 180px; object-fit: cover; border-radius: 16px 16px 0 0; }
-    h3 { margin: 8px 0; font-size: 18px; color: var(--text-primary) !important; }
-    .description { color: var(--text-secondary); font-size: 14px; height: 3em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .course-info { display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary); }
-    .price { font-weight: bold; color: var(--accent-primary); font-size: 1.1rem; }
-    
-    mat-paginator { background: var(--bg-surface) !important; border-radius: 8px; margin-top: 16px; color: white !important; }
-    .search-btn { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important; color: white !important; height: 56px; }
-  `],
+
+    :host ::ng-deep .mat-mdc-paginator-navigation-next, 
+    :host ::ng-deep .mat-mdc-paginator-navigation-previous {
+      color: #00d9ff !important;
+      transition: all 0.3s;
+    }
+
+    :host ::ng-deep .mat-mdc-paginator-navigation-next:hover, 
+    :host ::ng-deep .mat-mdc-paginator-navigation-previous:hover {
+      background: rgba(0, 217, 255, 0.1) !important;
+    }
+
+    /* Spinner */
+    ::ng-deep .custom-spinner circle { stroke: #00d9ff !important; }
+  `]
 })
 export class CourseListComponent implements OnInit {
   private courseService = inject(CourseService);
-
   courses = signal<Course[]>([]);
   totalItems = signal(0);
   currentPage = signal(1);
-  pageSize = 10;
-
+  pageSize = 8; 
   search = '';
   level = '';
   category = '';
   loading = false;
   categories = ['Desarrollo Web', 'Móvil', 'Data Science', 'DevOps', 'Diseño', 'Negocios'];
 
-  ngOnInit(): void {
-    // FIX DOBLE CLIC: Forzamos la carga al inicializar
-    setTimeout(() => this.loadCourses(), 150);
-  }
+  ngOnInit(): void { this.loadCourses(); }
 
   onSearch(): void {
     this.currentPage.set(1);
@@ -171,24 +178,20 @@ export class CourseListComponent implements OnInit {
 
   loadCourses(): void {
     this.loading = true;
-    this.courseService
-      .getCourses({
-        page: this.currentPage(),
-        per_page: this.pageSize,
-        level: this.level || undefined,
-        category: this.category || undefined,
-        search: this.search || undefined,
-      })
-      .subscribe({
-        next: (response: any) => {
-          this.courses.set(response.data.courses || response.data);
-          this.totalItems.set(response.meta.total || 0);
-          this.loading = false;
-        },
-        error: () => {
-          this.loading = false;
-        },
-      });
+    this.courseService.getCourses({
+      page: this.currentPage(),
+      per_page: this.pageSize,
+      level: this.level || undefined,
+      category: this.category || undefined,
+      search: this.search || undefined,
+    }).subscribe({
+      next: (res: any) => {
+        this.courses.set(res.data.courses || res.data);
+        this.totalItems.set(res.meta.total || 0);
+        this.loading = false;
+      },
+      error: () => this.loading = false
+    });
   }
 
   onPageChange(event: PageEvent): void {
