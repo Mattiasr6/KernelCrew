@@ -303,6 +303,7 @@ export interface SubscriptionPlan {
   price: number;
   duration_days: number;
   max_courses: number | null;
+  is_active?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -311,9 +312,27 @@ export interface UserSubscription {
   id: number;
   user_id: number;
   plan_id: number;
-  plan_name: string;
+  plan?: SubscriptionPlan;
+  plan_name?: string;
   status: 'active' | 'expired' | 'cancelled';
   start_date: string;
   end_date: string;
   auto_renew: boolean;
+  payments?: Payment[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Payment {
+  id: number;
+  user_id: number;
+  user_subscription_id: number;
+  amount: number;
+  payment_date: string;
+  transaction_id: string;
+  payment_method: string;
+  status: 'completed' | 'pending' | 'failed';
+  payment_gateway_response?: any;
+  created_at: string;
+  updated_at: string;
 }

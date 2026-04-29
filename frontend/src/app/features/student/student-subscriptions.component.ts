@@ -126,11 +126,16 @@ export class StudentSubscriptionsComponent implements OnInit {
   loadPlans() {
     this.isLoading.set(true);
     this.subscriptionService.getPlans().subscribe({
-      next: (res) => {
-        this.plans.set(res.data || []);
+      next: (res: any) => {
+        const plans = Array.isArray(res.data) ? res.data : [];
+        this.plans.set(plans);
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false)
+      error: (err) => {
+        console.error('Error loading plans:', err);
+        this.notification.error('Error al cargar los planes de suscripción');
+        this.isLoading.set(false);
+      }
     });
   }
 

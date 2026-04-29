@@ -115,11 +115,12 @@ class StripeController extends Controller
             // 3. Registrar el pago real
             Payment::create([
                 'user_id' => $user->id,
-                'subscription_id' => $subscription->id,
+                'user_subscription_id' => $subscription->id,
                 'amount' => $plan->price,
                 'payment_date' => now(),
                 'transaction_id' => $transactionId,
-                'status' => 'completed'
+                'status' => 'completed',
+                'payment_method' => 'stripe'
             ]);
 
             // 4. Registrar actividad

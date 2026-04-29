@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\Api\V1\Auth\SocialAuthController;
 use App\Http\Controllers\Api\V1\CertificateController;
 use App\Http\Controllers\Api\V1\CourseReviewController;
@@ -63,6 +64,11 @@ Route::prefix('v1')->group(function () {
         // Checkout de Suscripción (Legacy / Mock)
         Route::post('/subscriptions/checkout', [SubscriptionController::class, 'checkout']);
         
+        // Suscripciones del Usuario
+        Route::get('/subscriptions/active', [SubscriptionController::class, 'getActive']);
+        Route::get('/subscriptions/history', [SubscriptionController::class, 'getHistory']);
+        Route::patch('/subscriptions/{id}/auto-renew', [SubscriptionController::class, 'updateAutoRenew']);
+        
         // Certificados
         Route::get('/certificates', [CertificateController::class, 'index']);
         Route::get('/certificates/{uuid}/download', [CertificateController::class, 'download']);
@@ -76,6 +82,7 @@ Route::prefix('v1')->group(function () {
         // Panel de Instructor (Solo role_id = 2)
         Route::middleware('checkRole:2')->prefix('instructor')->group(function () {
             Route::get('/dashboard', [InstructorDashboardController::class, 'index']);
+            Route::get('/courses', [CourseController::class, 'getInstructorCourses']);
             Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
             Route::put('/courses/{id}', [CourseController::class, 'update'])->can('update', 'course');
             Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->can('delete', 'course');
@@ -102,6 +109,10 @@ Route::prefix('v1')->group(function () {
             Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
             Route::put('/courses/{id}', [CourseController::class, 'update'])->can('update', 'course');
             Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->can('delete', 'course');
+            
+            // Transacciones y Pagos (Admin)
+            Route::get('/payments', [AdminPaymentController::class, 'index']);
+            Route::get('/payments/stats', [AdminPaymentController::class, 'stats']);
         });
     });
 });

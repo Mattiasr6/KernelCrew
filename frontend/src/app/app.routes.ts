@@ -99,6 +99,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'my-subscriptions',
+    loadComponent: () =>
+      import('./features/student/subscription-history.component').then(
+        (m) => m.SubscriptionHistoryComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'payment/success',
     loadComponent: () =>
       import('./features/payment/payment-success.component').then((m) => m.PaymentSuccessComponent),
@@ -137,6 +145,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/admin-applications.component').then(
             (m) => m.AdminApplicationsComponent,
+          ),
+      },
+      {
+        path: 'payments',
+        loadComponent: () =>
+          import('./features/admin/components/admin-transactions.component').then(
+            (m) => m.AdminTransactionsComponent,
           ),
       }
     ],

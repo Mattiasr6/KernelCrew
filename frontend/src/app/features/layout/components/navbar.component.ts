@@ -81,11 +81,25 @@ import { AuthService } from '../../../core/services/auth.service';
                   <mat-icon>admin_panel_settings</mat-icon>
                   <span>Administración</span>
                 </button>
+                <button mat-menu-item routerLink="/admin/payments">
+                  <mat-icon>receipt</mat-icon>
+                  <span>Transacciones</span>
+                </button>
               }
               @if (authService.isInstructor()) {
                 <button mat-menu-item routerLink="/instructor">
                   <mat-icon>dashboard</mat-icon>
                   <span>Mi Dashboard</span>
+                </button>
+              }
+              @if (authService.isAuthenticated() && authService.isStudent()) {
+                <button mat-menu-item routerLink="/subscriptions">
+                  <mat-icon>card_membership</mat-icon>
+                  <span>Planes de Suscripción</span>
+                </button>
+                <button mat-menu-item routerLink="/my-subscriptions">
+                  <mat-icon>history</mat-icon>
+                  <span>Mi Historial</span>
                 </button>
               }
               <button mat-menu-item routerLink="/profile">

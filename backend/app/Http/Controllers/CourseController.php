@@ -98,7 +98,36 @@ class CourseController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Cursos obtenidos exitosamente',
-            'data' => $courses->items(),
+            'data' => [
+                'courses' => $courses->items(),
+            ],
+            'meta' => [
+                'current_page' => $courses->currentPage(),
+                'last_page' => $courses->lastPage(),
+                'per_page' => $courses->perPage(),
+                'total' => $courses->total(),
+            ],
+        ], 200);
+    }
+
+    /**
+     * Obtener cursos del instructor autenticado
+     */
+    public function getInstructorCourses(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $perPage = $request->query('per_page', 10);
+        
+        $courses = Course::with('instructor')
+            ->where('instructor_id', $user->id)
+            ->paginate((int) $perPage);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cursos del instructor obtenidos exitosamente',
+            'data' => [
+                'courses' => $courses->items(),
+            ],
             'meta' => [
                 'current_page' => $courses->currentPage(),
                 'last_page' => $courses->lastPage(),

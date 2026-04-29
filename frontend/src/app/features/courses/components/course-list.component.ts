@@ -185,11 +185,20 @@ export class CourseListComponent implements OnInit {
       })
       .subscribe({
         next: (response: any) => {
-          this.courses.set(response.data.courses || response.data);
-          this.totalItems.set(response.meta.total || 0);
+          if (response.data && response.data.courses) {
+            this.courses.set(response.data.courses);
+          } else if (Array.isArray(response.data)) {
+            this.courses.set(response.data);
+          } else {
+            this.courses.set([]);
+            console.warn('Estructura de respuesta inesperada:', response);
+          }
+          this.totalItems.set(response.meta?.total || 0);
           this.loading = false;
         },
-        error: () => {
+        error: (error) => {
+          console.error('Error al cargar cursos:', error);
+          this.courses.set([]);
           this.loading = false;
         },
       });
