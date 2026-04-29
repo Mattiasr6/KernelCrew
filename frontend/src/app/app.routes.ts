@@ -83,18 +83,18 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'ai',
-    loadComponent: () =>
-      import('./features/student/kernel-ai/kernel-ai.component').then(
-        (m) => m.KernelAIComponent,
-      ),
-    canActivate: [authGuard],
-  },
-  {
     path: 'subscriptions',
     loadComponent: () =>
       import('./features/student/student-subscriptions.component').then(
         (m) => m.StudentSubscriptionsComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'my-courses',
+    loadComponent: () =>
+      import('./features/student/my-courses.component').then(
+        (m) => m.MyCoursesComponent,
       ),
     canActivate: [authGuard],
   },
