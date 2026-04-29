@@ -72,12 +72,14 @@ class CourseController extends Controller
         $minPrice = $request->query('min_price');
         $maxPrice = $request->query('max_price');
         $status = $request->query('status');
+        $level = $request->query('level');
+        $categoryId = $request->query('category_id');
         $perPage = $request->query('per_page', 10);
 
         $user = $request->user();
         $isAdminOrInstructor = $user && ($user->hasRole('admin') || $user->hasRole('instructor'));
 
-        $query = Course::with('instructor');
+        $query = Course::with(['instructor', 'category']);
 
         if (!$isAdminOrInstructor) {
             $query->published();
@@ -91,6 +93,14 @@ class CourseController extends Controller
 
         if ($minPrice !== null || $maxPrice !== null) {
             $query->priceBetween((float) $minPrice, (float) $maxPrice);
+        }
+
+        if ($level) {
+            $query->where('level', $level);
+        }
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
         }
 
         $courses = $query->paginate((int) $perPage);
@@ -379,6 +389,21 @@ class CourseController extends Controller
             'success' => true,
             'message' => 'Curso restaurado exitosamente',
             'data' => null,
+        ], 200);
+    }
+
+    /**
+     * Listar categorías disponibles
+     */
+    public function categories(): JsonResponse
+    {
+        $categories = \App\Models\Category::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories
         ], 200);
     }
 }
