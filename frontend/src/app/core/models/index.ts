@@ -22,6 +22,7 @@ export interface User {
   rol?: Rol;
   role_id?: number;
   is_active?: boolean;
+  avatar?: string;
   created_at: string;
   updated_at?: string;
 }
