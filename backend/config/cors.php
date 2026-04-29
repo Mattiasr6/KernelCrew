@@ -6,7 +6,11 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:4200',
+        'https://mattias.tail09f411.ts.net',
+        'http://mattias.tail09f411.ts.net'
+    ],
 
     'allowed_origins_patterns' => [],
 
