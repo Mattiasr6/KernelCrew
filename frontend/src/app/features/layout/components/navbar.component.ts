@@ -31,7 +31,6 @@ import { AuthService } from '../../../core/services/auth.service';
           <nav class="hidden md:flex items-center gap-1">
             <a routerLink="/courses" routerLinkActive="active" class="nav-link">Explorar</a>
             
-            <!-- Botones dinámicos por ROL -->
             @if (authService.isAdmin()) {
               <a routerLink="/admin" class="nav-link admin-glow">
                 <span class="material-symbols-outlined text-sm mr-1">admin_panel_settings</span>
@@ -51,7 +50,7 @@ import { AuthService } from '../../../core/services/auth.service';
           @if (authService.isAuthenticated()) {
             <div class="user-info hidden sm:flex flex-col items-end mr-2">
               <span class="text-white text-xs font-bold">{{ authService.user()?.name }}</span>
-              <span class="text-[10px] uppercase tracking-widest" 
+              <span class="text-[10px] uppercase tracking-widest opacity-70" 
                     [ngClass]="{
                       'text-purple-400': authService.isAdmin(),
                       'text-blue-400': authService.isInstructor(),
@@ -61,9 +60,17 @@ import { AuthService } from '../../../core/services/auth.service';
               </span>
             </div>
 
+            <!-- Avatar Inteligente -->
             <button mat-icon-button [matMenuTriggerFor]="menu" class="profile-btn">
-              <img [src]="authService.user()?.avatar || 'https://ui-avatars.com/api/?name=' + authService.user()?.name" 
-                   class="w-8 h-8 rounded-full border border-white/20" alt="Avatar">
+              @if (authService.user()?.avatar) {
+                <img [src]="authService.user()?.avatar" 
+                     class="w-9 h-9 rounded-full border border-white/20 object-cover" 
+                     [alt]="authService.user()?.name">
+              } @else {
+                <div class="initials-avatar w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold border border-white/10 shadow-lg">
+                  {{ getInitials(authService.user()?.name) }}
+                </div>
+              }
             </button>
 
             <mat-menu #menu="matMenu" class="dark-menu">
@@ -123,11 +130,14 @@ import { AuthService } from '../../../core/services/auth.service';
     .nav-link:hover { color: white; background: rgba(255, 255, 255, 0.05); }
     .nav-link.active { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
     
+    .initials-avatar {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #60a5fa;
+      text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+    }
+
     .admin-glow { color: #a78bfa; }
-    .admin-glow:hover { box-shadow: 0 0 15px rgba(167, 139, 250, 0.2); color: white; }
-    
     .instructor-glow { color: #60a5fa; }
-    .instructor-glow:hover { box-shadow: 0 0 15px rgba(96, 165, 250, 0.2); color: white; }
 
     .register-btn {
       background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
@@ -138,6 +148,15 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class NavbarComponent {
   authService = inject(AuthService);
+
+  getInitials(name: string | undefined): string {
+    if (!name) return '??';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+  }
 
   logout(): void {
     this.authService.logout();

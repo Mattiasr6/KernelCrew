@@ -98,6 +98,18 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard],
   },
+  {
+    path: 'payment/success',
+    loadComponent: () =>
+      import('./features/payment/payment-success.component').then((m) => m.PaymentSuccessComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'payment/cancel',
+    loadComponent: () =>
+      import('./features/payment/payment-cancel.component').then((m) => m.PaymentCancelComponent),
+    canActivate: [authGuard],
+  },
 
   // --- ARQUITECTURA SPRINT 2: ADMIN DASHBOARD ---
   {

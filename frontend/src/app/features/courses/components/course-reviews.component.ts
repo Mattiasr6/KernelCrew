@@ -81,9 +81,14 @@ import { CourseReview } from '../../../core/models';
           <div class="glass-card p-6 hover:border-white/20 transition-all group">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 border border-white/10 flex items-center justify-center text-white font-bold">
-                  {{ review.user?.name?.charAt(0) }}
-                </div>
+                <!-- Avatar Inteligente en Reseña -->
+                @if (review.user?.avatar) {
+                  <img [src]="review.user?.avatar" class="w-10 h-10 rounded-full border border-white/10 object-cover" [alt]="review.user?.name">
+                } @else {
+                  <div class="review-avatar-circle">
+                    {{ getInitials(review.user?.name || '??') }}
+                  </div>
+                }
                 <div>
                   <p class="text-white font-semibold text-sm">{{ review.user?.name }}</p>
                   <p class="text-slate-500 text-xs">{{ review.created_at | date:'dd MMM, yyyy' }}</p>
@@ -111,6 +116,20 @@ import { CourseReview } from '../../../core/models';
   styles: [`
     .star-btn { color: #475569; }
     .star-btn.active { color: #facc15; filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.4)); }
+    
+    .review-avatar-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #334155, #1e293b);
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
   `]
 })
 export class CourseReviewsComponent implements OnInit {
@@ -119,7 +138,6 @@ export class CourseReviewsComponent implements OnInit {
 
   private reviewService = inject(ReviewService);
   private notification = inject(NotificationService);
-  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
   reviewData = signal<ReviewResponse | null>(null);
@@ -141,6 +159,12 @@ export class CourseReviewsComponent implements OnInit {
     this.reviewService.getReviews(this.courseId()).subscribe({
       next: (res: any) => this.reviewData.set(res.data)
     });
+  }
+
+  getInitials(name: string): string {
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
   }
 
   getStarFill(star: number): string {

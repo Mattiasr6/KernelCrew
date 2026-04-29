@@ -12,6 +12,7 @@ use App\Http\Controllers\CourseEnrollmentController;
 use App\Http\Controllers\Instructor\InstructorDashboardController;
 use App\Http\Controllers\InstructorApplicationController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\StripeController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -42,18 +43,24 @@ Route::prefix('v1')->group(function () {
     // Planes de Suscripción (Público)
     Route::get('/subscriptions/plans', [SubscriptionController::class, 'index']);
 
+    // Webhook de Stripe (Público)
+    Route::post('/webhooks/stripe', [StripeController::class, 'handleWebhook']);
+
     // Rutas Protegidas
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
         
+        // Checkout de Suscripción (Stripe Real Sandbox)
+        Route::post('/checkout/session', [StripeController::class, 'createSession']);
+
         // Inscripciones y Progreso
         Route::post('/courses/{id}/enroll', [CourseEnrollmentController::class, 'enroll']);
         Route::patch('/courses/{id}/progress', [CourseEnrollmentController::class, 'updateProgress']);
         Route::get('/courses/{id}/enrollment-status', [CourseEnrollmentController::class, 'status']);
         Route::post('/courses/{id}/reviews', [CourseReviewController::class, 'store']);
         
-        // Checkout de Suscripción
+        // Checkout de Suscripción (Legacy / Mock)
         Route::post('/subscriptions/checkout', [SubscriptionController::class, 'checkout']);
         
         // Certificados

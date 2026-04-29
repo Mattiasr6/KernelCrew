@@ -17,7 +17,14 @@ export class SubscriptionService {
   }
 
   /**
-   * Procesar el checkout simulado
+   * Crear sesión real en Stripe Sandbox
+   */
+  createCheckoutSession(planId: number): Observable<ApiResponse<{ url: string }>> {
+    return this.api.post<ApiResponse<{ url: string }>>('checkout/session', { plan_id: planId });
+  }
+
+  /**
+   * Procesar el checkout simulado (Legacy)
    */
   processCheckout(data: { plan_id: number; card_number: string }): Observable<ApiResponse<any>> {
     return this.api.post<ApiResponse<any>>('subscriptions/checkout', data);
