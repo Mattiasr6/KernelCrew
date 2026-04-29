@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/courses', [CourseController::class, 'index']);
     Route::get('/courses/{id}', [CourseController::class, 'show']);
     Route::get('/courses/{id}/reviews', [CourseReviewController::class, 'index']);
+    Route::get('/courses/categories', [CourseController::class, 'categories']);
 
     // Planes de Suscripción (Público)
     Route::get('/subscriptions/plans', [SubscriptionController::class, 'index']);
@@ -51,15 +52,25 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::put('/profile', [AuthController::class, 'updateProfile']);
         
         // Checkout de Suscripción (Stripe Real Sandbox)
         Route::post('/checkout/session', [StripeController::class, 'createSession']);
 
-        // Inscripciones y Progreso
-        Route::post('/courses/{id}/enroll', [CourseEnrollmentController::class, 'enroll']);
-        Route::patch('/courses/{id}/progress', [CourseEnrollmentController::class, 'updateProgress']);
-        Route::get('/courses/{id}/enrollment-status', [CourseEnrollmentController::class, 'status']);
-        Route::post('/courses/{id}/reviews', [CourseReviewController::class, 'store']);
+        // Acceso a Cursos y Suscripción (Middleaware de validación)
+        Route::middleware('subscription.access')->group(function () {
+            // Inscripciones y Progreso
+            Route::post('/courses/{id}/enroll', [CourseEnrollmentController::class, 'enroll']);
+            Route::patch('/courses/{id}/progress', [CourseEnrollmentController::class, 'updateProgress']);
+            Route::get('/courses/{id}/enrollment-status', [CourseEnrollmentController::class, 'status']);
+            Route::post('/courses/{id}/reviews', [CourseReviewController::class, 'store']);
+            
+            // Epic 5: Control de Acceso
+            Route::get('/courses/accessible', [CourseAccessController::class, 'getAccessibleCourses']);
+            Route::get('/courses/{id}/access-check', [CourseAccessController::class, 'checkAccess']);
+            Route::get('/my-courses', [CourseAccessController::class, 'getMyCourses']);
+            Route::post('/courses/{id}/complete', [CourseAccessController::class, 'markComplete']);
+        });
         
         // Checkout de Suscripción (Legacy / Mock)
         Route::post('/subscriptions/checkout', [SubscriptionController::class, 'checkout']);

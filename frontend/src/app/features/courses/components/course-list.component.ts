@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, Provider } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,8 +11,12 @@ import { MatPaginatorModule, PageEvent, MatPaginatorIntl } from '@angular/materi
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CourseService } from '../../../core/services/course.service';
-import { Course } from '../../../core/models';
+import { AuthService } from '../../../core/services/auth.service';
+import { SubscriptionService } from '../../../core/services/subscription.service';
+import { EnrollmentService } from '../../../core/services/enrollment.service';
+import { Course, Category } from '../../../core/models';
 
 class SpanishPaginatorIntl extends MatPaginatorIntl {
   override itemsPerPageLabel = 'Ítems por página';
@@ -37,120 +41,182 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
   imports: [
     CommonModule, RouterLink, FormsModule, MatCardModule, MatFormFieldModule,
     MatInputModule, MatSelectModule, MatButtonModule, MatPaginatorModule,
-    MatProgressSpinnerModule, MatChipsModule, MatIconModule,
+    MatProgressSpinnerModule, MatChipsModule, MatIconModule, MatTooltipModule,
   ],
   template: `
-    <div class="courses-container">
-      <h1>Catálogo de Cursos</h1>
+    <div class="min-h-screen bg-zinc-950 px-4 py-8">
+      <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-50 sm:text-4xl mb-8">Catálogo de Cursos</h1>
 
-      <div class="filters">
-        <mat-form-field appearance="outline">
-          <mat-label>Buscar</mat-label>
-          <input matInput [(ngModel)]="search" placeholder="Buscar cursos..." (input)="onSearch()" />
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
+        <div class="flex gap-4 flex-wrap mb-8">
+          <mat-form-field appearance="outline" class="flex-1 min-w-[200px]">
+            <mat-label>Buscar</mat-label>
+            <input matInput [(ngModel)]="search" placeholder="Buscar cursos..." (input)="onSearch()" />
+            <mat-icon matSuffix class="text-zinc-500">search</mat-icon>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Nivel</mat-label>
-          <mat-select [(ngModel)]="level" (selectionChange)="onSearch()">
-            <mat-option value="">Todos</mat-option>
-            <mat-option value="beginner">Principiante</mat-option>
-            <mat-option value="intermediate">Intermedio</mat-option>
-            <mat-option value="advanced">Avanzado</mat-option>
-          </mat-select>
-        </mat-form-field>
+          <mat-form-field appearance="outline" class="min-w-[150px]">
+            <mat-label>Nivel</mat-label>
+            <mat-select [(ngModel)]="level" (selectionChange)="onSearch()">
+              <mat-option value="">Todos</mat-option>
+              <mat-option value="beginner">Principiante</mat-option>
+              <mat-option value="intermediate">Intermedio</mat-option>
+              <mat-option value="advanced">Avanzado</mat-option>
+            </mat-select>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Categoría</mat-label>
-          <mat-select [(ngModel)]="category" (selectionChange)="onSearch()">
-            <mat-option value="">Todas</mat-option>
-            @for (cat of categories; track cat) {
-              <mat-option [value]="cat">{{ cat }}</mat-option>
+<mat-form-field appearance="outline" class="min-w-[150px]">
+            <mat-label>Categoría</mat-label>
+            <mat-select [(ngModel)]="category" (selectionChange)="onSearch()">
+              <mat-option value="">Todas</mat-option>
+              @for (cat of categories(); track cat.id) {
+                <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-flat-button class="search-btn h-14" (click)="loadCourses()">Actualizar</button>
+        </div>
+
+        @if (loading) {
+          <div class="flex justify-center py-20">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        } @else if (courses().length === 0) {
+          <div class="border-2 border-dashed border-zinc-800 rounded-xl p-12 text-center">
+            <span class="material-symbols-outlined text-6xl text-zinc-600 mb-4">school</span>
+            <p class="text-zinc-400 text-lg">No se encontraron cursos</p>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            @for (course of courses(); track course.id) {
+              <div class="course-card" [routerLink]="['/courses', course.id]">
+                <div class="relative">
+                  <img
+                    [src]="course.thumbnail || 'https://placehold.co/600x400/18181b/06b6d4?text=Course'"
+                    [alt]="course.title"
+                    class="w-full h-48 object-cover"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent"></div>
+                </div>
+                
+                <div class="p-5">
+                  <div class="flex flex-wrap gap-2 mb-3">
+                    <span class="badge" [class]="'badge-' + course.level">{{ course.level }}</span>
+                    @if (authService.isAuthenticated() && authService.isStudent() && course.level) {
+                      <span class="badge" [class]="getAccessClass(course.level)">
+                        <mat-icon class="text-xs">{{ getAccessIcon(course.level) }}</mat-icon>
+                        {{ getAccessLabel(course.level) }}
+                      </span>
+                    }
+                  </div>
+                  
+                  <div class="flex items-center gap-1 mb-3">
+                    <span class="material-symbols-outlined text-amber-400 text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+                    <span class="text-zinc-50 text-sm font-bold">{{ course.average_rating || '4.5' }}</span>
+                    <span class="text-zinc-500 text-xs">({{ course.reviews_count || 0 }})</span>
+                  </div>
+                  
+                  <h3 class="text-lg font-medium text-zinc-100 mb-2 line-clamp-2">{{ course.title }}</h3>
+                  <p class="text-sm text-zinc-400 line-clamp-2 mb-4">{{ course.short_description || course.description }}</p>
+                  
+                  <div class="flex justify-between items-center pt-3 border-t border-zinc-800">
+                    <span class="text-xs font-medium uppercase tracking-wider text-zinc-500">{{ course.duration_hours || course.duration }} horas</span>
+                    <span class="text-lg font-bold text-cyan-400">Bs. {{ course.price }}</span>
+                  </div>
+                </div>
+              </div>
             }
-          </mat-select>
-        </mat-form-field>
+          </div>
 
-        <button mat-raised-button class="search-btn" (click)="loadCourses()">Actualizar</button>
+          <mat-paginator
+            [length]="totalItems()"
+            [pageSize]="pageSize"
+            [pageIndex]="currentPage() - 1"
+            [pageSizeOptions]="[10, 20, 50]"
+            (page)="onPageChange($event)"
+            class="bg-zinc-900 rounded-lg mt-4"
+          >
+          </mat-paginator>
+        }
       </div>
-
-      @if (loading) {
-        <div class="loading">
-          <mat-spinner diameter="40"></mat-spinner>
-        </div>
-      } @else if (courses().length === 0) {
-        <div class="no-courses">
-          <p>No se encontraron cursos</p>
-        </div>
-      } @else {
-        <div class="courses-grid">
-          @for (course of courses(); track course.id) {
-            <mat-card class="glass-card course-card" [routerLink]="['/courses', course.id]">
-              <img
-                mat-card-image
-                [src]="course.thumbnail || 'https://placehold.co/600x400?text=Course'"
-                [alt]="course.title"
-              />
-              <mat-card-content>
-                <mat-chip-set>
-                  <mat-chip [class]="course.level">{{ course.level }}</mat-chip>
-                </mat-chip-set>
-                <div class="flex items-center gap-1 mt-2 text-yellow-500">
-                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-                    <span class="text-white text-xs font-bold">{{ course.average_rating || '4.5' }}</span>
-                </div>
-                <h3>{{ course.title }}</h3>
-                <p class="description">{{ course.short_description || course.description }}</p>
-                <div class="course-info">
-                  <span>{{ course.duration_hours || course.duration }} horas</span>
-                  <span class="price">Bs. {{ course.price }}</span>
-                </div>
-              </mat-card-content>
-            </mat-card>
-          }
-        </div>
-
-        <mat-paginator
-          [length]="totalItems()"
-          [pageSize]="pageSize"
-          [pageIndex]="currentPage() - 1"
-          [pageSizeOptions]="[10, 20, 50]"
-          (page)="onPageChange($event)"
-        >
-        </mat-paginator>
-      }
     </div>
   `,
   styles: [`
-    .courses-container { background: var(--bg-primary); min-height: 100vh; padding: 32px; max-width: 1200px; margin: 0 auto; }
-    h1 { margin-bottom: 24px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2rem; }
-    .filters { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
-    .filters mat-form-field { flex: 1; min-width: 200px; }
-    .loading, .no-courses { display: flex; justify-content: center; padding: 60px; color: var(--text-secondary); }
-    .courses-grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-bottom: 24px; }
-    
-    .glass-card { 
-      background: var(--glass-bg) !important; 
-      border: 1px solid var(--glass-border) !important; 
-      border-radius: 16px !important; 
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3); 
-      transition: transform 0.3s ease; 
-      backdrop-filter: blur(10px); 
-      cursor: pointer; 
+    .search-btn {
+      background: linear-gradient(135deg, #06b6d4, #8b5cf6) !important;
+      color: white !important;
+      font-weight: 500;
     }
-    .glass-card:hover { transform: translateY(-4px); border-color: var(--accent-primary) !important; }
     
-    .course-card img { height: 180px; object-fit: cover; border-radius: 16px 16px 0 0; }
-    h3 { margin: 8px 0; font-size: 18px; color: var(--text-primary) !important; }
-    .description { color: var(--text-secondary); font-size: 14px; height: 3em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .course-info { display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary); }
-    .price { font-weight: bold; color: var(--accent-primary); font-size: 1.1rem; }
+    .course-card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease-in-out;
+      cursor: pointer;
+    }
+    .course-card:hover {
+      transform: translateY(-4px);
+      border-color: #06b6d4;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+    }
     
-    mat-paginator { background: var(--bg-surface) !important; border-radius: 8px; margin-top: 16px; color: white !important; }
-    .search-btn { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important; color: white !important; height: 56px; }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .badge-beginner { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .badge-intermediate { background: rgba(6, 182, 212, 0.15); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.2); }
+    .badge-advanced { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.2); }
+    
+    .access-granted { background: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.2) !important; display: flex; align-items: center; gap: 2px; }
+    .access-denied { background: rgba(244, 63, 94, 0.15) !important; color: #f43f5e !important; border: 1px solid rgba(244, 63, 94, 0.2) !important; display: flex; align-items: center; gap: 2px; }
+    
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    ::ng-deep .mat-mdc-form-field-outline {
+      color: #27272a !important;
+    }
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: #09090b !important;
+    }
+    ::ng-deep .mat-mdc-form-field-focus-overlay {
+      background-color: transparent !important;
+    }
+    ::ng-deep .mat-mdc-select-panel {
+      background-color: #27272a !important;
+      border: 1px solid #3f3f46 !important;
+    }
+    ::ng-deep .mat-mdc-option {
+      color: #e4e4e7 !important;
+    }
+    ::ng-deep .mat-mdc-option:hover {
+      background-color: #3f3f46 !important;
+    }
+    
+    ::ng-deep .mat-mdc-paginator {
+      background-color: transparent !important;
+      color: #a1a1aa !important;
+    }
   `],
 })
 export class CourseListComponent implements OnInit {
   private courseService = inject(CourseService);
+  public authService = inject(AuthService);
+  private subscriptionService = inject(SubscriptionService);
+  private enrollmentService = inject(EnrollmentService);
+  private router = inject(Router);
 
   courses = signal<Course[]>([]);
   totalItems = signal(0);
@@ -161,11 +227,107 @@ export class CourseListComponent implements OnInit {
   level = '';
   category = '';
   loading = false;
-  categories = ['Desarrollo Web', 'Móvil', 'Data Science', 'DevOps', 'Diseño', 'Negocios'];
+  categories = signal<Category[]>([]);
+  courseAccessMap = signal<{ [courseId: number]: boolean }>({});
+
+  userPlanName = '';
+  userHasActiveSubscription = false;
 
   ngOnInit(): void {
-    // FIX DOBLE CLIC: Forzamos la carga al inicializar
+    this.loadUserPlan();
+    this.loadCategories();
     setTimeout(() => this.loadCourses(), 150);
+  }
+
+  loadCategories(): void {
+    this.courseService.getCategories().subscribe({
+      next: (res: any) => {
+        if (res.success && res.data) {
+          this.categories.set(Array.isArray(res.data) ? res.data : res.data.data || []);
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  loadUserPlan(): void {
+    if (this.authService.isAuthenticated() && this.authService.isStudent()) {
+      this.subscriptionService.getActive().subscribe({
+        next: (response: any) => {
+          if (response.success && response.data?.subscription) {
+            this.userPlanName = response.data.subscription.plan?.name || '';
+            this.userHasActiveSubscription = true;
+          }
+        },
+        error: () => {},
+      });
+    }
+  }
+
+  checkCourseAccess(courseId: number): void {
+    this.enrollmentService.checkCourseAccess(courseId).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          const map = this.courseAccessMap();
+          map[courseId] = res.data.has_access;
+          this.courseAccessMap.set({...map});
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  hasAccess(courseId: number): boolean {
+    return this.courseAccessMap()[courseId] ?? true;
+  }
+
+  canEnroll(courseId: number): boolean {
+    if (!this.userHasActiveSubscription) return false;
+    return this.hasAccess(courseId);
+  }
+
+  getAccessIcon(level: string): string {
+    if (!this.userPlanName) return 'lock_open';
+    const plan = this.userPlanName.toLowerCase();
+    const courseLevel = level.toLowerCase();
+
+    if (plan === 'premium' || plan === 'enterprise') return 'check_circle';
+    if (plan === 'pro' || plan === 'professional') {
+      return ['beginner', 'intermediate'].includes(courseLevel) ? 'check_circle' : 'lock';
+    }
+    if (plan === 'basic' || plan === 'básico') {
+      return courseLevel === 'beginner' ? 'check_circle' : 'lock';
+    }
+    return 'lock_open';
+  }
+
+  getAccessClass(level: string): string {
+    const icon = this.getAccessIcon(level);
+    return icon === 'check_circle' ? 'access-granted' : 'access-denied';
+  }
+
+  getAccessMessage(level: string): string {
+    if (!this.userPlanName) return 'Inicia sesión para verificar acceso';
+    const plan = this.userPlanName.toLowerCase();
+    const courseLevel = level.toLowerCase();
+
+    if (plan === 'premium' || plan === 'enterprise') return 'Tienes acceso con tu plan Premium';
+    if (plan === 'pro' || plan === 'professional') {
+      return ['beginner', 'intermediate'].includes(courseLevel)
+        ? 'Tienes acceso con tu plan Pro'
+        : `Tu plan Pro no incluye cursos ${level}`;
+    }
+    if (plan === 'basic' || plan === 'básico') {
+      return courseLevel === 'beginner'
+        ? 'Tienes acceso con tu plan Basic'
+        : `Tu plan Basic solo incluye cursos beginner`;
+    }
+    return 'Verifica tu plan';
+  }
+
+  getAccessLabel(level: string): string {
+    const icon = this.getAccessIcon(level);
+    return icon === 'check_circle' ? 'Acceso' : 'Bloqueado';
   }
 
   onSearch(): void {
@@ -180,7 +342,7 @@ export class CourseListComponent implements OnInit {
         page: this.currentPage(),
         per_page: this.pageSize,
         level: this.level || undefined,
-        category: this.category || undefined,
+        category_id: this.category || undefined,
         search: this.search || undefined,
       })
       .subscribe({
@@ -191,13 +353,11 @@ export class CourseListComponent implements OnInit {
             this.courses.set(response.data);
           } else {
             this.courses.set([]);
-            console.warn('Estructura de respuesta inesperada:', response);
           }
           this.totalItems.set(response.meta?.total || 0);
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Error al cargar cursos:', error);
+        error: () => {
           this.courses.set([]);
           this.loading = false;
         },

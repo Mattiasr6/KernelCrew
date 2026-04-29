@@ -104,7 +104,6 @@ export class AuthService {
         }
       },
       error: (err) => {
-        console.error('Error al refrescar la sesión:', err);
         if (err.status === 401) this.clearSession();
       }
     });

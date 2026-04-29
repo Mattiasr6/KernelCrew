@@ -93,7 +93,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.adminService.getStats().subscribe({
       next: (res: any) => this.stats.set(res.data),
-      error: (err: any) => console.error('Error cargando stats:', err)
+      error: () => {}
     });
   }
 }

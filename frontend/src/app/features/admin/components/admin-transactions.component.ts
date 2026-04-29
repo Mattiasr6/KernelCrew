@@ -8,8 +8,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { SubscriptionService } from '../../core/services/subscription.service';
-import { NotificationService } from '../../core/services/notification.service';
+import { SubscriptionService } from '../../../core/services/subscription.service';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-admin-transactions',

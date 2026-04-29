@@ -22,21 +22,29 @@ import { AuthService } from '../../../core/services/auth.service';
     MatDividerModule,
   ],
   template: `
-    <mat-toolbar class="navbar glass-card">
-      <div class="container mx-auto flex justify-between items-center px-4">
+    <mat-toolbar class="navbar">
+      <div class="max-w-7xl mx-auto flex justify-between items-center px-4 w-full">
         <div class="flex items-center gap-8">
           <a routerLink="/" class="logo flex items-center gap-2">
-            <span class="material-symbols-outlined text-blue-500">terminal</span>
-            <span class="text-white font-black text-xl tracking-tighter">Kernel<span class="text-blue-500">Learn</span></span>
+            <span class="material-symbols-outlined text-cyan-400">terminal</span>
+            <span class="text-zinc-50 font-black text-xl tracking-tighter">Kernel<span class="text-cyan-400">Learn</span></span>
           </a>
 
           <nav class="hidden md:flex items-center gap-1">
             <a routerLink="/courses" routerLinkActive="active" class="nav-link">Explorar</a>
+            <a routerLink="/subscriptions" routerLinkActive="active" class="nav-link">
+              <span class="material-symbols-outlined text-sm mr-1">card_membership</span>
+              Planes
+            </a>
             
             @if (authService.isAdmin()) {
               <a routerLink="/admin" class="nav-link admin-glow">
                 <span class="material-symbols-outlined text-sm mr-1">admin_panel_settings</span>
                 Panel Admin
+              </a>
+              <a routerLink="/admin/payments" class="nav-link admin-glow">
+                <span class="material-symbols-outlined text-sm mr-1">receipt</span>
+                Transacciones
               </a>
             }
             @if (authService.isInstructor()) {
@@ -45,17 +53,27 @@ import { AuthService } from '../../../core/services/auth.service';
                 Panel Instructor
               </a>
             }
+            @if (authService.user()?.role_id === 3) {
+              <a routerLink="/my-courses" class="nav-link">
+                <span class="material-symbols-outlined text-sm mr-1">school</span>
+                Mis Cursos
+              </a>
+              <a routerLink="/my-subscriptions" class="nav-link">
+                <span class="material-symbols-outlined text-sm mr-1">history</span>
+                Mi Historial
+              </a>
+            }
           </nav>
         </div>
 
         <div class="flex items-center gap-4">
           @if (authService.isAuthenticated()) {
             <div class="user-info hidden sm:flex flex-col items-end mr-2">
-              <span class="text-white text-xs font-bold">{{ authService.user()?.name }}</span>
-              <span class="text-[10px] uppercase tracking-widest opacity-70" 
+              <span class="text-zinc-50 text-xs font-bold">{{ authService.user()?.name }}</span>
+              <span class="text-[10px] uppercase tracking-widest text-zinc-500" 
                     [ngClass]="{
-                      'text-purple-400': authService.isAdmin(),
-                      'text-blue-400': authService.isInstructor(),
+                      'text-violet-400': authService.isAdmin(),
+                      'text-cyan-400': authService.isInstructor(),
                       'text-emerald-400': authService.isStudent()
                     }">
                 {{ authService.user()?.role }}
@@ -66,10 +84,10 @@ import { AuthService } from '../../../core/services/auth.service';
             <button mat-icon-button [matMenuTriggerFor]="menu" class="profile-btn">
               @if (authService.user()?.avatar) {
                 <img [src]="authService.user()?.avatar" 
-                     class="w-9 h-9 rounded-full border border-white/20 object-cover" 
+                     class="w-9 h-9 rounded-full border border-zinc-700 object-cover" 
                      [alt]="authService.user()?.name">
               } @else {
-                <div class="initials-avatar w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold border border-white/10 shadow-lg">
+                <div class="initials-avatar">
                   {{ getInitials(authService.user()?.name) }}
                 </div>
               }
@@ -78,44 +96,48 @@ import { AuthService } from '../../../core/services/auth.service';
             <mat-menu #menu="matMenu" class="dark-menu">
               @if (authService.isAdmin()) {
                 <button mat-menu-item routerLink="/admin">
-                  <mat-icon>admin_panel_settings</mat-icon>
-                  <span>Administración</span>
+                  <mat-icon class="text-violet-400">admin_panel_settings</mat-icon>
+                  <span class="text-zinc-300">Administración</span>
                 </button>
                 <button mat-menu-item routerLink="/admin/payments">
-                  <mat-icon>receipt</mat-icon>
-                  <span>Transacciones</span>
+                  <mat-icon class="text-cyan-400">receipt</mat-icon>
+                  <span class="text-zinc-300">Transacciones</span>
                 </button>
               }
               @if (authService.isInstructor()) {
                 <button mat-menu-item routerLink="/instructor">
-                  <mat-icon>dashboard</mat-icon>
-                  <span>Mi Dashboard</span>
+                  <mat-icon class="text-cyan-400">dashboard</mat-icon>
+                  <span class="text-zinc-300">Mi Dashboard</span>
                 </button>
               }
               @if (authService.isAuthenticated() && authService.isStudent()) {
+                <button mat-menu-item routerLink="/my-courses">
+                  <mat-icon class="text-cyan-400">school</mat-icon>
+                  <span class="text-zinc-300">Mis Cursos</span>
+                </button>
                 <button mat-menu-item routerLink="/subscriptions">
-                  <mat-icon>card_membership</mat-icon>
-                  <span>Planes de Suscripción</span>
+                  <mat-icon class="text-emerald-400">card_membership</mat-icon>
+                  <span class="text-zinc-300">Planes de Suscripción</span>
                 </button>
                 <button mat-menu-item routerLink="/my-subscriptions">
-                  <mat-icon>history</mat-icon>
-                  <span>Mi Historial</span>
+                  <mat-icon class="text-zinc-400">history</mat-icon>
+                  <span class="text-zinc-300">Mi Historial</span>
                 </button>
               }
               <button mat-menu-item routerLink="/profile">
-                <mat-icon>person</mat-icon>
-                <span>Mi Perfil</span>
+                <mat-icon class="text-zinc-400">person</mat-icon>
+                <span class="text-zinc-300">Mi Perfil</span>
               </button>
-              <mat-divider></mat-divider>
-              <button mat-menu-item (click)="logout()" class="text-red-400">
-                <mat-icon class="text-red-400">logout</mat-icon>
-                <span>Cerrar Sesión</span>
+              <mat-divider class="border-zinc-700"></mat-divider>
+              <button mat-menu-item (click)="logout()">
+                <mat-icon class="text-rose-400">logout</mat-icon>
+                <span class="text-rose-400">Cerrar Sesión</span>
               </button>
             </mat-menu>
           } @else {
             <div class="flex gap-2">
-              <button mat-button routerLink="/login" class="text-slate-300">Entrar</button>
-              <button mat-raised-button routerLink="/register" class="register-btn">Empezar</button>
+              <button mat-button routerLink="/login" class="text-zinc-400 hover:text-zinc-200">Entrar</button>
+              <button mat-flat-button routerLink="/register" class="register-btn">Empezar</button>
             </div>
           }
         </div>
@@ -124,41 +146,69 @@ import { AuthService } from '../../../core/services/auth.service';
   `,
   styles: [`
     .navbar {
-      background: rgba(15, 23, 42, 0.8) !important;
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: #09090b !important;
+      border-bottom: 1px solid !important;
+      border-color: #27272a !important;
       height: 70px;
       position: sticky;
       top: 0;
-      z-index: 1000;
+      z-index: 40;
     }
     .nav-link {
-      color: #94a3b8;
+      color: #a1a1aa;
       padding: 8px 16px;
       border-radius: 8px;
       text-decoration: none;
       font-size: 0.9rem;
       font-weight: 500;
-      transition: all 0.2s;
+      transition: all 0.2s ease-in-out;
       display: flex;
       align-items: center;
     }
-    .nav-link:hover { color: white; background: rgba(255, 255, 255, 0.05); }
-    .nav-link.active { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+    .nav-link:hover { color: #fafafa; background: rgba(255, 255, 255, 0.05); }
+    .nav-link.active { color: #06b6d4; background: rgba(6, 182, 212, 0.1); }
     
     .initials-avatar {
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      color: #60a5fa;
-      text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #18181b, #09090b);
+      border: 1px solid #27272a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #06b6d4;
+      text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
     }
 
-    .admin-glow { color: #a78bfa; }
-    .instructor-glow { color: #60a5fa; }
+    .admin-glow { color: #8b5cf6; }
+    .instructor-glow { color: #06b6d4; }
 
     .register-btn {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+      background: linear-gradient(135deg, #06b6d4, #8b5cf6) !important;
       color: white !important;
       border-radius: 8px !important;
+      font-weight: 500;
+    }
+    
+    ::ng-deep .dark-menu .mat-mdc-menu-content {
+      background-color: #27272a !important;
+      border: 1px solid #3f3f46 !important;
+      border-radius: 8px !important;
+    }
+    
+    ::ng-deep .dark-menu .mat-mdc-menu-item {
+      color: #e4e4e7 !important;
+    }
+    
+    ::ng-deep .dark-menu .mat-mdc-menu-item:hover {
+      background-color: #3f3f46 !important;
+    }
+    
+    ::ng-deep .mat-divider {
+      border-top-color: #3f3f46 !important;
     }
   `],
 })

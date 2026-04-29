@@ -21,7 +21,7 @@ import { NotificationService } from '../../core/services/notification.service';
   ],
   template: `
     <div class="history-container animate-fade-in">
-      <h1 class="text-3xl font-bold text-white mb-8">Mi Historial de Suscripciones</h1>
+      <h1 class="text-3xl font-bold text-zinc-50 mb-8">Mi Historial de Suscripciones</h1>
 
       @if (isLoading()) {
         <div class="loading-spinner">
@@ -29,29 +29,29 @@ import { NotificationService } from '../../core/services/notification.service';
         </div>
       } @else if (subscriptions().length === 0) {
         <div class="empty-state glass-card p-8 text-center">
-          <span class="material-symbols-outlined text-5xl text-slate-400 mb-4">shopping_cart_off</span>
-          <p class="text-slate-400 text-lg">Aún no tienes suscripciones.</p>
-          <p class="text-slate-500">¡Elige un plan para acceder a todos los cursos!</p>
+          <span class="material-symbols-outlined text-5xl text-zinc-500 mb-4">shopping_cart_off</span>
+          <p class="text-zinc-400 text-lg">Aún no tienes suscripciones.</p>
+          <p class="text-zinc-500">¡Elige un plan para acceder a todos los cursos!</p>
         </div>
       } @else {
         <div class="subscriptions-table glass-card overflow-hidden">
           <table class="w-full">
-            <thead class="bg-slate-800/50 border-b border-slate-700">
+            <thead class="bg-zinc-900/50 border-b border-zinc-800">
               <tr>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Plan</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Inicio</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Fin</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Monto</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Estado</th>
-                <th class="px-6 py-4 text-center text-sm font-semibold text-slate-300">Auto-Renovar</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Plan</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Inicio</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Fin</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Monto</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Estado</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-zinc-400">Auto-Renovar</th>
               </tr>
             </thead>
             <tbody>
               @for (sub of subscriptions(); track sub.id) {
-                <tr class="border-b border-slate-700 hover:bg-slate-700/20 transition-colors">
-                  <td class="px-6 py-4 text-sm text-white font-semibold">{{ sub.plan.name }}</td>
-                  <td class="px-6 py-4 text-sm text-slate-300">{{ sub.start_date | date: 'short' }}</td>
-                  <td class="px-6 py-4 text-sm text-slate-300">{{ sub.end_date | date: 'short' }}</td>
+                <tr class="border-b border-zinc-800 hover:bg-zinc-800/20 transition-colors">
+                  <td class="px-6 py-4 text-sm text-zinc-50 font-semibold">{{ sub.plan.name }}</td>
+                  <td class="px-6 py-4 text-sm text-zinc-400">{{ sub.start_date | date: 'short' }}</td>
+                  <td class="px-6 py-4 text-sm text-zinc-400">{{ sub.end_date | date: 'short' }}</td>
                   <td class="px-6 py-4 text-sm text-emerald-400 font-bold">\${{ sub.plan.price / 100 | number: '1.2-2' }}</td>
                   <td class="px-6 py-4 text-sm">
                     <mat-chip [class]="'status-' + sub.status">
@@ -62,7 +62,8 @@ import { NotificationService } from '../../core/services/notification.service';
                     @if (sub.status === 'active') {
                       <mat-slide-toggle 
                         [checked]="sub.auto_renew"
-                        (change)="toggleAutoRenew(sub)">
+                        (change)="toggleAutoRenew(sub)"
+                        color="primary">
                       </mat-slide-toggle>
                     }
                   </td>
@@ -75,15 +76,24 @@ import { NotificationService } from '../../core/services/notification.service';
     </div>
   `,
   styles: [`
-    .history-container { padding: 40px 20px; min-height: 100vh; background: #0f172a; max-width: 1200px; margin: 0 auto; }
+    .history-container { padding: 40px 20px; min-height: 100vh; background: #09090b; max-width: 1200px; margin: 0 auto; }
     .loading-spinner { display: flex; justify-content: center; padding: 60px 20px; }
-    .empty-state { text-align: center; }
-    .subscriptions-table { margin-top: 20px; border-radius: 12px; }
+    .empty-state { text-align: center; background: #18181b; border: 1px solid #27272a; border-radius: 12px; }
+    .subscriptions-table { margin-top: 20px; border-radius: 12px; border: 1px solid #27272a; }
+    .glass-card { background: #18181b; }
     .status-active { background: rgba(16, 185, 129, 0.2) !important; color: #10b981 !important; }
-    .status-expired { background: rgba(148, 163, 184, 0.2) !important; color: #cbd5e1 !important; }
+    .status-expired { background: rgba(161, 161, 170, 0.2) !important; color: #a1a1aa !important; }
     .status-cancelled { background: rgba(239, 68, 68, 0.2) !important; color: #ef4444 !important; }
     .animate-fade-in { animation: fadeIn 0.5s ease-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    ::ng-deep .mat-mdc-slide-toggle.mat-primary {
+      --mdc-switch-selected-track-color: #8b5cf6 !important;
+      --mdc-switch-selected-handle-color: #fafafa !important;
+      --mdc-switch-selected-hover-track-color: #7c3aed !important;
+      --mdc-switch-selected-focus-track-color: #8b5cf6 !important;
+      --mdc-switch-selected-pressed-track-color: #7c3aed !important;
+    }
   `]
 })
 export class SubscriptionHistoryComponent implements OnInit {

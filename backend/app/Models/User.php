@@ -24,7 +24,9 @@ class User extends Authenticatable
         'provider',
         'provider_id',
         'avatar',
-        'enrollment_credits'
+        'enrollment_credits',
+        'bio',
+        'phone',
     ];
 
     public function instructorApplication(): \Illuminate\Database\Eloquent\Relations\HasOne

@@ -23,6 +23,8 @@ export interface User {
   role_id?: number;
   is_active?: boolean;
   avatar?: string;
+  bio?: string;
+  phone?: string;
   created_at: string;
   updated_at?: string;
 }
@@ -269,7 +271,15 @@ export interface DashboardData {
   stats: {
     courses_count: number;
     active_students: number;
+    average_rating?: number;
+    total_earnings?: number;
   };
+  courses_distribution?: Array<{
+    course_id: number;
+    course_title: string;
+    students_count: number;
+    completed_count: number;
+  }>;
   recent_activity: Activity[];
 }
 
@@ -335,4 +345,10 @@ export interface Payment {
   payment_gateway_response?: any;
   created_at: string;
   updated_at: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  slug?: string;
 }

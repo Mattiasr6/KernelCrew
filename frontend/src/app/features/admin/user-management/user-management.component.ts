@@ -163,8 +163,7 @@ export class UserManagementComponent implements OnInit {
         this.users.set(res.data?.users || res.data || []);
         this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('Error cargando usuarios:', err);
+      error: () => {
         this.isLoading.set(false);
       }
     });
@@ -179,7 +178,7 @@ export class UserManagementComponent implements OnInit {
   toggleUser(user: User) {
     this.userService.toggleStatus(user.id).subscribe({
       next: () => this.loadUsers(),
-      error: (err) => console.error('Error cambiando estado:', err)
+      error: () => {}
     });
   }
 

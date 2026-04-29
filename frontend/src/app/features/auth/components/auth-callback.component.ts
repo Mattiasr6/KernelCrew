@@ -1,30 +1,39 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-auth-callback',
   standalone: true,
-  imports: [MatProgressSpinnerModule],
+  imports: [CommonModule],
   template: `
     <div class="callback-container">
-      <mat-spinner diameter="50"></mat-spinner>
-      <p>Finalizando autenticación...</p>
+      <div class="loading-spinner"></div>
+      <p class="text-zinc-400 mt-4">Procesando autenticación...</p>
     </div>
   `,
   styles: [`
     .callback-container {
-      height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      background: #0f172a;
-      color: white;
+      justify-content: center;
+      min-height: 100vh;
+      background: #09090b;
     }
-    p { margin-top: 20px; font-family: 'Inter', sans-serif; opacity: 0.8; }
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #27272a;
+      border-top-color: #06b6d4;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   `]
 })
 export class AuthCallbackComponent implements OnInit {
@@ -34,40 +43,28 @@ export class AuthCallbackComponent implements OnInit {
   private api = inject(ApiService);
 
   ngOnInit() {
-    // 1. Capturar token y decodificar caracteres especiales (ej: %7C -> |)
-    const rawToken = this.route.snapshot.queryParamMap.get('token');
-    
-    if (rawToken) {
-      const decodedToken = decodeURIComponent(rawToken);
-      
-      // 2. Establecer token para que el interceptor lo reconozca inmediatamente
-      this.authService.setToken(decodedToken);
-      
-      // 4. Obtener datos completos del usuario
+    const token = this.route.snapshot.queryParamMap.get('token');
+    const error = this.route.snapshot.queryParamMap.get('error');
+
+    if (error) {
+      this.handleError();
+      return;
+    }
+
+    if (token) {
+      this.authService.setToken(token);
       this.api.get<any>('auth/me').subscribe({
         next: (response) => {
           if (response.success && response.data) {
             const user = response.data;
-            
-            // Guardar datos y actualizar señal reactiva
-            localStorage.setItem('user', JSON.stringify(user));
             this.authService.userSignal.set(user);
-            
-            // 5. Redirección inteligente
-            const returnUrl = localStorage.getItem('returnUrl');
-            if (returnUrl) {
-                localStorage.removeItem('returnUrl');
-                this.router.navigateByUrl(returnUrl);
-            } else {
-                this.router.navigate([this.getRedirectByRole(user.role_id)]);
-            }
+            localStorage.setItem('user', JSON.stringify(user));
+            this.redirectByRole(user.role_id);
           } else {
-            console.error('Callback fallido:', response.message);
             this.handleError();
           }
         },
-        error: (err) => {
-          console.error('Error de red en el callback:', err);
+        error: () => {
           this.handleError();
         }
       });
@@ -76,13 +73,23 @@ export class AuthCallbackComponent implements OnInit {
     }
   }
 
-  private handleError() {
+  private redirectByRole(roleId: number): void {
+    const returnUrl = localStorage.getItem('returnUrl');
+    if (returnUrl) {
+      localStorage.removeItem('returnUrl');
+      this.router.navigateByUrl(returnUrl);
+    } else {
+      this.router.navigate([this.getRedirectByRole(roleId)]);
+    }
+  }
+
+  private handleError(): void {
     this.authService.clearSession();
     this.router.navigate(['/login']);
   }
 
   private getRedirectByRole(roleId: number): string {
-    switch (Number(roleId)) {
+    switch (roleId) {
       case 1: return '/admin';
       case 2: return '/instructor';
       default: return '/dashboard';
