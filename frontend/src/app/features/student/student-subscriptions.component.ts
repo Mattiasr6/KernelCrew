@@ -214,7 +214,6 @@ export class StudentSubscriptionsComponent implements OnInit {
     this.subscriptionService.createCheckoutSession(plan.id).subscribe({
       next: (res) => {
         if (res.success && res.data?.url) {
-          // Redirección directa a Stripe Checkout
           window.location.href = res.data.url;
         } else {
           this.isProcessing.set(false);

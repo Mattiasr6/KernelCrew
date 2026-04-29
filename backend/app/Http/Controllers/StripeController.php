@@ -58,7 +58,9 @@ class StripeController extends Controller
 
         return response()->json([
             'success' => true,
-            'url' => $session->url
+            'data' => [
+                'url' => $session->url
+            ]
         ]);
     }
 
