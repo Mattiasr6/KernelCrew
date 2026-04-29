@@ -152,8 +152,7 @@ export class StudentCertificatesComponent implements OnInit {
         window.URL.revokeObjectURL(url);
         this.downloadingUuid.set(null);
       },
-      error: (err) => {
-        console.error('Error descargando el certificado:', err);
+      error: () => {
         this.downloadingUuid.set(null);
       }
     });

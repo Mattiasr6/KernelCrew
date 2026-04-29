@@ -1,292 +1,229 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { SubscriptionService } from '../../core/services/subscription.service';
-import { AuthService } from '../../core/services/auth.service';
-import { NotificationService } from '../../core/services/notification.service';
 import { SubscriptionPlan } from '../../core/models';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-student-subscriptions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatProgressSpinnerModule],
   template: `
-    <div class="subscriptions-container animate-fade-in">
-      <div class="header-section text-center mb-16">
-        <h1 class="text-4xl font-bold text-white mb-4">Planes de Suscripción</h1>
-        <p class="text-slate-400 max-w-2xl mx-auto">
-          Elige el plan que mejor se adapte a tu camino de aprendizaje en KernelLearn.
-        </p>
-      </div>
+    <div class="min-h-screen bg-zinc-950 px-4 py-16 animate-fade-in">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-16">
+          <h1 class="text-4xl font-bold tracking-tight text-zinc-50 mb-4">Planes de Suscripción</h1>
+          <p class="text-zinc-400 max-w-2xl mx-auto text-lg">
+            Elige el plan que mejor se adapte a tu camino de aprendizaje en KernelLearn.
+          </p>
+        </div>
 
-      <!-- Pricing Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        @for (plan of plans(); track plan.id) {
-          <div class="pricing-card" [class.featured]="plan.name.toLowerCase().includes('pro')">
-            @if (plan.name.toLowerCase().includes('pro')) {
-              <div class="recommended-badge">Recomendado</div>
-            }
-            
-            <div class="card-header">
-              <h3 class="plan-name">{{ plan.name }}</h3>
-              <div class="price-container">
-                <span class="currency">$</span>
-                <span class="amount">{{ plan.price }}</span>
-                <span class="duration">/mes</span>
+        <!-- Pricing Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          @for (plan of plans(); track plan.id) {
+            <div class="pricing-card" [class.featured]="isFeaturedPlan(plan)">
+              @if (isFeaturedPlan(plan)) {
+                <div class="recommended-badge">
+                  <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                  Recomendado
+                </div>
+              }
+              
+              <div class="card-header">
+                <h3 class="plan-name">{{ plan.name }}</h3>
+                <div class="price-container">
+                  <span class="currency">$</span>
+                  <span class="amount">{{ plan.price / 100 }}</span>
+                  <span class="duration text-zinc-500">/mes</span>
+                </div>
               </div>
+
+              <ul class="features-list">
+                <li>
+                  <span class="material-symbols-outlined icon">check_circle</span>
+                  {{ plan.max_courses && plan.max_courses > 0 ? 'Hasta ' + plan.max_courses + ' cursos' : 'Cursos ilimitados' }}
+                </li>
+                <li>
+                  <span class="material-symbols-outlined icon">check_circle</span>
+                  Acceso por {{ plan.duration_days }} días
+                </li>
+                <li>
+                  <span class="material-symbols-outlined icon">check_circle</span>
+                  Certificados incluidos
+                </li>
+                <li>
+                  <span class="material-symbols-outlined icon">check_circle</span>
+                  <span class="text-violet-400">KernelAI Assistant</span> incluido
+                </li>
+              </ul>
+
+              <button class="subscribe-btn" [class.featured-btn]="isFeaturedPlan(plan)" (click)="subscribe(plan)" [disabled]="isProcessing() && selectedPlanId() === plan.id">
+                @if (isProcessing() && selectedPlanId() === plan.id) {
+                  <mat-spinner diameter="20" class="inline-block mr-2"></mat-spinner>
+                  <span>Conectando...</span>
+                } @else {
+                  @if (isFeaturedPlan(plan)) {
+                    <span class="material-symbols-outlined mr-2">rocket_launch</span>
+                  }
+                  Suscribirme ahora
+                }
+              </button>
             </div>
+          }
+        </div>
 
-            <ul class="features-list">
-              <li>
-                <span class="material-symbols-outlined icon">check_circle</span>
-                {{ plan.max_courses ? 'Hasta ' + plan.max_courses + ' cursos' : 'Cursos ilimitados' }}
-              </li>
-              <li>
-                <span class="material-symbols-outlined icon">check_circle</span>
-                Acceso por {{ plan.duration_days }} días
-              </li>
-              <li>
-                <span class="material-symbols-outlined icon">check_circle</span>
-                Certificados incluidos
-              </li>
-              <li>
-                <span class="material-symbols-outlined icon">check_circle</span>
-                Soporte de la comunidad
-              </li>
-            </ul>
-
-            <button class="subscribe-btn" (click)="openCheckout(plan)">
-              Suscribirme
-            </button>
+        <!-- Loading Overlay -->
+        @if (isProcessing()) {
+          <div class="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div class="text-center">
+                  <mat-spinner diameter="50" class="mx-auto mb-4"></mat-spinner>
+                  <p class="text-zinc-50 font-bold">Redirigiendo a pasarela segura...</p>
+              </div>
           </div>
         }
       </div>
-
-      <!-- Checkout Modal -->
-      @if (showCheckout) {
-        <div class="modal-overlay" (click)="closeCheckout()">
-          <div class="modal-content glass-card" (click)="$event.stopPropagation()">
-            <h2 class="text-2xl font-bold text-white mb-6">Finalizar Suscripción</h2>
-            <p class="text-slate-400 mb-8">
-              Estás por suscribirte al plan <strong>{{ selectedPlan?.name }}</strong> por <strong>\${{ selectedPlan?.price }}</strong>.
-            </p>
-
-            <form [formGroup]="checkoutForm" (ngSubmit)="processPayment()" class="space-y-6">
-              <div class="form-group">
-                <label>Número de Tarjeta (Simulación)</label>
-                <input type="text" formControlName="card_number" placeholder="4242 4242 4242 4242" maxlength="19">
-              </div>
-
-              <div class="flex gap-4">
-                <div class="form-group flex-1">
-                  <label>Expiración</label>
-                  <input type="text" placeholder="MM/YY">
-                </div>
-                <div class="form-group flex-1">
-                  <label>CVC</label>
-                  <input type="text" placeholder="123">
-                </div>
-              </div>
-
-              <div class="pt-4">
-                <button type="submit" class="pay-btn" [disabled]="checkoutForm.invalid || isProcessing()">
-                  @if (isProcessing()) {
-                    <mat-spinner diameter="24"></mat-spinner>
-                    <span>Procesando pago...</span>
-                  } @else {
-                    Pagar Ahora
-                  }
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      }
     </div>
   `,
   styles: [`
-    .subscriptions-container { padding: 60px 20px; min-height: 100vh; background: #0f172a; }
-
+    .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
     .pricing-card {
       position: relative;
-      background: rgba(30, 41, 59, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #18181b;
+      border: 1px solid #27272a;
       border-radius: 24px;
       padding: 40px;
       display: flex;
       flex-direction: column;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(8px);
+      transition: all 0.3s ease-in-out;
     }
-
-    .pricing-card:hover { transform: translateY(-10px); border-color: rgba(255, 255, 255, 0.2); }
-
+    .pricing-card:hover { transform: translateY(-8px); border-color: #3f3f46; }
+    
     .pricing-card.featured {
-      background: rgba(30, 41, 59, 0.8);
-      border: 2px solid #3b82f6;
-      box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+      background: #18181b;
+      border: 2px solid #8b5cf6;
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
     }
-
+    
     .recommended-badge {
       position: absolute;
       top: -12px;
       left: 50%;
       transform: translateX(-50%);
-      background: #3b82f6;
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
       color: white;
-      padding: 4px 16px;
-      border-radius: 20px;
+      padding: 6px 20px;
+      border-radius: 9999px;
       font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
-
-    .plan-name { font-size: 1.25rem; font-weight: 700; color: #94a3b8; margin-bottom: 16px; }
-    .featured .plan-name { color: #3b82f6; }
-
+    
+    .plan-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #a1a1aa;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .featured .plan-name { color: #8b5cf6; }
+    
     .price-container { display: flex; align-items: baseline; gap: 4px; margin-bottom: 32px; }
-    .currency { font-size: 1.5rem; font-weight: 600; color: white; }
-    .amount { font-size: 3.5rem; font-weight: 800; color: white; }
-    .duration { color: #64748b; }
-
+    .currency { font-size: 1.5rem; font-weight: 600; color: #fafafa; }
+    .amount { font-size: 3.5rem; font-weight: 800; color: #fafafa; line-height: 1; }
+    
     .features-list { list-style: none; padding: 0; margin: 0 0 40px 0; flex: 1; }
-    .features-list li { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: #cbd5e1; font-size: 0.95rem; }
+    .features-list li { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: #d4d4d8; font-size: 0.95rem; }
     .features-list .icon { font-size: 20px; color: #10b981; }
-
+    
     .subscribe-btn {
       width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      color: white;
-      font-weight: 700;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .featured .subscribe-btn { background: #3b82f6; border-color: #3b82f6; }
-    .subscribe-btn:hover { background: rgba(255, 255, 255, 0.1); }
-    .featured .subscribe-btn:hover { background: #2563eb; }
-
-    /* Modal Styles */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      backdrop-filter: blur(4px);
-    }
-
-    .modal-content {
-      width: 450px;
-      max-width: 95%;
-      padding: 40px;
-      border-radius: 24px;
-      background: #0f172a;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .form-group label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 8px; }
-    .form-group input {
-      width: 100%;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 12px 16px;
-      border-radius: 10px;
-      color: white;
-      outline: none;
-    }
-
-    .pay-btn {
-      width: 100%;
       padding: 16px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
       border-radius: 12px;
+      background: rgba(6, 182, 212, 0.1);
+      color: #06b6d4;
       font-weight: 700;
-      border: none;
+      border: 1px solid rgba(6, 182, 212, 0.2);
       cursor: pointer;
+      transition: all 0.2s ease-in-out;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
     }
-
-    .pay-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .animate-fade-in { animation: fadeIn 0.5s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .subscribe-btn:hover:not(:disabled) {
+      background: rgba(6, 182, 212, 0.2);
+      transform: translateY(-2px);
+    }
+    .subscribe-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    .subscribe-btn.featured-btn {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+      border: none;
+    }
+    .subscribe-btn.featured-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+    }
   `]
 })
 export class StudentSubscriptionsComponent implements OnInit {
   private subscriptionService = inject(SubscriptionService);
-  private authService = inject(AuthService);
   private notification = inject(NotificationService);
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
 
   plans = signal<SubscriptionPlan[]>([]);
   isLoading = signal(true);
   isProcessing = signal(false);
-  showCheckout = false;
-  selectedPlan: SubscriptionPlan | null = null;
-
-  checkoutForm: FormGroup = this.fb.group({
-    plan_id: [null, Validators.required],
-    card_number: ['', [Validators.required, Validators.minLength(16)]]
-  });
+  selectedPlanId = signal<number | null>(null);
 
   ngOnInit() {
     this.loadPlans();
   }
 
+  isFeaturedPlan(plan: SubscriptionPlan): boolean {
+    const name = plan.name.toLowerCase();
+    return name.includes('pro') || name.includes('professional') || name.includes('premium') || name.includes('enterprise');
+  }
+
   loadPlans() {
     this.isLoading.set(true);
     this.subscriptionService.getPlans().subscribe({
-      next: (res) => {
-        this.plans.set(res.data);
+      next: (res: any) => {
+        const plans = Array.isArray(res.data) ? res.data : [];
+        this.plans.set(plans);
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false)
+      error: () => {
+        this.notification.error('Error al cargar los planes de suscripción');
+        this.isLoading.set(false);
+      }
     });
   }
 
-  openCheckout(plan: SubscriptionPlan) {
-    this.selectedPlan = plan;
-    this.checkoutForm.patchValue({ plan_id: plan.id });
-    this.showCheckout = true;
-  }
-
-  closeCheckout() {
-    this.showCheckout = false;
-    this.selectedPlan = null;
-    this.checkoutForm.reset();
-  }
-
-  processPayment() {
-    if (this.checkoutForm.invalid) return;
-
+  subscribe(plan: SubscriptionPlan) {
     this.isProcessing.set(true);
-    this.subscriptionService.processCheckout(this.checkoutForm.value).subscribe({
+    this.selectedPlanId.set(plan.id);
+
+    this.subscriptionService.createCheckoutSession(plan.id).subscribe({
       next: (res) => {
-        this.notification.success(res.message || 'Pago procesado con éxito');
-        this.isProcessing.set(false);
-        this.closeCheckout();
-        
-        // Refrescar la sesión para obtener el nuevo rol o estado de suscripción
-        this.authService.refreshUserSession();
-        this.router.navigate(['/dashboard']);
+        if (res.success && res.data?.url) {
+          // Redirección directa a Stripe Checkout
+          window.location.href = res.data.url;
+        } else {
+          this.isProcessing.set(false);
+          this.notification.error('No se pudo generar la sesión de pago.');
+        }
       },
       error: (err) => {
         this.isProcessing.set(false);
-        this.notification.error(err.error?.message || 'Error en el pago');
+        this.notification.error(err.error?.message || 'Error al conectar con Stripe');
       }
     });
   }

@@ -52,6 +52,13 @@ export class CourseService {
   }
 
   /**
+   * Obtener categorías disponibles
+   */
+  getCategories(): Observable<ApiResponse<any>> {
+    return this.api.get<ApiResponse<any>>('courses/categories');
+  }
+
+  /**
    * Inscribir al usuario en un curso
    */
   enrollInCourse(id: number): Observable<ApiResponse<any>> {

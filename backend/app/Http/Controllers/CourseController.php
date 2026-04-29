@@ -72,12 +72,14 @@ class CourseController extends Controller
         $minPrice = $request->query('min_price');
         $maxPrice = $request->query('max_price');
         $status = $request->query('status');
+        $level = $request->query('level');
+        $categoryId = $request->query('category_id');
         $perPage = $request->query('per_page', 10);
 
         $user = $request->user();
         $isAdminOrInstructor = $user && ($user->hasRole('admin') || $user->hasRole('instructor'));
 
-        $query = Course::with('instructor');
+        $query = Course::with(['instructor', 'category']);
 
         if (!$isAdminOrInstructor) {
             $query->published();
@@ -93,12 +95,49 @@ class CourseController extends Controller
             $query->priceBetween((float) $minPrice, (float) $maxPrice);
         }
 
+        if ($level) {
+            $query->where('level', $level);
+        }
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+
         $courses = $query->paginate((int) $perPage);
 
         return response()->json([
             'success' => true,
             'message' => 'Cursos obtenidos exitosamente',
-            'data' => $courses->items(),
+            'data' => [
+                'courses' => $courses->items(),
+            ],
+            'meta' => [
+                'current_page' => $courses->currentPage(),
+                'last_page' => $courses->lastPage(),
+                'per_page' => $courses->perPage(),
+                'total' => $courses->total(),
+            ],
+        ], 200);
+    }
+
+    /**
+     * Obtener cursos del instructor autenticado
+     */
+    public function getInstructorCourses(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $perPage = $request->query('per_page', 10);
+        
+        $courses = Course::with('instructor')
+            ->where('instructor_id', $user->id)
+            ->paginate((int) $perPage);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cursos del instructor obtenidos exitosamente',
+            'data' => [
+                'courses' => $courses->items(),
+            ],
             'meta' => [
                 'current_page' => $courses->currentPage(),
                 'last_page' => $courses->lastPage(),
@@ -350,6 +389,21 @@ class CourseController extends Controller
             'success' => true,
             'message' => 'Curso restaurado exitosamente',
             'data' => null,
+        ], 200);
+    }
+
+    /**
+     * Listar categorías disponibles
+     */
+    public function categories(): JsonResponse
+    {
+        $categories = \App\Models\Category::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories
         ], 200);
     }
 }

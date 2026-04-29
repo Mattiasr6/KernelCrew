@@ -83,19 +83,39 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'ai',
-    loadComponent: () =>
-      import('./features/student/kernel-ai/kernel-ai.component').then(
-        (m) => m.KernelAIComponent,
-      ),
-    canActivate: [authGuard],
-  },
-  {
     path: 'subscriptions',
     loadComponent: () =>
       import('./features/student/student-subscriptions.component').then(
         (m) => m.StudentSubscriptionsComponent,
       ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'my-courses',
+    loadComponent: () =>
+      import('./features/student/my-courses.component').then(
+        (m) => m.MyCoursesComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'my-subscriptions',
+    loadComponent: () =>
+      import('./features/student/subscription-history.component').then(
+        (m) => m.SubscriptionHistoryComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'payment/success',
+    loadComponent: () =>
+      import('./features/payment/payment-success.component').then((m) => m.PaymentSuccessComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'payment/cancel',
+    loadComponent: () =>
+      import('./features/payment/payment-cancel.component').then((m) => m.PaymentCancelComponent),
     canActivate: [authGuard],
   },
 
@@ -125,6 +145,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/admin-applications.component').then(
             (m) => m.AdminApplicationsComponent,
+          ),
+      },
+      {
+        path: 'payments',
+        loadComponent: () =>
+          import('./features/admin/components/admin-transactions.component').then(
+            (m) => m.AdminTransactionsComponent,
           ),
       }
     ],

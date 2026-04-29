@@ -24,7 +24,9 @@ class User extends Authenticatable
         'provider',
         'provider_id',
         'avatar',
-        'enrollment_credits'
+        'enrollment_credits',
+        'bio',
+        'phone',
     ];
 
     public function instructorApplication(): \Illuminate\Database\Eloquent\Relations\HasOne
@@ -84,11 +86,21 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function subscriptions()
+    {
+        return $this->hasMany(UserSubscription::class, 'user_id');
+    }
+
     public function subscriptionPlans(): BelongsToMany
     {
         return $this->belongsToMany(SubscriptionPlan::class, 'user_subscriptions')
             ->withPivot('status', 'start_date', 'end_date', 'auto_renew')
             ->withTimestamps();
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'user_id');
     }
 
     public function activeSubscription()

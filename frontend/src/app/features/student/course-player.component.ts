@@ -6,13 +6,14 @@ import { CertificateService } from '../../core/services/certificate.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Course, Certificate } from '../../core/models';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-course-player',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatProgressSpinnerModule],
+  imports: [CommonModule, RouterLink, MatProgressSpinnerModule, MatSnackBarModule],
   template: `
-    <div class="player-container animate-fade-in">
+    <div class="player-container animate-fade-in text-slate-100">
       @if (loading()) {
         <div class="loading">
           <mat-spinner diameter="50"></mat-spinner>
@@ -56,7 +57,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
                }
             </div>
 
-            <div class="lesson-info mt-8 glass-card p-8">
+            <div class="lesson-info mt-8 glass-card p-8 bg-slate-900/40 rounded-2xl border border-white/10">
               <h2 class="text-2xl font-bold text-white mb-4">Módulo Final: Evaluación de Conocimientos</h2>
               <p class="text-slate-300 leading-relaxed">
                 Este es el último paso para obtener tu certificación. Al marcar esta lección como completada, el sistema validará tu trayectoria y generará el documento oficial.
@@ -89,7 +90,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
           </div>
 
           <!-- Sidebar Content -->
-          <aside class="lesson-sidebar glass-card">
+          <aside class="lesson-sidebar glass-card bg-slate-900/40 border-l border-white/10">
             <h3 class="p-6 font-bold text-white border-b border-white/5">Contenido del Curso</h3>
             <div class="lessons-list p-4 space-y-2">
                <div class="lesson-item active">
@@ -133,7 +134,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     @media (max-width: 1200px) { .content-grid { grid-template-columns: 1fr; overflow-y: auto; } }
 
     .main-player { padding: 40px; overflow-y: auto; }
-    .lesson-sidebar { border-radius: 0; border-top: none; border-bottom: none; background: rgba(15, 23, 42, 0.4); }
 
     .complete-btn {
       display: flex; align-items: center; gap: 10px; padding: 14px 28px;
@@ -167,6 +167,7 @@ export class CoursePlayerComponent implements OnInit {
   private courseService = inject(CourseService);
   private certService = inject(CertificateService);
   private notification = inject(NotificationService);
+  private snackBar = inject(MatSnackBar);
 
   course = signal<Course | null>(null);
   progress = signal(0);
@@ -185,7 +186,9 @@ export class CoursePlayerComponent implements OnInit {
   loadCourse(id: number) {
     this.courseService.getCourse(id).subscribe({
       next: (res) => {
-        this.course.set(res.data.course);
+        if (res.data) {
+          this.course.set(res.data.course);
+        }
         this.loading.set(false);
       },
       error: () => this.router.navigate(['/courses'])
@@ -208,7 +211,7 @@ export class CoursePlayerComponent implements OnInit {
   completeCourse() {
     this.isUpdating.set(true);
     this.courseService.updateProgress(this.course()!.id, 100).subscribe({
-      next: (res) => {
+      next: () => {
         this.progress.set(100);
         this.isUpdating.set(false);
         this.notification.success('¡Curso completado! Tu certificado ha sido generado.');
@@ -219,10 +222,9 @@ export class CoursePlayerComponent implements OnInit {
 
   downloadCertificate() {
     this.isDownloading.set(true);
-    // Buscamos el certificado por curso en el listado del servicio
     this.certService.getMyCertificates().subscribe({
       next: (res) => {
-        const cert = res.data.find(c => c.course_id === this.course()!.id);
+        const cert = res.data?.find(c => c.course_id === this.course()!.id);
         if (cert) {
           this.certService.downloadPdf(cert.certificate_code).subscribe({
             next: (blob) => {

@@ -33,7 +33,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Nombre</th>
+                <th>Usuario</th>
                 <th>Email</th>
                 <th>Rol</th>
                 <th>Estado</th>
@@ -47,9 +47,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
                   <td class="font-mono text-slate-500">#{{ user.id }}</td>
                   <td>
                     <div class="flex items-center gap-3">
-                      <div class="avatar-circle">
-                        {{ user.name.substring(0, 2).toUpperCase() }}
-                      </div>
+                      <!-- Avatar Inteligente -->
+                      @if (user.avatar) {
+                        <img [src]="user.avatar" class="w-9 h-9 rounded-xl border border-white/10 object-cover" [alt]="user.name">
+                      } @else {
+                        <div class="avatar-circle">
+                          {{ getInitials(user.name) }}
+                        </div>
+                      }
                       <span class="font-semibold text-slate-200">{{ user.name }}</span>
                     </div>
                   </td>
@@ -100,90 +105,20 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     </div>
   `,
   styles: [`
-    .user-mgmt-container {
-      padding: 24px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .header-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 32px;
-    }
-
-    .add-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 12px;
-      font-weight: 600;
-      border: none;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-      cursor: pointer;
-    }
-
-    .add-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-    }
-
-    .table-card {
-      position: relative;
-      min-height: 400px;
-      border-radius: 20px;
-      overflow: hidden;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .loading-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(15, 23, 42, 0.4);
-      z-index: 10;
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    .data-table th {
-      padding: 16px 24px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .data-table td {
-      padding: 16px 24px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      vertical-align: middle;
-    }
-
-    .hover-row:hover {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
+    .user-mgmt-container { padding: 24px; max-width: 1400px; margin: 0 auto; }
+    .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    .add-btn { display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 10px 20px; border-radius: 12px; font-weight: 600; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+    .table-card { position: relative; min-height: 400px; border-radius: 20px; overflow: hidden; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .data-table th { padding: 16px 24px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #94a3b8; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .data-table td { padding: 16px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
+    .hover-row:hover { background: rgba(255, 255, 255, 0.02); }
+    
     .avatar-circle {
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: rgba(59, 130, 246, 0.1);
+      background: linear-gradient(135deg, #1e293b, #0f172a);
       color: #60a5fa;
       display: flex;
       align-items: center;
@@ -191,80 +126,24 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
       font-weight: 700;
       font-size: 0.8rem;
       border: 1px solid rgba(59, 130, 246, 0.2);
+      text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
     }
 
-    .badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
     .badge-admin { background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.2); }
     .badge-instructor { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
     .badge-student { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
 
-    .status-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.85rem;
-      color: #64748b;
-    }
-
-    .status-indicator.active {
-      color: #10b981;
-    }
-
-    .status-indicator::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    .action-group {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-
-    .icon-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .icon-btn span { font-size: 18px; }
-
+    .status-indicator { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #64748b; }
+    .status-indicator.active { color: #10b981; }
+    .status-indicator::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .action-group { display: flex; justify-content: flex-end; gap: 8px; }
+    .icon-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #94a3b8; cursor: pointer; transition: all 0.2s; }
     .icon-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
-    .icon-btn.delete:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
-    .icon-btn.toggle:hover { background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
-
-    .empty-state {
-      text-align: center;
-      padding: 60px !important;
-      color: #64748b;
-    }
-
-    .animate-fade-in {
-      animation: fadeIn 0.5s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .loading-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.4); z-index: 10; }
+    .empty-state { text-align: center; padding: 60px !important; color: #64748b; }
+    .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
 export class UserManagementComponent implements OnInit {
@@ -281,21 +160,25 @@ export class UserManagementComponent implements OnInit {
     this.isLoading.set(true);
     this.userService.getUsers().subscribe({
       next: (res: any) => {
-        // Adaptación flexible por si el backend devuelve data.users o data directamente
         this.users.set(res.data?.users || res.data || []);
         this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('Error cargando usuarios:', err);
+      error: () => {
         this.isLoading.set(false);
       }
     });
   }
 
+  getInitials(name: string): string {
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  }
+
   toggleUser(user: User) {
     this.userService.toggleStatus(user.id).subscribe({
       next: () => this.loadUsers(),
-      error: (err) => console.error('Error cambiando estado:', err)
+      error: () => {}
     });
   }
 

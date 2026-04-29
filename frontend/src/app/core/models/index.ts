@@ -4,6 +4,7 @@ export interface ApiResponse<T> {
   message?: string;
   data?: T;
   errors?: Record<string, string[]>;
+  meta?: any;
 }
 
 // User models
@@ -21,6 +22,9 @@ export interface User {
   rol?: Rol;
   role_id?: number;
   is_active?: boolean;
+  avatar?: string;
+  bio?: string;
+  phone?: string;
   created_at: string;
   updated_at?: string;
 }
@@ -100,6 +104,8 @@ export interface Course {
   can_enroll?: boolean;
   syllabus?: string;
   requirements?: string;
+  average_rating?: string | number;
+  reviews_count?: number;
 }
 
 export interface CoursesMeta {
@@ -265,7 +271,15 @@ export interface DashboardData {
   stats: {
     courses_count: number;
     active_students: number;
+    average_rating?: number;
+    total_earnings?: number;
   };
+  courses_distribution?: Array<{
+    course_id: number;
+    course_title: string;
+    students_count: number;
+    completed_count: number;
+  }>;
   recent_activity: Activity[];
 }
 
@@ -299,6 +313,7 @@ export interface SubscriptionPlan {
   price: number;
   duration_days: number;
   max_courses: number | null;
+  is_active?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -307,9 +322,33 @@ export interface UserSubscription {
   id: number;
   user_id: number;
   plan_id: number;
-  plan_name: string;
+  plan?: SubscriptionPlan;
+  plan_name?: string;
   status: 'active' | 'expired' | 'cancelled';
   start_date: string;
   end_date: string;
   auto_renew: boolean;
+  payments?: Payment[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Payment {
+  id: number;
+  user_id: number;
+  user_subscription_id: number;
+  amount: number;
+  payment_date: string;
+  transaction_id: string;
+  payment_method: string;
+  status: 'completed' | 'pending' | 'failed';
+  payment_gateway_response?: any;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  slug?: string;
 }

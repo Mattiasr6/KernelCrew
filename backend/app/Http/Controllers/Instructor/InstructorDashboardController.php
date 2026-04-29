@@ -38,7 +38,51 @@ class InstructorDashboardController extends Controller
     {
         $user = $request->user();
 
-        // 1. Calcular progreso hacia el próximo crédito (módulo 3)
+        // 1. Cursos del instructor
+        $courses = $user->courses()->published()->get();
+        
+        // 2. Total de estudiantes activos (inscritos en cursos publicados del instructor)
+        $activeStudents = \App\Models\CourseEnrollment::whereIn('course_id', $courses->pluck('id'))
+            ->distinct('user_id')
+            ->count('user_id');
+
+        // 3. Calificación promedio de los cursos del instructor
+        $totalRating = 0;
+        $coursesWithReviews = 0;
+        foreach ($courses as $course) {
+            $avgRating = $course->reviews()->avg('rating');
+            if ($avgRating) {
+                $totalRating += $avgRating;
+                $coursesWithReviews++;
+            }
+        }
+        $averageRating = $coursesWithReviews > 0 ? round($totalRating / $coursesWithReviews, 1) : 0;
+
+        // 4. Ingresos del instructor (suma de pagos de sus cursos - si aplica)
+        $totalEarnings = 0;
+        $completedEnrollments = \App\Models\CourseEnrollment::whereIn('course_id', $courses->pluck('id'))
+            ->where('progress', '>=', 100)
+            ->with('course')
+            ->get();
+        
+        // Calcular ingresos basados en precios de cursos (lógica simplificada)
+        foreach ($completedEnrollments as $enrollment) {
+            if ($enrollment->course && $enrollment->course->price > 0) {
+                $totalEarnings += $enrollment->course->price;
+            }
+        }
+
+        // 5. Distribución de estudiantes por curso
+        $studentsPerCourse = $courses->map(function ($course) {
+            return [
+                'course_id' => $course->id,
+                'course_title' => $course->title,
+                'students_count' => $course->enrollments()->count(),
+                'completed_count' => $course->enrollments()->where('progress', '>=', 100)->count(),
+            ];
+        });
+
+        // 6. Progreso hacia el próximo crédito (gamificación)
         $totalCounted = $user->courses()
             ->withTrashed()
             ->where('is_credit_counted', true)
@@ -46,7 +90,7 @@ class InstructorDashboardController extends Controller
         
         $progress = $totalCounted % 3;
 
-        // 2. Obtener feed de actividades recientes
+        // 7. Obtener feed de actividades recientes
         $activities = Activity::where('user_id', $user->id)
             ->latest('created_at')
             ->take(5)
@@ -63,9 +107,12 @@ class InstructorDashboardController extends Controller
                     'total_history' => $totalCounted
                 ],
                 'stats' => [
-                    'courses_count' => $user->courses()->count(),
-                    'active_students' => 0, // TODO: Implementar tras completar Inscripciones
+                    'courses_count' => $courses->count(),
+                    'active_students' => $activeStudents,
+                    'average_rating' => $averageRating,
+                    'total_earnings' => $totalEarnings,
                 ],
+                'courses_distribution' => $studentsPerCourse,
                 'recent_activity' => $activities
             ]
         ], 200);

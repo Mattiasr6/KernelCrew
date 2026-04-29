@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdminService, AdminStats } from '../../../../core/services/admin.service';
+import { AdminService, AdminStats } from '../../../core/services/admin.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -92,8 +92,8 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.adminService.getStats().subscribe({
-      next: (res) => this.stats.set(res.data),
-      error: (err) => console.error('Error cargando stats:', err)
+      next: (res: any) => this.stats.set(res.data),
+      error: () => {}
     });
   }
 }

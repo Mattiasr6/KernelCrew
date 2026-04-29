@@ -182,6 +182,39 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'role' => $user->getRoleName(),
                     'is_active' => $user->isActive(),
+                    'avatar' => $user->avatar,
+                ],
+            ],
+        ], 200);
+    }
+
+    #[OA\Put(path: '/api/v1/profile', tags: ['Autenticación'], summary: 'Actualizar perfil')]
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'bio' => 'sometimes|string|max:500',
+            'phone' => 'sometimes|string|max:20',
+            'avatar' => 'sometimes|string|url|max:500',
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Perfil actualizado exitosamente',
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->getRoleName(),
+                    'is_active' => $user->isActive(),
+                    'avatar' => $user->avatar,
+                    'bio' => $user->bio,
+                    'phone' => $user->phone,
                 ],
             ],
         ], 200);
