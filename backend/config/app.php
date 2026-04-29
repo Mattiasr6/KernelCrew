@@ -125,4 +125,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'exchange_rate_usd_to_bob' => 6.96,
+
 ];

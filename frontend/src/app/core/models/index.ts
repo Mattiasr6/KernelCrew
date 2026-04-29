@@ -86,6 +86,8 @@ export interface Course {
   slug?: string;
   description: string;
   price: number;
+  price_in_bob?: number;
+  price_display?: string;
   instructor_id: number;
   status: 'draft' | 'published';
   instructor?: Instructor;

@@ -32,9 +32,19 @@ class Course extends Model
         'price' => 'decimal:2',
     ];
 
+    public function getPriceInBobAttribute(): float
+    {
+        return round(($this->price / 100) * config('app.exchange_rate_usd_to_bob', 6.96), 2);
+    }
+
     public function instructor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'instructor_id');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Category::class, 'category_id');
     }
 
     public function students(): BelongsToMany

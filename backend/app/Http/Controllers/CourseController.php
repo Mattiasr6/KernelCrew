@@ -105,11 +105,19 @@ class CourseController extends Controller
 
         $courses = $query->paginate((int) $perPage);
 
+        $coursesData = collect($courses->items())->map(function ($course) {
+            return [
+                ...$course->toArray(),
+                'price_in_bob' => $course->price_in_bob,
+                'price_display' => 'Bs. ' . $course->price_in_bob,
+            ];
+        });
+
         return response()->json([
             'success' => true,
             'message' => 'Cursos obtenidos exitosamente',
             'data' => [
-                'courses' => $courses->items(),
+                'courses' => $coursesData,
             ],
             'meta' => [
                 'current_page' => $courses->currentPage(),

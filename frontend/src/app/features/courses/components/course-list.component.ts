@@ -122,7 +122,7 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
                   
                   <div class="flex justify-between items-center pt-3 border-t border-zinc-800">
                     <span class="text-xs font-medium uppercase tracking-wider text-zinc-500">{{ course.duration_hours || course.duration }} horas</span>
-                    <span class="text-lg font-bold text-cyan-400">Bs. {{ course.price }}</span>
+                    <span class="text-lg font-bold text-cyan-400">Bs. {{ course.price_in_bob || (course.price / 100 * 6.96 | number:'1.2-2') }}</span>
                   </div>
                 </div>
               </div>
