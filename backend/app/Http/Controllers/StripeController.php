@@ -43,7 +43,7 @@ class StripeController extends Controller
                         'name' => "Plan {$plan->name} - EduPortal",
                         'description' => $plan->description,
                     ],
-                    'unit_amount' => $plan->price, // El seeder usa montos tipo 2999 (centavos)
+                    'unit_amount' => (int) ($plan->price * 100), // Convertir a centavos (2999.00 -> 299900)
                 ],
                 'quantity' => 1,
             ]],
@@ -116,7 +116,7 @@ class StripeController extends Controller
             Payment::create([
                 'user_id' => $user->id,
                 'user_subscription_id' => $subscription->id,
-                'amount' => $plan->price,
+                'amount' => (int) ($plan->price * 100),
                 'payment_date' => now(),
                 'transaction_id' => $transactionId,
                 'status' => 'completed',
