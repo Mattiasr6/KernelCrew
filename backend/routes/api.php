@@ -91,7 +91,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/instructor-applications', [InstructorApplicationController::class, 'store']);
 
         // Panel de Instructor (Solo role_id = 2)
-        Route::middleware('checkRole:2')->prefix('instructor')->group(function () {
+        Route::middleware(['api.auth', 'checkRole:2'])->prefix('instructor')->group(function () {
             Route::get('/dashboard', [InstructorDashboardController::class, 'index']);
             Route::get('/courses', [CourseController::class, 'getInstructorCourses']);
             Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
@@ -100,7 +100,7 @@ Route::prefix('v1')->group(function () {
         });
 
         // Panel de Admin (Solo role_id = 1)
-        Route::middleware('checkRole:1')->prefix('admin')->group(function () {
+        Route::middleware(['api.auth', 'checkRole:1'])->prefix('admin')->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index']);
             Route::get('/stats', [AdminDashboardController::class, 'stats']);
 
