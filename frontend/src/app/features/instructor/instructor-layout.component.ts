@@ -9,9 +9,9 @@ import { RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
   template: `
     <div class="min-h-screen bg-zinc-950 flex">
       
-      <!-- SideNavBar (Persistente) -->
-      <nav class="fixed left-0 top-0 h-full flex flex-col py-6 bg-zinc-900/80 backdrop-blur-xl w-64 border-r border-zinc-800 hidden md:flex">
-        <div class="flex-1 flex flex-col px-3 gap-2 mt-6">
+       <!-- SideNavBar (Persistente) -->
+       <nav class="fixed left-0 top-0 h-full flex flex-col py-6 bg-zinc-900/80 backdrop-blur-xl w-64 border-r border-zinc-800 hidden md:flex pt-20">
+         <div class="flex-1 flex flex-col px-3 gap-2">
           <a 
             class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-all"
             routerLink="/instructor"
