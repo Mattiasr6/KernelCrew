@@ -38,9 +38,9 @@ Route::prefix('v1')->group(function () {
 
     // Rutas Públicas de Cursos
     Route::get('/courses', [CourseController::class, 'index']);
+    Route::get('/courses/categories', [CourseController::class, 'categories']);
     Route::get('/courses/{id}', [CourseController::class, 'show']);
     Route::get('/courses/{id}/reviews', [CourseReviewController::class, 'index']);
-    Route::get('/courses/categories', [CourseController::class, 'categories']);
 
     // Planes de Suscripción (Público)
     Route::get('/subscriptions/plans', [SubscriptionController::class, 'index']);

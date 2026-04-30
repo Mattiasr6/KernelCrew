@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'checkRole' => \App\Http\Middleware\CheckRoleId::class,
             'subscription.access' => \App\Http\Middleware\SubscriptionAccess::class,
         ]);
+
+        $middleware->trustProxies(at: '*');
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
