@@ -49,7 +49,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/webhooks/stripe', [StripeController::class, 'handleWebhook']);
 
     // Rutas Protegidas
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('api.auth')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::put('/profile', [AuthController::class, 'updateProfile']);
