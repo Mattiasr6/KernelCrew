@@ -29,7 +29,7 @@ import { AuthService } from '../../core/services/auth.service';
             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
             <span class="font-semibold text-sm">Mis Certificados</span>
           </a>
-          @if (authService.user()?.role_id !== 2) {
+          @if (!authService.isInstructor()) {
             <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all font-inter" routerLink="/become-teacher">
               <span class="material-symbols-outlined text-[20px]">school</span>
               <span class="font-medium text-sm">Become a Teacher</span>
