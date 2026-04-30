@@ -32,10 +32,12 @@ import { AuthService } from '../../../core/services/auth.service';
 
           <nav class="hidden md:flex items-center gap-1">
             <a routerLink="/courses" routerLinkActive="active" class="nav-link">Explorar</a>
-            <a routerLink="/subscriptions" routerLinkActive="active" class="nav-link">
-              <span class="material-symbols-outlined text-sm mr-1">card_membership</span>
-              Planes
-            </a>
+            @if (authService.user()?.role_id !== 2) {
+              <a routerLink="/subscriptions" routerLinkActive="active" class="nav-link">
+                <span class="material-symbols-outlined text-sm mr-1">card_membership</span>
+                Planes
+              </a>
+            }
             
             @if (authService.isAdmin()) {
               <a routerLink="/admin" class="nav-link admin-glow">

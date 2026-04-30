@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { CertificateService } from '../../core/services/certificate.service';
 import { Certificate } from '../../core/models';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-student-certificates',
@@ -18,24 +19,22 @@ import { RouterLink } from '@angular/router';
             <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
           </div>
           <div>
-            <h1 class="text-lg font-black text-slate-100 tracking-tight">EduPortal</h1>
+            <h1 class="text-lg font-black text-slate-100 tracking-tight">KernelLearn</h1>
             <p class="font-inter text-slate-300 text-xs opacity-80">Faculty Portal</p>
           </div>
         </div>
         
         <div class="flex-1 flex flex-col px-3 gap-2">
-          <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all font-inter" routerLink="/dashboard">
-            <span class="material-symbols-outlined text-[20px]">home</span>
-            <span class="font-medium text-sm">Home</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 bg-white/10 text-blue-400 border-l-4 border-blue-500 rounded-r-lg font-inter" routerLink="/my-certificates">
+          <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all font-inter" routerLink="/my-certificates">
             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
             <span class="font-semibold text-sm">Mis Certificados</span>
           </a>
-          <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all font-inter" routerLink="/become-teacher">
-            <span class="material-symbols-outlined text-[20px]">school</span>
-            <span class="font-medium text-sm">Become a Teacher</span>
-          </a>
+          @if (authService.user()?.role_id !== 2) {
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all font-inter" routerLink="/become-teacher">
+              <span class="material-symbols-outlined text-[20px]">school</span>
+              <span class="font-medium text-sm">Become a Teacher</span>
+            </a>
+          }
         </div>
 
         <div class="px-6 mt-auto">
@@ -116,6 +115,7 @@ import { RouterLink } from '@angular/router';
 })
 export class StudentCertificatesComponent implements OnInit {
   private certService = inject(CertificateService);
+  authService = inject(AuthService);
 
   certificates = signal<Certificate[]>([]);
   isLoading = signal(true);

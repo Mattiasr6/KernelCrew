@@ -20,7 +20,7 @@ import { RouterLink } from '@angular/router';
             <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
           </div>
           <div>
-            <h1 class="text-lg font-black text-slate-100 tracking-tight">EduPortal</h1>
+            <h1 class="text-lg font-black text-slate-100 tracking-tight">KernelLearn</h1>
             <p class="font-inter text-slate-300 text-xs opacity-80">Faculty Portal</p>
           </div>
         </div>
