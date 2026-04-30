@@ -43,7 +43,7 @@ class StripeController extends Controller
                         'name' => "Plan {$plan->name} - EduPortal",
                         'description' => $plan->description,
                     ],
-                    'unit_amount' => (int) ($plan->price * 100), // Convertir a centavos (2999.00 -> 299900)
+                    'unit_amount' => (int) rtrim((string) $plan->price, '.00'),
                 ],
                 'quantity' => 1,
             ]],
