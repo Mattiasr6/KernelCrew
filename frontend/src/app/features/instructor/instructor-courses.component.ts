@@ -74,8 +74,8 @@ import { Course } from '../../core/models';
               @for (course of courses(); track course.id) {
                 <tr class="hover-row">
                   <td>
-                    <span class="status-badge" [class.published]="course.status === 'published'">
-                      {{ course.status === 'published' ? 'Publicado' : 'Borrador' }}
+                    <span class="status-badge" [ngClass]="getStatusClass(course.status)">
+                      {{ getStatusLabel(course.status) }}
                     </span>
                   </td>
                   <td>
@@ -270,10 +270,34 @@ import { Course } from '../../core/models';
       border: 1px solid rgba(148, 163, 184, 0.2);
     }
 
+    .status-badge.draft {
+      background: rgba(39, 39, 42, 0.1);
+      color: #a1a1aa;
+      border: 1px solid rgba(63, 63, 70, 0.2);
+    }
+
+    .status-badge.pending {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .status-badge.approved {
+      background: rgba(6, 182, 212, 0.1);
+      color: #06b6d4;
+      border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
     .status-badge.published {
       background: rgba(16, 185, 129, 0.1);
-      color: #34d399;
+      color: #10b981;
       border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge.rejected {
+      background: rgba(244, 63, 94, 0.1);
+      color: #f43f5e;
+      border: 1px solid rgba(244, 63, 94, 0.2);
     }
 
     .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; }
@@ -471,5 +495,27 @@ export class InstructorCoursesComponent implements OnInit {
         }
       });
     }
+  }
+
+  getStatusClass(status: string): string {
+    const classes: Record<string, string> = {
+      'draft': 'status-badge draft',
+      'pending': 'status-badge pending',
+      'approved': 'status-badge approved',
+      'published': 'status-badge published',
+      'rejected': 'status-badge rejected'
+    };
+    return classes[status] || 'status-badge';
+  }
+
+  getStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      'draft': 'Borrador',
+      'pending': 'Pendiente',
+      'approved': 'Aprobado',
+      'published': 'Publicado',
+      'rejected': 'Rechazado'
+    };
+    return labels[status] || status;
   }
 }

@@ -11,17 +11,7 @@ import { RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
       
       <!-- SideNavBar (Persistente) -->
       <nav class="fixed left-0 top-0 h-full flex flex-col py-6 bg-zinc-900/80 backdrop-blur-xl w-64 border-r border-zinc-800 hidden md:flex">
-        <div class="px-6 mb-10 flex items-center gap-4">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center shadow-lg">
-            <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
-          </div>
-          <div>
-            <h1 class="text-lg font-black text-zinc-50 tracking-tight">KernelLearn</h1>
-            <p class="text-zinc-500 text-xs">Faculty Portal</p>
-          </div>
-        </div>
-        
-        <div class="flex-1 flex flex-col px-3 gap-2">
+        <div class="flex-1 flex flex-col px-3 gap-2 mt-6">
           <a 
             class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-all"
             routerLink="/instructor"

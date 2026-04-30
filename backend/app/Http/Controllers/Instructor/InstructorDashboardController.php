@@ -39,7 +39,7 @@ class InstructorDashboardController extends Controller
         $user = $request->user();
 
         // 1. Cursos del instructor
-        $courses = $user->courses()->published()->get();
+        $courses = $user->courses()->get();
         
         // 2. Total de estudiantes activos (inscritos en cursos publicados del instructor)
         $activeStudents = \App\Models\CourseEnrollment::whereIn('course_id', $courses->pluck('id'))
