@@ -341,9 +341,9 @@ export class CourseListComponent implements OnInit {
       .getCourses({
         page: this.currentPage(),
         per_page: this.pageSize,
-        level: this.level || undefined,
-        category_id: this.category || undefined,
-        search: this.search || undefined,
+        ...(this.level ? { level: this.level } : {}),
+        ...(this.category ? { category_id: this.category } : {}),
+        ...(this.search ? { search: this.search } : {}),
       })
       .subscribe({
         next: (response: any) => {
