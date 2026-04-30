@@ -99,6 +99,13 @@ export class AuthService {
       next: (response) => {
         if (response.success && response.data) {
           const updatedUser = response.data;
+          // Merge subscription data if available
+          if (updatedUser.subscription) {
+            updatedUser.subscription = {
+              ...updatedUser.subscription,
+              plan: { name: updatedUser.subscription.plan_name }
+            };
+          }
           this.userSignal.set(updatedUser);
           localStorage.setItem('user', JSON.stringify(updatedUser));
         }

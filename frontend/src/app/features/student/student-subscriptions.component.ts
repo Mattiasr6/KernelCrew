@@ -1,9 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SubscriptionService } from '../../core/services/subscription.service';
-import { SubscriptionPlan } from '../../core/models';
+import { SubscriptionPlan, UserSubscription } from '../../core/models';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NotificationService } from '../../core/services/notification.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-student-subscriptions',
@@ -42,7 +43,7 @@ import { NotificationService } from '../../core/services/notification.service';
               <ul class="features-list">
                 <li>
                   <span class="material-symbols-outlined icon">check_circle</span>
-                  {{ plan.max_courses && plan.max_courses > 0 ? 'Hasta ' + plan.max_courses + ' cursos' : 'Cursos ilimitados' }}
+                  {{ plan.max_courses === null || plan.max_courses === -1 ? 'Cursos ilimitados' : (plan.max_courses >= 999 ? 'Cursos ilimitados' : 'Hasta ' + plan.max_courses + ' cursos') }}
                 </li>
                 <li>
                   <span class="material-symbols-outlined icon">check_circle</span>
@@ -58,17 +59,29 @@ import { NotificationService } from '../../core/services/notification.service';
                 </li>
               </ul>
 
-              <button class="subscribe-btn" [class.featured-btn]="isFeaturedPlan(plan)" (click)="subscribe(plan)" [disabled]="isProcessing() && selectedPlanId() === plan.id">
+              <button 
+                class="subscribe-btn" 
+                [class.featured-btn]="isFeaturedPlan(plan)"
+                (click)="subscribe(plan)" 
+                [disabled]="isProcessing() && selectedPlanId() === plan.id || isCurrentPlan(plan)">
                 @if (isProcessing() && selectedPlanId() === plan.id) {
                   <mat-spinner diameter="20" class="inline-block mr-2"></mat-spinner>
                   <span>Conectando...</span>
                 } @else {
-                  @if (isFeaturedPlan(plan)) {
-                    <span class="material-symbols-outlined mr-2">rocket_launch</span>
+                  @if (isCurrentPlan(plan)) {
+                    <span class="material-symbols-outlined mr-2">check_circle</span>
+                    Plan Actual
+                  } @else {
+                    @if (isFeaturedPlan(plan)) {
+                      <span class="material-symbols-outlined mr-2">rocket_launch</span>
+                    }
+                    Suscribirme ahora
                   }
-                  Suscribirme ahora
                 }
               </button>
+              @if (isCurrentPlan(plan) && getExpiryText()) {
+                <p class="text-center text-xs text-zinc-500 mt-2">{{ getExpiryText() }}</p>
+              }
             </div>
           }
         </div>
@@ -161,7 +174,13 @@ import { NotificationService } from '../../core/services/notification.service';
       background: rgba(6, 182, 212, 0.2);
       transform: translateY(-2px);
     }
-    .subscribe-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .subscribe-btn:disabled { 
+      opacity: 0.6; 
+      cursor: not-allowed; 
+      background: #3f3f46 !important; 
+      color: #a1a1aa !important; 
+      border: 1px solid #52525b !important; 
+    }
     
     .subscribe-btn.featured-btn {
       background: linear-gradient(135deg, #8b5cf6, #7c3aed);
@@ -177,14 +196,45 @@ import { NotificationService } from '../../core/services/notification.service';
 export class StudentSubscriptionsComponent implements OnInit {
   private subscriptionService = inject(SubscriptionService);
   private notification = inject(NotificationService);
+  private authService = inject(AuthService);
 
   plans = signal<SubscriptionPlan[]>([]);
   isLoading = signal(true);
   isProcessing = signal(false);
   selectedPlanId = signal<number | null>(null);
+  currentSubscription = signal<UserSubscription | null>(null);
 
   ngOnInit() {
     this.loadPlans();
+    this.loadCurrentSubscription();
+  }
+
+  loadCurrentSubscription() {
+    this.subscriptionService.getActive().subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.currentSubscription.set(res.data.subscription || null);
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  isCurrentPlan(plan: SubscriptionPlan): boolean {
+    const current = this.currentSubscription();
+    if (!current || current.status !== 'active') return false;
+    return current.plan_id === plan.id;
+  }
+
+  getExpiryText(): string {
+    const current = this.currentSubscription();
+    if (!current || !current.end_date) return '';
+    const endDate = new Date(current.end_date);
+    const now = new Date();
+    const diffTime = endDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) return 'Expirado';
+    return `Expira en: ${diffDays} días`;
   }
 
   isFeaturedPlan(plan: SubscriptionPlan): boolean {

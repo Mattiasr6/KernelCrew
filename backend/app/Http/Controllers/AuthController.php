@@ -172,6 +172,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
+        $subscription = $user->subscriptions()->where('status', 'active')->first();
 
         return response()->json([
             'success' => true,
@@ -183,6 +184,10 @@ class AuthController extends Controller
                     'role' => $user->getRoleName(),
                     'is_active' => $user->isActive(),
                     'avatar' => $user->avatar,
+                    'subscription' => $subscription ? [
+                        'id' => $subscription->id,
+                        'plan_name' => $subscription->plan->name ?? 'N/A',
+                    ] : null,
                 ],
             ],
         ], 200);

@@ -27,6 +27,7 @@ export interface User {
   phone?: string;
   created_at: string;
   updated_at?: string;
+  subscription?: UserSubscription;
 }
 
 export interface Instructor {
@@ -318,6 +319,7 @@ export interface SubscriptionPlan {
   is_active?: boolean;
   created_at: string;
   updated_at: string;
+  is_current?: boolean;
 }
 
 export interface UserSubscription {

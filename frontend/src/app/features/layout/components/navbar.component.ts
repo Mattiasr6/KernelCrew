@@ -72,14 +72,22 @@ import { AuthService } from '../../../core/services/auth.service';
           @if (authService.isAuthenticated()) {
             <div class="user-info hidden sm:flex flex-col items-end mr-2">
               <span class="text-zinc-50 text-xs font-bold">{{ authService.user()?.name }}</span>
-              <span class="text-[10px] uppercase tracking-widest text-zinc-500" 
-                    [ngClass]="{
-                      'text-violet-400': authService.isAdmin(),
-                      'text-cyan-400': authService.isInstructor(),
-                      'text-emerald-400': authService.isStudent()
-                    }">
-                {{ authService.user()?.role }}
-              </span>
+              <div class="flex items-center gap-2">
+                <span 
+                  class="text-[10px] uppercase tracking-widest"
+                  [ngClass]="{
+                    'text-violet-400': authService.isAdmin(),
+                    'text-cyan-400': authService.isInstructor(),
+                    'text-emerald-400': authService.isStudent()
+                  }">
+                  {{ authService.user()?.role }}
+                </span>
+                @if (authService.user()?.subscription?.plan_name) {
+                  <span class="bg-amber-500/20 text-amber-500 text-xs px-2 py-1 rounded-full font-medium">
+                    {{ authService.user()?.subscription?.plan_name }}
+                  </span>
+                }
+              </div>
             </div>
 
             <!-- Avatar Inteligente -->
