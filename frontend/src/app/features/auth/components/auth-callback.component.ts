@@ -42,7 +42,7 @@ export class AuthCallbackComponent implements OnInit {
   private authService = inject(AuthService);
   private api = inject(ApiService);
 
-  ngOnInit() {
+    ngOnInit() {
     const token = this.route.snapshot.queryParamMap.get('token');
     const error = this.route.snapshot.queryParamMap.get('error');
 
@@ -55,8 +55,8 @@ export class AuthCallbackComponent implements OnInit {
       this.authService.setToken(token);
       this.api.get<any>('auth/me').subscribe({
         next: (response) => {
-          if (response.success && response.data) {
-            const user = response.data;
+          if (response.success && response.data?.user) {
+            const user = response.data.user;
             this.authService.userSignal.set(user);
             localStorage.setItem('user', JSON.stringify(user));
             this.redirectByRole(user.role_id);

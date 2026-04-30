@@ -106,41 +106,41 @@ import { AuthService } from '../../../core/services/auth.service';
             <mat-menu #menu="matMenu" class="dark-menu">
               @if (authService.isAdmin()) {
                 <button mat-menu-item routerLink="/admin">
-                  <mat-icon class="text-violet-400">admin_panel_settings</mat-icon>
+                  <span class="material-symbols-outlined text-violet-400">admin_panel_settings</span>
                   <span class="text-zinc-300">Administración</span>
                 </button>
                 <button mat-menu-item routerLink="/admin/payments">
-                  <mat-icon class="text-cyan-400">receipt</mat-icon>
+                  <span class="material-symbols-outlined text-cyan-400">receipt</span>
                   <span class="text-zinc-300">Transacciones</span>
                 </button>
               }
               @if (authService.isInstructor()) {
                 <button mat-menu-item routerLink="/instructor">
-                  <mat-icon class="text-cyan-400">dashboard</mat-icon>
+                  <span class="material-symbols-outlined text-cyan-400">dashboard</span>
                   <span class="text-zinc-300">Mi Dashboard</span>
                 </button>
               }
               @if (authService.isAuthenticated() && authService.isStudent()) {
                 <button mat-menu-item routerLink="/my-courses">
-                  <mat-icon class="text-cyan-400">school</mat-icon>
+                  <span class="material-symbols-outlined text-cyan-400">school</span>
                   <span class="text-zinc-300">Mis Cursos</span>
                 </button>
                 <button mat-menu-item routerLink="/subscriptions">
-                  <mat-icon class="text-emerald-400">card_membership</mat-icon>
+                  <span class="material-symbols-outlined text-emerald-400">card_membership</span>
                   <span class="text-zinc-300">Planes de Suscripción</span>
                 </button>
                 <button mat-menu-item routerLink="/my-subscriptions">
-                  <mat-icon class="text-zinc-400">history</mat-icon>
+                  <span class="material-symbols-outlined text-zinc-400">history</span>
                   <span class="text-zinc-300">Mi Historial</span>
                 </button>
               }
               <button mat-menu-item routerLink="/profile">
-                <mat-icon class="text-zinc-400">person</mat-icon>
+                <span class="material-symbols-outlined text-zinc-400">person</span>
                 <span class="text-zinc-300">Mi Perfil</span>
               </button>
               <mat-divider class="border-zinc-700"></mat-divider>
               <button mat-menu-item (click)="logout()">
-                <mat-icon class="text-rose-400">logout</mat-icon>
+                <span class="material-symbols-outlined text-rose-400">logout</span>
                 <span class="text-rose-400">Cerrar Sesión</span>
               </button>
             </mat-menu>
@@ -225,9 +225,11 @@ import { AuthService } from '../../../core/services/auth.service';
 export class NavbarComponent {
   authService = inject(AuthService);
 
-  getInitials(name: string | undefined): string {
-    if (!name) return '??';
-    const parts = name.trim().split(' ');
+  getInitials(name: string | undefined | null): string {
+    if (!name || typeof name !== 'string') return '??';
+    const trimmed = name.trim();
+    if (!trimmed) return '??';
+    const parts = trimmed.split(' ').filter(p => p.length > 0);
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
