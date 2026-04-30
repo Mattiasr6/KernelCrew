@@ -161,6 +161,10 @@ export const routes: Routes = [
   {
     path: 'instructor',
     canActivate: [authGuard, instructorGuard],
+    loadComponent: () =>
+      import('./features/instructor/instructor-layout.component').then(
+        (m) => m.InstructorLayoutComponent,
+      ),
     children: [
         {
             path: '',

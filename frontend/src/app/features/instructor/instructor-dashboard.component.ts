@@ -8,57 +8,12 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-instructor-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   template: `
-    <div class="min-h-screen bg-zinc-950 flex">
-      
-      <!-- SideNavBar -->
-      <nav class="fixed left-0 top-0 h-full flex flex-col py-6 bg-zinc-900/80 backdrop-blur-xl w-64 border-r border-zinc-800 hidden md:flex">
-        <div class="px-6 mb-10 flex items-center gap-4">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center shadow-lg">
-            <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
-          </div>
-          <div>
-            <h1 class="text-lg font-black text-zinc-50 tracking-tight">KernelLearn</h1>
-            <p class="text-zinc-500 text-xs">Faculty Portal</p>
-          </div>
-        </div>
-        
-        <div class="flex-1 flex flex-col px-3 gap-2">
-          <a class="flex items-center gap-3 px-4 py-3 bg-cyan-500/10 text-cyan-400 border-l-4 border-cyan-500 rounded-r-lg" routerLink="/instructor">
-            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
-            <span class="font-semibold text-sm">Dashboard</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-all" routerLink="/my-certificates">
-            <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
-            <span class="font-medium text-sm">Mis Certificados</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-all" routerLink="/instructor/courses">
-            <span class="material-symbols-outlined text-[20px]">menu_book</span>
-            <span class="font-medium text-sm">Mis Cursos</span>
-          </a>
-        </div>
+    <!-- Ambient Background Glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-        <div class="px-6 mt-auto">
-          <button class="w-full py-2.5 rounded-lg border border-zinc-700 text-zinc-400 text-sm hover:bg-zinc-800 transition-all flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined text-[18px]">data_usage</span>
-            View Status
-          </button>
-        </div>
-      </nav>
-
-      <!-- Main Canvas -->
-      <main class="flex-1 md:ml-64 relative p-6 min-h-screen overflow-y-auto">
-        <!-- Ambient Background Glow -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none"></div>
-
-        <div class="max-w-7xl mx-auto space-y-8 animate-fade-in relative z-10">
-          
-          <!-- Header -->
-          <header class="mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-zinc-50 mb-2">Resumen de Créditos</h1>
-            <p class="text-zinc-400">Gestiona tus créditos de inscripción y metas de publicación.</p>
-          </header>
+    <div class="max-w-7xl mx-auto space-y-8 animate-fade-in relative z-10">
 
           <!-- Métricas del Instructor -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -186,18 +141,15 @@ import { RouterLink } from '@angular/router';
                       <span class="material-symbols-outlined text-5xl mb-4">history_toggle_off</span>
                       <p class="text-sm">Aún no tienes actividad registrada.</p>
                     </div>
-                  }
-                </ul>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </main>
-    </div>
-  `,
+                   }
+                 </ul>
+               </div>
+             </div>
+           </div>
+         </div>
+     `,
   styles: [`
-    :host { display: block; }
+    :host { display: block; position: relative; }
     .animate-fade-in { animation: fadeIn 0.8s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
