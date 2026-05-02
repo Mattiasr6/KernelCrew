@@ -13,14 +13,19 @@ class CourseCurriculumController extends Controller
     public function index(int $courseId): JsonResponse
     {
         $course = Course::with(['sections' => function ($q) {
-            $q->with('lessons');
+            $q->orderBy('order')->with(['lessons' => function ($q) {
+                $q->orderBy('order');
+            }]);
         }])->findOrFail($courseId);
 
         // Público: cualquiera puede ver el temario de un curso publicado
         // Solo el instructor/admin puede verlo si está en draft
         $user = request()->user();
+        $isOwner = $user && $course->instructor_id === $user->id;
+        $isAdmin = $user && $user->isAdmin();
+
         if ($course->status !== 'published') {
-            if (!$user || (!$user->isAdmin() && $course->instructor_id !== $user->id)) {
+            if (!$isOwner && !$isAdmin) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Curso no encontrado',
@@ -29,12 +34,68 @@ class CourseCurriculumController extends Controller
             }
         }
 
+        $sections = $course->sections->map(function ($section) use ($isOwner, $isAdmin) {
+            $lessons = $section->lessons->map(function ($lesson) use ($isOwner, $isAdmin) {
+                if ($isOwner || $isAdmin) {
+                    return $lesson;
+                }
+                // Público: solo metadata, sin contenido ni video
+                return $lesson->makeHidden(['content', 'video_url']);
+            });
+
+            return [
+                'id' => $section->id,
+                'course_id' => $section->course_id,
+                'title' => $section->title,
+                'order' => $section->order,
+                'status' => $section->status,
+                'lessons' => $lessons,
+            ];
+        });
+
         return response()->json([
             'success' => true,
             'data' => [
-                'sections' => $course->sections,
+                'sections' => $sections,
             ],
         ]);
+    }
+
+    public function show(int $lessonId): JsonResponse
+    {
+        $lesson = Lesson::with('section.course')->findOrFail($lessonId);
+        $course = $lesson->section->course;
+        $user = request()->user();
+
+        // Público: lecciones gratuitas siempre accesibles
+        if ($lesson->is_free && $course->status === 'published') {
+            return response()->json(['success' => true, 'data' => $lesson]);
+        }
+
+        // Requiere autenticación para lecciones no gratuitas
+        if (!$user) {
+            return response()->json([
+                'success' => false, 'message' => 'Debes iniciar sesión', 'data' => null,
+            ], 401);
+        }
+
+        // Propietario o admin siempre accede
+        if ($user->id === $course->instructor_id || $user->isAdmin()) {
+            return response()->json(['success' => true, 'data' => $lesson]);
+        }
+
+        // Estudiantes: requieren inscripción activa
+        $enrolled = \App\Models\CourseEnrollment::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->exists();
+
+        if (!$enrolled) {
+            return response()->json([
+                'success' => false, 'message' => 'Debes estar inscrito en el curso', 'data' => null,
+            ], 403);
+        }
+
+        return response()->json(['success' => true, 'data' => $lesson]);
     }
 
     public function storeSection(Request $request, int $courseId): JsonResponse

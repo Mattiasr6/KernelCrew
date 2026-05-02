@@ -2,9 +2,10 @@ import { Component, inject, signal, OnInit, computed, DestroyRef } from '@angula
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourseService } from '../../core/services/course.service';
+import { CurriculumService } from '../../core/services/curriculum.service';
 import { CertificateService } from '../../core/services/certificate.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { Course, Certificate } from '../../core/models';
+import { Course, CourseSection, Lesson } from '../../core/models';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -36,35 +37,40 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         <div class="content-grid">
           <!-- Main Player -->
           <div class="main-player">
-            <div class="video-container aspect-video bg-black rounded-2xl border border-white/5 relative overflow-hidden flex items-center justify-center group">
-               <span class="material-symbols-outlined text-8xl text-white/20 group-hover:scale-110 transition-transform cursor-pointer">play_circle</span>
-               
-               <!-- Success Overlay -->
-               @if (progress() === 100) {
-                 <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-8 text-center animate-fade-in">
-                    <span class="material-symbols-outlined text-7xl text-yellow-400 mb-4 animate-bounce">workspace_premium</span>
-                    <h2 class="text-3xl font-bold text-white mb-2">¡Felicidades, Graduado!</h2>
-                    <p class="text-slate-400 mb-8">Has completado satisfactoriamente este curso. Tu certificado está listo.</p>
-                    
-                    <button class="certificate-btn" (click)="downloadCertificate()" [disabled]="isDownloading()">
-                      @if (isDownloading()) {
-                        <mat-spinner diameter="20"></mat-spinner>
-                      } @else {
-                        <span class="material-symbols-outlined">download</span>
-                        Descargar Certificado PDF
-                      }
-                    </button>
-                 </div>
-               }
-            </div>
+            @if (selectedLesson(); as lesson) {
+              <div class="video-container aspect-video bg-black rounded-2xl border border-white/5 relative overflow-hidden flex items-center justify-center">
+                @if (lesson.video_url) {
+                  <iframe
+                    [src]="sanitizeVideoUrl(lesson.video_url)"
+                    class="absolute inset-0 w-full h-full"
+                    frameborder="0"
+                    allowfullscreen
+                  ></iframe>
+                } @else {
+                  <span class="material-symbols-outlined text-8xl text-white/20">play_circle</span>
+                }
+              </div>
 
+              <div class="lesson-info mt-8 glass-card p-8 bg-slate-900/40 rounded-2xl border border-white/10">
+                <h2 class="text-2xl font-bold text-white mb-4">{{ lesson.title }}</h2>
+                @if (lesson.content) {
+                  <div class="text-slate-300 leading-relaxed whitespace-pre-line">{{ lesson.content }}</div>
+                } @else {
+                  <p class="text-slate-500 italic">No hay contenido escrito para esta lección.</p>
+                }
+              </div>
+            } @else {
+              <div class="flex items-center justify-center h-full">
+                <div class="text-center text-zinc-500">
+                  <span class="material-symbols-outlined text-6xl mb-4 block">touch_app</span>
+                  <p class="text-lg">Selecciona una lección del temario para comenzar.</p>
+                </div>
+              </div>
+            }
+
+            <!-- Progress & Completion -->
             <div class="lesson-info mt-8 glass-card p-8 bg-slate-900/40 rounded-2xl border border-white/10">
-              <h2 class="text-2xl font-bold text-white mb-4">Módulo Final: Evaluación de Conocimientos</h2>
-              <p class="text-slate-300 leading-relaxed">
-                Este es el último paso para obtener tu certificación. Al marcar esta lección como completada, el sistema validará tu trayectoria y generará el documento oficial.
-              </p>
-              
-              <div class="mt-10 pt-8 border-t border-white/5 flex justify-between items-center">
+              <div class="flex justify-between items-center">
                 <div class="progress-bar-container flex-1 mr-8">
                    <div class="flex justify-between mb-2">
                      <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tu Avance</span>
@@ -88,24 +94,62 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
                 }
               </div>
             </div>
+
+            <!-- Success Overlay -->
+            @if (progress() === 100) {
+              <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+                 <span class="material-symbols-outlined text-7xl text-yellow-400 mb-4 animate-bounce">workspace_premium</span>
+                 <h2 class="text-3xl font-bold text-white mb-2">¡Felicidades, Graduado!</h2>
+                 <p class="text-slate-400 mb-8">Has completado satisfactoriamente este curso. Tu certificado está listo.</p>
+                 
+                 <button class="certificate-btn" (click)="downloadCertificate()" [disabled]="isDownloading()">
+                   @if (isDownloading()) {
+                     <mat-spinner diameter="20"></mat-spinner>
+                   } @else {
+                     <span class="material-symbols-outlined">download</span>
+                     Descargar Certificado PDF
+                   }
+                 </button>
+              </div>
+            }
           </div>
 
-          <!-- Sidebar Content -->
-          <aside class="lesson-sidebar glass-card bg-slate-900/40 border-l border-white/10">
-            <h3 class="p-6 font-bold text-white border-b border-white/5">Contenido del Curso</h3>
-            <div class="lessons-list p-4 space-y-2">
-               <div class="lesson-item active">
-                  <span class="material-symbols-outlined">play_circle</span>
-                  <span>1. Introducción</span>
-               </div>
-               <div class="lesson-item locked">
-                  <span class="material-symbols-outlined">lock</span>
-                  <span>2. Fundamentos</span>
-               </div>
-               <div class="lesson-item locked">
-                  <span class="material-symbols-outlined">lock</span>
-                  <span>3. Proyecto Final</span>
-               </div>
+          <!-- Sidebar: Dynamic Curriculum -->
+          <aside class="lesson-sidebar glass-card bg-slate-900/40 border-l border-white/5 overflow-y-auto">
+            <h3 class="p-6 font-bold text-white border-b border-white/5 sticky top-0 bg-slate-900/90 backdrop-blur z-10">Contenido del Curso</h3>
+            <div class="p-4 space-y-1">
+              @for (section of sections(); track section.id) {
+                <div class="mb-2">
+                  <div class="flex items-center gap-2 px-2 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <span>{{ section.title }}</span>
+                    <span class="text-zinc-700">·</span>
+                    <span class="text-zinc-600">{{ section.lessons?.length || 0 }}</span>
+                  </div>
+                  @for (lesson of section.lessons; track lesson.id) {
+                    <div
+                      class="lesson-item cursor-pointer"
+                      [class.active]="selectedLesson()?.id === lesson.id"
+                      (click)="selectLesson(lesson)"
+                    >
+                      @if (selectedLesson()?.id === lesson.id) {
+                        <span class="material-symbols-outlined text-blue-400 text-[18px]" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+                      } @else {
+                        <span class="material-symbols-outlined text-zinc-600 text-[18px]">play_circle</span>
+                      }
+                      <div class="flex-1 min-w-0">
+                        <span class="text-sm truncate block">{{ lesson.title }}</span>
+                      </div>
+                      <span class="text-[11px] text-zinc-600 shrink-0">{{ lesson.duration_minutes }}m</span>
+                    </div>
+                  }
+                </div>
+              }
+              @if (sections().length === 0) {
+                <div class="text-center py-8 text-zinc-500">
+                  <span class="material-symbols-outlined text-4xl mb-2 block">menu_book</span>
+                  <p class="text-sm">No hay contenido disponible</p>
+                </div>
+              }
             </div>
           </aside>
         </div>
@@ -152,11 +196,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     .certificate-btn:hover { transform: scale(1.05); box-shadow: 0 15px 40px rgba(217, 119, 6, 0.6); }
 
     .lesson-item {
-      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-      border-radius: 10px; color: #64748b; font-size: 0.9rem; transition: all 0.2s;
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      border-radius: 10px; color: #a1a1aa; font-size: 0.87rem;
+      transition: all 0.15s;
     }
+    .lesson-item:hover { background: rgba(255,255,255,0.03); }
     .lesson-item.active { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
-    .lesson-item.locked { opacity: 0.5; }
 
     .animate-fade-in { animation: fadeIn 0.5s ease-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -166,12 +211,15 @@ export class CoursePlayerComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private courseService = inject(CourseService);
+  private curriculumService = inject(CurriculumService);
   private certService = inject(CertificateService);
   private notification = inject(NotificationService);
   private snackBar = inject(MatSnackBar);
   private destroyRef = inject(DestroyRef);
 
   course = signal<Course | null>(null);
+  sections = signal<CourseSection[]>([]);
+  selectedLesson = signal<Lesson | null>(null);
   progress = signal(0);
   loading = signal(true);
   isUpdating = signal(false);
@@ -181,6 +229,7 @@ export class CoursePlayerComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadCourse(+id);
+      this.loadCurriculum(+id);
       this.loadProgress(+id);
     }
   }
@@ -197,6 +246,16 @@ export class CoursePlayerComponent implements OnInit {
     });
   }
 
+  loadCurriculum(courseId: number) {
+    this.curriculumService.getPublicCurriculum(courseId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.sections.set(res.data?.sections || []);
+        }
+      });
+  }
+
   loadProgress(id: number) {
     this.courseService.getEnrollmentStatus(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
@@ -208,6 +267,33 @@ export class CoursePlayerComponent implements OnInit {
         this.progress.set(res.data.progress);
       }
     });
+  }
+
+  selectLesson(lesson: Lesson) {
+    this.selectedLesson.set(lesson);
+    // Cargar contenido completo desde la API protegida
+    this.curriculumService.getLesson(lesson.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          if (res.data) {
+            this.selectedLesson.set(res.data);
+          }
+        },
+        error: () => {
+          this.snackBar.open('No tienes acceso a esta lección', 'Cerrar');
+        }
+      });
+  }
+
+  sanitizeVideoUrl(url: string): string {
+    if (!url) return '';
+    // Convertir URLs de YouTube a embebido
+    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+    return url;
   }
 
   completeCourse() {

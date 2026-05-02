@@ -15,6 +15,16 @@ export class CurriculumService {
     );
   }
 
+  getPublicCurriculum(courseId: number): Observable<ApiResponse<{ sections: CourseSection[] }>> {
+    return this.api.get<ApiResponse<{ sections: CourseSection[] }>>(
+      `courses/${courseId}/curriculum`
+    );
+  }
+
+  getLesson(lessonId: number): Observable<ApiResponse<Lesson>> {
+    return this.api.get<ApiResponse<Lesson>>(`lessons/${lessonId}`);
+  }
+
   createSection(courseId: number, data: { title: string; order?: number }): Observable<ApiResponse<CourseSection>> {
     return this.api.post<ApiResponse<CourseSection>>(
       `instructor/courses/${courseId}/sections`,

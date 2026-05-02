@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -9,9 +9,11 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CourseService } from '../../../core/services/course.service';
-import { Course } from '../../../core/models';
+import { CurriculumService } from '../../../core/services/curriculum.service';
+import { Course, CourseSection } from '../../../core/models';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseReviewsComponent } from './course-reviews.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-course-detail',
@@ -104,8 +106,36 @@ import { CourseReviewsComponent } from './course-reviews.component';
             </section>
 
             <section class="glass-card p-8">
-              <h2 class="text-2xl font-bold text-white mb-4">Temario / Syllabus</h2>
-              <div class="text-slate-300 whitespace-pre-line">{{ course()!.syllabus || 'Próximamente disponible...' }}</div>
+              <h2 class="text-2xl font-bold text-white mb-6">Temario / Syllabus</h2>
+              @if (curriculumSections().length === 0) {
+                <p class="text-slate-500">Próximamente disponible...</p>
+              }
+              <div class="space-y-3">
+                @for (section of curriculumSections(); track section.id) {
+                  <div class="border border-zinc-800 rounded-xl overflow-hidden">
+                    <div class="flex items-center gap-3 px-5 py-4 bg-zinc-900/50 cursor-pointer select-none" (click)="toggleCurriculumSection(section.id)">
+                      <span class="material-symbols-outlined text-zinc-500 text-sm transition-transform" [class.rotate-90]="!collapsedCurriculum[section.id]">chevron_right</span>
+                      <span class="material-symbols-outlined text-cyan-400 text-[20px]">folder</span>
+                      <span class="font-semibold text-zinc-200 text-sm flex-1">{{ section.title }}</span>
+                      <span class="text-xs text-zinc-500">{{ section.lessons?.length || 0 }} lecciones</span>
+                    </div>
+                    @if (!collapsedCurriculum[section.id]) {
+                      <div class="border-t border-zinc-800">
+                        @for (lesson of section.lessons; track lesson.id) {
+                          <div class="flex items-center gap-3 px-5 py-3 hover:bg-zinc-800/30 transition-colors">
+                            <span class="material-symbols-outlined text-zinc-600 text-[18px]" [class.text-emerald-400]="lesson.is_free">play_circle</span>
+                            <span class="text-sm text-zinc-300 flex-1">{{ lesson.title }}</span>
+                            @if (lesson.is_free) {
+                              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Gratis</span>
+                            }
+                            <span class="text-xs text-zinc-600">{{ lesson.duration_minutes }} min</span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
             </section>
 
             <!-- Sistema de Reseñas (US-23) -->
@@ -155,20 +185,45 @@ export class CourseDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private courseService = inject(CourseService);
+  private curriculumService = inject(CurriculumService);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
 
   course = signal<Course | null>(null);
   enrolled = signal(false);
   loading = true;
   isEnrolling = signal(false);
+  curriculumSections = signal<CourseSection[]>([]);
+  collapsedCurriculum: Record<number, boolean> = {};
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadCourse(+id);
+      this.loadCurriculum(+id);
       this.checkEnrollment(+id);
     }
+  }
+
+  loadCurriculum(courseId: number) {
+    this.courseService.getCourse(courseId).subscribe({
+      next: () => {
+        this.curriculumService.getPublicCurriculum(courseId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (res) => {
+              const sections = res.data?.sections || [];
+              this.curriculumSections.set(sections);
+              sections.forEach(s => { this.collapsedCurriculum[s.id] = false; });
+            }
+          });
+      }
+    });
+  }
+
+  toggleCurriculumSection(sectionId: number) {
+    this.collapsedCurriculum[sectionId] = !this.collapsedCurriculum[sectionId];
   }
 
   loadCourse(id: number): void {
