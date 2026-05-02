@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { Component, inject, signal, OnInit, computed, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourseService } from '../../core/services/course.service';
@@ -7,6 +7,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { Course, Certificate } from '../../core/models';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-course-player',
@@ -168,6 +169,7 @@ export class CoursePlayerComponent implements OnInit {
   private certService = inject(CertificateService);
   private notification = inject(NotificationService);
   private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
 
   course = signal<Course | null>(null);
   progress = signal(0);
@@ -184,7 +186,7 @@ export class CoursePlayerComponent implements OnInit {
   }
 
   loadCourse(id: number) {
-    this.courseService.getCourse(id).subscribe({
+    this.courseService.getCourse(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         if (res.data) {
           this.course.set(res.data.course);
@@ -196,7 +198,7 @@ export class CoursePlayerComponent implements OnInit {
   }
 
   loadProgress(id: number) {
-    this.courseService.getEnrollmentStatus(id).subscribe({
+    this.courseService.getEnrollmentStatus(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         if (!res.data) {
            this.snackBar.open('No estás inscrito en este curso', 'Cerrar');
@@ -210,7 +212,7 @@ export class CoursePlayerComponent implements OnInit {
 
   completeCourse() {
     this.isUpdating.set(true);
-    this.courseService.updateProgress(this.course()!.id, 100).subscribe({
+    this.courseService.updateProgress(this.course()!.id, 100).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.progress.set(100);
         this.isUpdating.set(false);
@@ -222,11 +224,11 @@ export class CoursePlayerComponent implements OnInit {
 
   downloadCertificate() {
     this.isDownloading.set(true);
-    this.certService.getMyCertificates().subscribe({
+    this.certService.getMyCertificates().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         const cert = res.data?.find(c => c.course_id === this.course()!.id);
         if (cert) {
-          this.certService.downloadPdf(cert.certificate_code).subscribe({
+          this.certService.downloadPdf(cert.certificate_code).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
             next: (blob) => {
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement('a');

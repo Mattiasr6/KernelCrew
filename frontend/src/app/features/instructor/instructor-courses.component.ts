@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -19,6 +19,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CourseService } from '../../core/services/course.service';
 import { Course } from '../../core/models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-instructor-courses',
@@ -390,6 +391,7 @@ export class InstructorCoursesComponent implements OnInit {
   private courseService = inject(CourseService);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
 
   courses = signal<Course[]>([]);
   isLoading = signal(true);
@@ -416,7 +418,7 @@ export class InstructorCoursesComponent implements OnInit {
 
   loadMyCourses(): void {
     this.isLoading.set(true);
-    this.courseService.getInstructorCourses().subscribe({
+    this.courseService.getInstructorCourses().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         this.courses.set(res.data?.courses || res.data || []);
         this.isLoading.set(false);
@@ -453,7 +455,7 @@ export class InstructorCoursesComponent implements OnInit {
       ? this.courseService.updateCourse(this.editingCourse.id, data)
       : this.courseService.createCourse(data);
 
-    request.subscribe({
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.snackBar.open(`Curso ${this.editingCourse ? 'actualizado' : 'creado'} con éxito`, 'OK', { duration: 3000 });
         this.isSaving.set(false);
@@ -488,7 +490,7 @@ export class InstructorCoursesComponent implements OnInit {
 
   deleteCourse(course: Course): void {
     if (confirm(`¿Estás seguro de eliminar "${course.title}"?`)) {
-      this.courseService.deleteCourse(course.id).subscribe({
+      this.courseService.deleteCourse(course.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.snackBar.open('Curso eliminado', 'OK', { duration: 3000 });
           this.loadMyCourses();
