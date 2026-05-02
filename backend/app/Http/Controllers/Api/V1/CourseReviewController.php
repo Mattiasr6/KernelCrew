@@ -15,9 +15,31 @@ class CourseReviewController extends Controller
     /**
      * Listar reseñas de un curso y su promedio
      */
-    public function index(int $courseId): JsonResponse
+    public function index(Request $request, int $courseId): JsonResponse
     {
-        $course = Course::findOrFail($courseId);
+        $course = Course::find($courseId);
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Curso no encontrado',
+                'data' => null,
+            ], 404);
+        }
+
+        $user = $request->user();
+
+        if ($course->status !== 'published') {
+            $isOwner = $user && $course->instructor_id === $user->id;
+            $isAdmin = $user && $user->isAdmin();
+            if (!$isOwner && !$isAdmin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Curso no encontrado',
+                    'data' => null,
+                ], 404);
+            }
+        }
         
         $reviews = $course->reviews()->with('user:id,name,avatar')->latest()->get();
         $average = $course->reviews()->avg('rating') ?? 0;

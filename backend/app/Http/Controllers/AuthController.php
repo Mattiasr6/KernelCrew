@@ -69,7 +69,7 @@ class AuthController extends Controller
             'is_active' => true,
         ]);
 
-        $user->assignRole('student');
+        $user->update(['role_id' => 3]);
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
