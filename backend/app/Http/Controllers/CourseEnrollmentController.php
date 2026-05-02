@@ -35,12 +35,14 @@ class CourseEnrollmentController extends Controller
 
         $hasAccess = false;
 
-        if ($planName === 'enterprise') {
+        $planName = strtolower($plan->name ?? '');
+
+        if (in_array($planName, ['enterprise', 'empresa', 'ilimitado'])) {
             $hasAccess = true; // Acceso total
-        } elseif ($planName === 'professional') {
+        } elseif (in_array($planName, ['pro', 'professional', 'profesional'])) {
             // Professional: beginner + intermediate
             $hasAccess = in_array($courseLevel, ['beginner', 'intermediate']);
-        } elseif ($planName === 'básico') {
+        } elseif (in_array($planName, ['basic', 'básico'])) {
             // Básico: solo beginner
             $hasAccess = $courseLevel === 'beginner';
         }

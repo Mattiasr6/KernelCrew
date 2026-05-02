@@ -73,15 +73,15 @@ class SubscriptionAccess
         $planName = strtolower($plan->name);
         $courseLevel = $course->level;
 
-        if ($planName === 'premium' || $planName === 'enterprise') {
+        if (in_array($planName, ['enterprise', 'empresa', 'premium', 'ilimitado'])) {
             return true;
         }
 
-        if ($planName === 'pro' || $planName === 'professional') {
+        if (in_array($planName, ['pro', 'professional', 'profesional'])) {
             return in_array($courseLevel, ['beginner', 'intermediate']);
         }
 
-        if ($planName === 'basic' || $planName === 'básico') {
+        if (in_array($planName, ['basic', 'básico'])) {
             return $courseLevel === 'beginner';
         }
 
