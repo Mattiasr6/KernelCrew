@@ -6,17 +6,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        'background': '#0e141a',
-        'on-background': '#dde3eb',
-        'surface-container-high': 'rgba(36, 43, 49, 0.6)',
-        'primary': '#adc6ff',
-        'primary-container': '#4d8eff',
-        'on-surface': '#dde3eb',
-        'on-surface-variant': '#c2c6d6',
-        'error': '#ffb4ab',
-        'outline': '#8c909f',
-        'inverse-primary': '#005ac2',
-        'secondary-container': '#6f00be',
+        // KernelLearn Design System (DESIGN.md compliant)
+        // The Void (Surfaces & Backgrounds)
+        'background': '#09090b',
+        'on-background': '#fafafa',
+        'surface-container-high': '#18181b',
+        'on-surface': '#fafafa',
+        'on-surface-variant': '#a1a1aa',
+
+        // The Neon (Brand & Interaction)
+        'primary': '#06b6d4',
+        'primary-container': '#06b6d4',
+        'on-primary-container': '#06b6d4',
+
+        // Semantic/State Colors
+        'error': '#f43f5e',
+        'success': '#10b981',
+        'warning': '#f59e0b',
+
+        // Override inverse & secondary to match
+        'outline': '#a1a1aa',
+        'inverse-primary': '#0891b2',
+        'secondary-container': '#8b5cf6',
       },
       fontFamily: {
         'inter': ['Inter', 'sans-serif'],

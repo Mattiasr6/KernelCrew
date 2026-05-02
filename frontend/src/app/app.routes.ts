@@ -83,6 +83,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/profile.component').then(
+        (m) => m.ProfileComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'subscriptions',
     loadComponent: () =>
       import('./features/student/student-subscriptions.component').then(
