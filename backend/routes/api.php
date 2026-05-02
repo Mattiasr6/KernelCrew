@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\KernelAIController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseEnrollmentController;
+use App\Http\Controllers\CourseCurriculumController;
 use App\Http\Controllers\Instructor\InstructorDashboardController;
 use App\Http\Controllers\InstructorApplicationController;
 use App\Http\Controllers\SubscriptionController;
@@ -41,6 +42,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/courses/categories', [CourseController::class, 'categories']);
     Route::get('/courses/{id}', [CourseController::class, 'show']);
     Route::get('/courses/{id}/reviews', [CourseReviewController::class, 'index']);
+    Route::get('/courses/{courseId}/curriculum', [CourseCurriculumController::class, 'index']);
 
     // Planes de Suscripción (Público)
     Route::get('/subscriptions/plans', [SubscriptionController::class, 'index']);
@@ -97,6 +99,17 @@ Route::prefix('v1')->group(function () {
             Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
             Route::put('/courses/{id}', [CourseController::class, 'update'])->can('update', 'course');
             Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->can('delete', 'course');
+
+            // Curriculum Builder (Secciones y Lecciones)
+            Route::get('/courses/{courseId}/curriculum', [CourseCurriculumController::class, 'index']);
+            Route::post('/courses/{courseId}/sections', [CourseCurriculumController::class, 'storeSection']);
+            Route::put('/sections/{sectionId}', [CourseCurriculumController::class, 'updateSection']);
+            Route::delete('/sections/{sectionId}', [CourseCurriculumController::class, 'destroySection']);
+            Route::post('/sections/{sectionId}/lessons', [CourseCurriculumController::class, 'storeLesson']);
+            Route::put('/lessons/{lessonId}', [CourseCurriculumController::class, 'updateLesson']);
+            Route::delete('/lessons/{lessonId}', [CourseCurriculumController::class, 'destroyLesson']);
+            Route::post('/courses/{courseId}/sections/reorder', [CourseCurriculumController::class, 'reorderSections']);
+            Route::post('/lessons/reorder', [CourseCurriculumController::class, 'reorderLessons']);
         });
 
         // Panel de Admin (Solo role_id = 1)

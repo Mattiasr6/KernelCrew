@@ -59,6 +59,11 @@ class Course extends Model
         return $this->hasMany(CourseEnrollment::class, 'course_id');
     }
 
+    public function sections(): HasMany
+    {
+        return $this->hasMany(CourseSection::class)->orderBy('order');
+    }
+
     public function isPublished(): bool
     {
         return $this->status === 'published';
