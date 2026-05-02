@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KernelCrew — QA Audit Report</title>
+  <style>
+    :root {
+      --bg: #09090b;
+      --surface1: #18181b;
+      --surface2: #27272a;
+      --border: #3f3f46;
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --amber: #f59e0b;
+      --violet: #8b5cf6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 4rem 0 3rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header .subtitle {
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+      font-size: 1.1rem;
+    }
+    header .meta {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Summary Cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+    .summary-card {
+      background: var(--surface1);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .summary-card .count {
+      font-size: 3rem;
+      font-weight: 800;
+    }
+    .summary-card .label {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+    }
+    .critical .count { color: var(--rose); }
+    .high .count { color: var(--amber); }
+    .medium .count { color: var(--cyan); }
+    .low .count { color: var(--text-secondary); }
+
+    /* Section */
+    section {
+      margin-bottom: 3rem;
+    }
+    section h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--cyan);
+      display: inline-block;
+    }
+    section h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--cyan);
+      margin: 2rem 0 1rem;
+    }
+    section p.desc {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Finding */
+    .finding {
+      background: var(--surface1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--border);
+    }
+    .finding.sev-critical { border-left-color: var(--rose); }
+    .finding.sev-high { border-left-color: var(--amber); }
+    .finding.sev-medium { border-left-color: var(--cyan); }
+    .finding.sev-low { border-left-color: var(--text-muted); }
+
+    .finding .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .finding .header .id {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 2rem;
+    }
+    .finding .header .title {
+      flex: 1;
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+    .finding .badge {
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .badge-critical { background: rgba(244,63,94,0.15); color: var(--rose); }
+    .badge-high { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .badge-medium { background: rgba(6,182,212,0.15); color: var(--cyan); }
+    .badge-low { background: rgba(161,161,170,0.15); color: var(--text-secondary); }
+
+    .finding .file {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: var(--violet);
+      margin-bottom: 0.5rem;
+    }
+    .finding .details {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .finding .fix {
+      background: rgba(16,185,129,0.08);
+      border: 1px solid rgba(16,185,129,0.15);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--emerald);
+    }
+    .finding .fix strong {
+      color: var(--text-primary);
+    }
+
+    code {
+      background: var(--surface2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85em;
+      color: var(--cyan);
+    }
+
+    pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: var(--text-secondary);
+      margin: 0.5rem 0;
+    }
+
+    /* Phase Plan */
+    .phase {
+      background: var(--surface1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .phase h4 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    .phase ul {
+      list-style: none;
+      padding: 0;
+    }
+    .phase ul li {
+      padding: 0.3rem 0;
+      color: var(--text-secondary);
+    }
+    .phase ul li::before {
+      content: "▸ ";
+      color: var(--cyan);
+    }
+
+    /* TOC */
+    .toc {
+      background: var(--surface1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+    }
+    .toc h3 { margin-top: 0; margin-bottom: 1rem; }
+    .toc ol { padding-left: 1.5rem; color: var(--text-secondary); }
+    .toc ol li { margin-bottom: 0.3rem; }
+    .toc a { color: var(--cyan); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      header h1 { font-size: 1.8rem; }
+      .finding .header { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <h1>KernelCrew — QA Audit Report</h1>
+  <p class="subtitle">Análisis Exhaustivo de Sesgos, Bugs y Fallas de Calidad</p>
+  <div class="meta">
+    <span>Fecha: 2026-05-02</span>
+    <span>Repositorio: KernelCrew</span>
+    <span>Total Hallazgos: 40</span>
+  </div>
+</header>
+
+<!-- Summary -->
+<div class="summary-grid">
+  <div class="summary-card critical">
+    <div class="count">7</div>
+    <div class="label">Críticos</div>
+  </div>
+  <div class="summary-card high">
+    <div class="count">12</div>
+    <div class="label">Alta Prioridad</div>
+  </div>
+  <div class="summary-card medium">
+    <div class="count">12</div>
+    <div class="label">Media Prioridad</div>
+  </div>
+  <div class="summary-card low">
+    <div class="count">9</div>
+    <div class="label">Baja Prioridad</div>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h3>Índice</h3>
+  <ol>
+    <li><a href="#s1">Hallazgos Críticos (7)</a></li>
+    <li><a href="#s2">Hallazgos Alta Prioridad (12)</a></li>
+    <li><a href="#s3">Hallazgos Media Prioridad (12)</a></li>
+    <li><a href="#s4">Hallazgos Baja Prioridad (9)</a></li>
+    <li><a href="#s5">Plan de Acción por Fases</a></li>
+    <li><a href="#s6">Recomendaciones de Arquitectura</a></li>
+    <li><a href="#s7">Resumen de Archivos Afectados</a></li>
+  </ol>
+</div>
+
+<!-- ===== SECTION 1: CRITICAL ===== -->
+<section id="s1">
+  <h2>1. Hallazgos Críticos</h2>
+  <p class="desc">Problemas que causan crashes, data leaks, o features completamente rotas. Deben resolverse antes del próximo deploy.</p>
+
+  <!-- B1 -->
+  <h3>🔴 Backend — Métodos undefined: <code>hasRole()</code> y <code>assignRole()</code></h3>
+  <div class="finding sev-critical">
+    <div class="header">
+      <span class="badge badge-critical">B1 · Crítico</span>
+      <span class="title">Spatie removido pero <code>hasRole()</code>/<code>assignRole()</code> siguen usándose</span>
+    </div>
+    <div class="file">backend/app/Http/Controllers/AuthController.php:72</div>
+    <div class="file">backend/app/Http/Controllers/CourseController.php:80, 275, 341</div>
+    <div class="file">backend/app/Http/Requests/StoreCourseRequest.php:20</div>
+    <div class="details">
+      Las tablas de Spatie <code>laravel-permission</code> fueron dropeadas en la migración <code>2026_04_23_000001_drop_spatie_permission_tables.php</code>. 
+      El trait <code>HasRoles</code> ya no se importa en el modelo User. Sin embargo, 4 archivos llaman a <code>$user->hasRole()</code> y <code>$user->assignRole()</code>, 
+      lo que causa <strong>Error: Call to undefined method</strong> en runtime.
+    </div>
+    <div class="fix"><strong>Fix:</strong> Reemplazar <code>$user->hasRole('admin')</code> por <code>$user->isAdmin()</code> (método existente en User.php) y 
+    <code>$user->assignRole('student')</code> por <code>$user->update(['role_id' => 3])</code>.</div>
+  </div>
+
+  <!-- B2 -->
+  <h3>🔴 Backend — Cursos draft visibles públicamente</h3>
+  <div class="finding sev-critical">
+    <div class="header">
+      <span class="badge badge-critical">B2 · Crítico</span>
+      <span class="title"><code>CourseController::show()</code> no aplica scope <code>published()</code></span>
+    </div>
+    <div class="file">backend/app/Http/Controllers/CourseController.php:213</div>
+    <div class="details">
+      La ruta <code>GET /api/v1/courses/{id}</code> es pública y no verifica si el curso está publicado. 
+      Cualquier usuario no autenticado puede ver cursos con <code>status = 'draft'</code> navegando por ID.
+    </div>
+    <div class="fix"><strong>Fix:</strong> Agregar <code>->published()</code> condicionalmente para usuarios no-admin/instructor.</div>
+  </div>
+
+  <!-- B3 -->
+  <h3>🔴 Backend — Reviews de cursos draft expuestos</h3>
+  <div class="finding sev-critical">
+    <div class="header">
+      <span class="badge badge-critical">B3 · Crítico</span>
+      <span class="title"><code>CourseReviewController::index()</code> no verifica estado del curso</span>
+    </div>
+    <div class="file">backend/app/Http/Controllers/Api/V1/CourseReviewController.php:20</div>
+    <div class="details">
+      La ruta pública <code>GET /api/v1/courses/{id}/reviews</code> usa <code>Course::findOrFail($courseId)</code> sin filtrar por <code>published</code>. 
+      Las reviews de cursos no publicados son accesibles.
+    </div>
+    <div class="fix"><strong>Fix:</strong> Agregar <code>->published()</code> al query o verificar <code>$course->isPublished()</code>.</div>
+  </div>
+
+  <!-- F1 -->
+  <h3>🔴 Frontend — Ruta <code>/profile</code> no existe</h3>
+  <div class="finding sev-critical">
+    <div class="header">
+      <span class="badge badge-critical">F1 · Crítico</span>
+      <span class="title">El componente Profile existe pero NO está registrado en <code>app.routes.ts</code></span>
+    </div>
+    <div class="file">frontend/src/app/features/layout/components/navbar.component.ts:137</div>
+    <div class="file">frontend/src/app/features/profile/profile.component.ts (308 líneas implementadas)</div>
+    <div class="details">
+      El navbar tiene <code>routerLink="/profile"</code> pero <code>app.routes.ts</code> no tiene ruta para <code>/profile</code>. 
+      Al hacer clic en "Mi Perfil", el router cae en el wildcard <code>**</code> y redirige silenciosamente a <code>/courses</code>. 
+      El componente Profile está completamente implementado pero es inaccesible.
+    </div>
+    <div class="fix"><strong>Fix:</strong> Agregar <code>{ path: 'profile', loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent) }</code> en <code>app.routes.ts</code>.</div>
+  </div>
+
+  <!-- F2 -->
+  <h3>🔴 Frontend — Doble <code>/v1</code> en 3 servicios (llamadas API fallan)</h3>
+  <div class="finding sev-critical">
+    <div class="header">
+      <span class="badge badge-critical">F2 · Crítico</span>
+      <span class="title">3 servicios construyen URLs con doble <code>/v1</code> → 404 en runtime</span>
+    </div>
+    <div class="file">frontend/src/app/core/services/dashboard.service.ts:12</div>
+    <div class="file">frontend/src/app/core/services/certificate.service.ts:12</div>
+    <div class="file">frontend/src/app/core/services/application.service.ts:12</div>
+    <div class="details">
+      El environment ya define <code>apiUrl: 'https://.../api/v1'</code>, pero estos servicios concatenan otra vez <code>/v1</code>:
+      <pre>private baseUrl = `${environment.apiUrl}/v1/instructor/dashboard`;</pre>
+      Resultado: <code>https://.../api/v1/v1/instructor/dashboard</code> → 404.
+    </div>
+    <div class="fix"><strong>Fix:</strong> Quitar el <code>/v1</code> extra de la ruta, o migrar estos servicios a usar <code>ApiService</code> en lugar de <code>HttpClient</code> directo.</div>
+  </div>
+
+  <!-- F3 -->
+  <h3>🔴 Frontend — 56 memory leaks (sin <code>unsubscribe</code>)</h3>
+  <div class="finding sev-critical">
+    <div class="header">
+      <span class="badge badge-critical">F3 · Crítico</span>
+      <span class="title">Cero patrones de cleanup en 56 <code>.subscribe()</code> calls</span>
+    </div>
+    <div class="details">
+      Ningún componente usa <code>takeUntil()</code>, <code>takeUntilDestroyed()</code>, <code>DestroyRef</code>, ni <code>unsubscribe()</code> en <code>ngOnDestroy</code>. 
+      Esto significa que al navegar entre vistas, las suscripciones quedan vivas, causando:
+      <ul style="margin: 0.5rem 0 0 1.5rem; color: var(--text-secondary);">
+        <li>Memory leaks progresivos</li>
+        <li>Actualizaciones de señales/DOM en componentes destruidos</li>
+        <li>Llamadas API duplicadas al volver a una vista</li>
+      </ul>
+    </div>
+    <div class="fix"><strong>Fix:</strong> Adoptar <code>takeUntilDestroyed()</code> (Angular 16+) en todos los componentes con <code>.subscribe()</code>. 
+    Los 3 mayores ofensores: <code>course-player.component.ts</code> (5), <code>course-list.component.ts</code> (4), <code>instructor-courses.component.ts</code> (3).</div>
+  </div>
+
+  <!-- F4 -->
+  <h3>🔴 Frontend — Provider inexistente en Angular</h3>
+  <div class="finding sev-critical">
+    <div class="header">
+      <span class="badge badge-critical">F4 · Crítico</span>
+      <span class="title"><code>provideBrowserGlobalErrorListeners</code> no existe en Angular</span>
+    </div>
+    <div class="file">frontend/src/app/app.config.ts:1</div>
+    <div class="details">
+      El import <code>import { provideBrowserGlobalErrorListeners } from '@angular/core';</code> referencia una función que no existe en Angular. 
+      Esto fue probablemente alucinado por una IA. Causa error de compilación. 
+      <strong>Nota:</strong> La build pasó en sesiones anteriores, posiblemente porque es un warning tree-shaken, pero debe corregirse.
+    </div>
+    <div class="fix"><strong>Fix:</strong> Eliminar el import y su uso. El proveedor correcto es <code>provideZoneChangeDetection</code> o <code>ErrorHandler</code>.</div>
+  </div>
+</section>
+
+<!-- ===== SECTION 2: HIGH ===== -->
+<section id="s2">
+  <h2>2. Hallazgos Alta Prioridad</h2>
+  <p class="desc">Problemas que degradan la experiencia de usuario, causan datos incorrectos, o introducen riesgos de seguridad.</p>
+
+  <h3>🟠 Backend</h3>
+
+  <div class="finding sev-high">
+    <div class="header">
+      <span class="badge badge-high">B4 · Alto</span>
+      <span class="title"><code>/auth/me</code> no devuelve <code>role_id</code></span>
+    </div>
+    <div class="file">backend/app/Http/Controllers/AuthController.php:180-191</div>
+    <div class="details">El endpoint retorna <code>role</code> (string) pero no <code>role_id</code> (número). El frontend usa <code>role_id</code> para lógica condicional en guards y componentes.</div>
+    <div class="fix"><strong>Fix:</strong> Agregar <code>'role_id' => $user->role_id</code> en la respuesta.</div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header">
+      <span class="badge badge-high">B5 · Alto</span>
+      <span class="title">Inconsistencia "básico" vs "basic" en control de acceso por nivel</span>
+    </div>
+    <div class="file">backend/app/Http/Controllers/CourseEnrollmentController.php:43 vs SubscriptionAccess.php:84</div>
+    <div class="details">El middleware <code>SubscriptionAccess</code> maneja ambos <code>'basic'</code> y <code>'básico'</code>, pero <code>CourseEnrollmentController</code> solo maneja <code>'básico'</code>. Si un plan tiene nombre en inglés, el middleware deja pasar pero el enrollment controller lo rechaza.</div>
+    <div class="fix"><strong>Fix:</strong> Unificar usando <code>in_array($planName, ['basic', 'básico'])</code> en ambos lugares.</div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header">
+      <span class="badge badge-high">B6 · Alto</span>
+      <span class="title"><code>toggleStatus()</code> sin validación — bug de type-casting</span>
+    </div>
+    <div class="file">backend/app/Http/Controllers/Admin/AdminUserController.php:215-219</div>
+    <div class="details"><code>(bool) "false"</code> evalúa a <code>true</code> en PHP (string no vacío). Enviar <code>{"is_active": "false"}</code> activa al usuario en vez de desactivarlo. Sin validación.</div>
+    <div class="fix"><strong>Fix:</strong> Agregar <code>$request->validate(['is_active' => 'required|boolean']);</code>.</div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header">
+      <span class="badge badge-high">B7 · Alto</span>
+      <span class="title">Estadísticas de pagos ignoran filtros aplicados</span>
+    </div>
+    <div class="file">backend/app/Http/Controllers/Admin/AdminPaymentController.php:49-51</div>
+    <div class="details">El controller construye un query filtrado pero calcula <code>total</code> y <code>count</code> desde <strong>todos</strong> los pagos completados, ignorando fecha/método/búsqueda. Admin ve stats inconsistentes.</div>
+    <div class="fix"><strong>Fix:</strong> Clonar el query filtrado para las estadísticas.</div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header">
+      <span class="badge badge-high">B8 · Alto</span>
+      <span class="title">Respuestas de error sin campo <code>success</code></span>
+    </div>
+    <div class="file">backend/app/Http/Controllers/InstructorApplicationController.php:40, 44, 94</div>
+    <div class="details">Los errores retornan <code>['message' => '...']</code> sin <code>'success' => false</code>. Rompe el contrato de API que el frontend espera.</div>
+    <div class="fix"><strong>Fix:</strong> Agregar <code>'success' => false</code> a todas las respuestas de error.</div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header">
+      <span class="badge badge-high">B9 · Alto</span>
+      <span class="title">N+1 queries en Dashboard del Instructor (60+ queries extra)</span>
+    </div>
+    <div class="file">backend/app/Http/Controllers/Instructor/InstructorDashboardController.php:52-58, 76-83</div>
+    <div class="details">Itera sobre cursos con <code>$course->reviews()->avg('rating')</code> y <code>$course->enrollments()->count()</code> dentro de loops. Con 20 cursos = ~60 queries extra.</div>
+    <div class="fix"><strong>Fix:</strong> Usar <code>withAvg('reviews', 'rating')</code> y <code>withCount(['enrollments', 'enrollments as completed_count' => fn])</code> en el eager load.</div>
+  </div>
+
+  <h3>🟠 Frontend</h3>
+
+  <div class="finding sev-high">
+    <div class="header">
+      <span class="badge badge-high">F5 · Alto</span>
+      <span class="title">56 <code>.subscribe()</code> sin <code>catchError</code> — errores silenciados</span>
+    </div>
+    <div class="file">56 instancias en 20+ archivos</div>
+    <div class="details">El único <code>catchError</code> en todo el código está en <code>auth.interceptor.ts</code> para 401. Errores 5xx, network failures, y CORS son silenciados. Componentes con <code>error: () => {}</code> vacío no dan feedback visual al usuario.</div>
+    <div class="fix"><strong>Fix:</strong> Implementar un interceptor global de errores HTTP y usar <code>NotificationService</code> para errores 500+.</div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header">
+      <span class="badge badge-high">F6 · Alto</span>
+      <span class="title">Subscription component sin estado de carga inicial</span>
+    </div>
+    <div class="file">frontend/src/app/features/student/student-subscriptions.component.ts:202</div>
+    <div class="details"><code>isLoading</code> signal declarado pero nunca usado en el template. En conexiones lentas, el usuario ve una página vacía antes de que carguen los planes.</div>
+    <div class="fix"><strong>Fix:</strong> Agregar <code>@if (isLoading()) { ... spinner/skeleton ... }</code> en el template.</div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header">
+      <span class="badge badge-high">F7 · Alto</span>
+      <span class="title">Guards duplicados con lógica de redirect diferente</span>
+    </div>
+    <div class="file">frontend/src/app/core/guards/auth.guard.ts:32-53 vs admin.guard.ts / instructor.guard.ts</div>
+    <div class="details"><code>adminGuard</code> existe en dos archivos: uno redirecta a <code>/dashboard</code>, otro a <code>/</code>. Los imports en <code>app.routes.ts</code> usan los correctos, pero los duplicados generan confusión.</div>
+    <div class="fix"><strong>Fix:</strong> Eliminar los guards duplicados en <code>auth.guard.ts</code> (líneas 32-53) — son dead code.</div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header">
+      <span class="badge badge-high">F8 · Alto</span>
+      <span class="title">6 enfoques CSS distintos en el mismo codebase</span>
+    </div>
+    <div class="details">
+      <ul style="margin: 0.5rem 0 0 1.5rem; color: var(--text-secondary);">
+        <li>Tailwind utility classes (la mayoría)</li>
+        <li>Hex colors hardcodeados en <code>styles: [...]</code> arrays (30+ componentes)</li>
+        <li>CSS custom properties (<code>var(--bg-primary)</code>) — solo dashboard.component.ts</li>
+        <li>SCSS externo (<code>admin-layout.component.scss</code>)</li>
+        <li>Inline <code>style="..."</code> attributes</li>
+        <li><code>@apply</code> dentro de <code>styles: [...]</code> (instructor-layout)</li>
+      </ul>
+      Cambiar el color de fondo requiere find-and-replace en 30+ archivos.
+    </div>
+    <div class="fix"><strong>Fix:</strong> Extraer colores a variables CSS globales o extender el tema de Tailwind. El <code>DESIGN.md</code> ya define la paleta oficial.</div>
+  </div>
+</section>
+
+<!-- ===== SECTION 3: MEDIUM ===== -->
+<section id="s3">
+  <h2>3. Hallazgos Media Prioridad</h2>
+  <p class="desc">Problemas de mantenibilidad, deuda técnica, e inconsistencias que deben abordarse en el sprint actual.</p>
+
+  <h3>🟡 Backend</h3>
+
+  <div class="finding sev-medium">
+    <div class="header"><span class="badge badge-medium">B10 · Medio</span><span class="title">Middleware <code>api.auth</code> redundante en rutas instructor/admin</span></div>
+    <div class="file">backend/routes/api.php:94, 103</div>
+    <div class="details">Las rutas ya están dentro de <code>Route::middleware('api.auth')</code> (línea 52). Volver a declararlo causa doble ejecución del middleware (2 token lookups por request).</div>
+    <div class="fix"><strong>Fix:</strong> Eliminar <code>'api.auth'</code> de los arrays en líneas 94 y 103.</div>
+  </div>
+
+  <div class="finding sev-medium">
+    <div class="header"><span class="badge badge-medium">B11 · Medio</span><span class="title">Scope <code>published()</code> aplicado inconsistentemente</span></div>
+    <div class="file">CourseController.php:84, 139, 213; AdminDashboardController.php:32; CourseAccessController.php:28</div>
+    <div class="details">Cada endpoint decide independientemente si filtrar por <code>published</code>. No hay política centralizada de visibilidad de cursos.</div>
+    <div class="fix"><strong>Fix:</strong> Definir una policy o middleware que aplique <code>published()</code> según el rol del usuario.</div>
+  </div>
+
+  <div class="finding sev-medium">
+    <div class="header"><span class="badge badge-medium">B12 · Medio</span><span class="title">Magic number 3600 repetido (token expiry)</span></div>
+    <div class="file">backend/app/Http/Controllers/AuthController.php:276, 330</div>
+    <div class="fix"><strong>Fix:</strong> Extraer a constante o config <code>password_reset.ttl</code>.</div>
+  </div>
+
+  <div class="finding sev-medium">
+    <div class="header"><span class="badge badge-medium">B13 · Medio</span><span class="title">Exchange rate hardcodeado (6.96 Bs/USD)</span></div>
+    <div class="file">backend/config/app.php:128, backend/app/Models/Course.php:37</div>
+    <div class="fix"><strong>Fix:</strong> Usar <code>env('EXCHANGE_RATE_USD_TO_BOB', 6.96)</code> en el config.</div>
+  </div>
+
+  <div class="finding sev-medium">
+    <div class="header"><span class="badge badge-medium">B14 · Medio</span><span class="title"><code>forgotPassword</code> miente: dice enviar email pero solo loguea</span></div>
+    <div class="file">backend/app/Http/Controllers/AuthController.php:269-276</div>
+    <div class="details">El mensaje dice "Se ha enviado un enlace a tu correo" pero solo hace <code>Log::info()</code>. Además, el token se expone en la respuesta API (debería ir solo por email).</div>
+    <div class="fix"><strong>Fix:</strong> Implementar Mail facade o cambiar el mensaje a "Token generado". No exponer el token en la respuesta.</div>
+  </div>
+
+  <h3>🟡 Frontend</h3>
+
+  <div class="finding sev-medium">
+    <div class="header"><span class="badge badge-medium">F9 · Medio</span><span class="title">64 <code>any</code> types — TypeScript sin type safety</span></div>
+    <div class="details">64 ocurrencias de <code>any</code> en servicios (10 métodos retornan <code>ApiResponse&lt;any&gt;</code>), componentes (parámetros <code>res: any</code>, <code>err: any</code>), y modelos (<code>meta?: any</code>).</div>
+    <div class="fix"><strong>Fix:</strong> Reemplazar con tipos explícitos. Crear interfaces para todas las respuestas de API.</div>
+  </div>
+
+  <div class="finding sev-medium">
+    <div class="header"><span class="badge badge-medium">F10 · Medio</span><span class="title">Rutas muertas en componentes</span></div>
+    <div class="details">
+      <code>dashboard.component.ts</code> linkea a <code>/plans</code>, <code>/admin/reports</code>, <code>/courses/create</code> — ninguna existe.<br>
+      <code>profile.component.ts:164</code> linkea a <code>/student/subscriptions</code> — debería ser <code>/subscriptions</code>.
+    </div>
+    <div class="fix"><strong>Fix:</strong> Corregir todos los <code>routerLink</code> para que apunten a rutas existentes.</div>
+  </div>
+
+  <div class="finding sev-medium">
+    <div class="header"><span class="badge badge-medium">F11 · Medio</span><span class="title">Sidebars duplicados en 3 componentes (sin componente compartido)</span></div>
+    <div class="file">student-certificates.component.ts:16-46, instructor-application.component.ts:17-45, instructor-layout.component.ts:13-44</div>
+    <div class="details">35 líneas de markup de sidebar copiadas 3 veces. Si cambia un ítem del menú, hay que actualizar 3 archivos.</div>
+    <div class="fix"><strong>Fix:</strong> Extraer a un <code>StudentSidebarComponent</code> compartido.</div>
+  </div>
+
+  <div class="finding sev-medium">
+    <div class="header"><span class="badge badge-medium">F12 · Medio</span><span class="title">Admin layout usa <code>*ngIf</code> (sintaxis deprecada)</span></div>
+    <div class="file">frontend/src/app/layouts/admin-layout/admin-layout.component.html:5, 14, 18, 22, 29</div>
+    <div class="details">Es el único componente que usa <code>*ngIf</code> en vez de <code>@if</code> (nueva sintaxis de control flow de Angular 17+).</div>
+    <div class="fix"><strong>Fix:</strong> Migrar a <code>@if</code> para consistencia con el resto del código.</div>
+  </div>
+
+  <div class="finding sev-medium">
+    <div class="header"><span class="badge badge-medium">F13 · Medio</span><span class="title">100+ strings hardcodeados en español — sin i18n</span></div>
+    <div class="details">Todos los textos de UI están hardcodeados. Si se necesita inglés u otro idioma, hay que reescribir 20+ componentes.</div>
+    <div class="fix"><strong>Fix:</strong> Adoptar <code>@angular/localize</code> o <code>ngx-translate</code> para todos los strings visibles.</div>
+  </div>
+</section>
+
+<!-- ===== SECTION 4: LOW ===== -->
+<section id="s4">
+  <h2>4. Hallazgos Baja Prioridad</h2>
+  <p class="desc">Problemas menores de limpieza, consistencia, y buenas prácticas. Pueden ir al backlog.</p>
+
+  <h3>🟢 Backend</h3>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">B15 · Bajo</span><span class="title"><code>destroy()</code> usa <code>request()</code> helper en vez de inyección</span></div>
+    <div class="file">backend/app/Http/Controllers/CourseController.php:339</div>
+    <div class="fix"><strong>Fix:</strong> Agregar <code>Request $request</code> al signature del método.</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">B16 · Bajo</span><span class="title">Route ordering trap: <code>courses/{id}</code> antes que <code>courses/accessible</code></span></div>
+    <div class="file">backend/routes/api.php:42, 69</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">B17 · Bajo</span><span class="title"><code>store()</code> ignora <code>category_id</code> y <code>level</code> del request</span></div>
+    <div class="file">backend/app/Http/Controllers/CourseController.php:196-202</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">B18 · Bajo</span><span class="title">Missing <code>: JsonResponse</code> return types en CertificateController</span></div>
+    <div class="file">backend/app/Http/Controllers/Api/V1/CertificateController.php:36, 48</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">B19 · Bajo</span><span class="title">Campos inconsistentes entre <code>/auth/register</code>, <code>/auth/login</code> y <code>/auth/me</code></span></div>
+    <div class="file">backend/app/Http/Controllers/AuthController.php:85, 146, 180</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">B20 · Bajo</span><span class="title"><code>getAccessibleCourses()</code> no filtra por nivel del plan</span></div>
+    <div class="file">backend/app/Http/Controllers/CourseAccessController.php:28-30</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">B21 · Bajo</span><span class="title"><code>distinct('user_id')</code> con <code>count()</code> no es SQL estándar</span></div>
+    <div class="file">backend/app/Http/Controllers/Instructor/InstructorDashboardController.php:45-47</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">B22 · Bajo</span><span class="title">Formato de subscription inconsistente entre <code>/auth/me</code> y <code>/subscriptions/active</code></span></div>
+    <div class="file">AuthController.php:187-189 vs SubscriptionController.php:31-43</div>
+  </div>
+
+  <h3>🟢 Frontend</h3>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">F14 · Bajo</span><span class="title"><code>MatTableDataSource</code> importado pero sin usar (usa <code>&lt;table&gt;</code> nativo)</span></div>
+    <div class="file">instructor-courses.component.ts:10, admin-courses.component.ts:10, user-management.component.ts, admin-transactions.component.ts</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">F15 · Bajo</span><span class="title">Archivos muertos: <code>app.html</code> (344 líneas), <code>app.scss</code> (vacío)</span></div>
+    <div class="file">frontend/src/app/app.html, frontend/src/app/app.scss</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">F16 · Bajo</span><span class="title"><code>app.spec.ts</code> testea <code>title()</code> que no existe en <code>App</code></span></div>
+    <div class="file">frontend/src/app/app.spec.ts:21</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">F17 · Bajo</span><span class="title"><code>console.error(err)</code> en <code>main.ts</code></span></div>
+    <div class="file">frontend/src/main.ts:6</div>
+    <div class="fix"><strong>Fix:</strong> Reemplazar con servicio de error reporting.</div>
+  </div>
+
+  <div class="finding sev-low">
+    <div class="header"><span class="badge badge-low">F18 · Bajo</span><span class="title">Exchange rate 6.96 hardcodeado en frontend</span></div>
+    <div class="file">frontend/src/app/features/courses/components/course-list.component.ts:125</div>
+    <div class="fix"><strong>Fix:</strong> Mover a environment config.</div>
+  </div>
+</section>
+
+<!-- ===== SECTION 5: ACTION PLAN ===== -->
+<section id="s5">
+  <h2>5. Plan de Acción por Fases</h2>
+
+  <div class="phase" style="border-left: 4px solid var(--rose);">
+    <h4 style="color: var(--rose);">🔴 Fase 1: Críticos — Antes del próximo deploy</h4>
+    <ul>
+      <li><strong>F2</strong>: Corregir doble <code>/v1</code> en dashboard, certificate, y application services</li>
+      <li><strong>F1</strong>: Agregar ruta <code>/profile</code> en <code>app.routes.ts</code></li>
+      <li><strong>B1</strong>: Reemplazar <code>hasRole()</code>/<code>assignRole()</code> por métodos del modelo User</li>
+      <li><strong>B2</strong>: Agregar <code>published()</code> a <code>CourseController::show()</code></li>
+      <li><strong>B3</strong>: Agregar <code>published()</code> a <code>CourseReviewController::index()</code></li>
+      <li><strong>F3</strong>: Agregar <code>takeUntilDestroyed()</code> en top 5 componentes con más subscriptions</li>
+      <li><strong>F4</strong>: Eliminar <code>provideBrowserGlobalErrorListeners</code> de <code>app.config.ts</code></li>
+    </ul>
+  </div>
+
+  <div class="phase" style="border-left: 4px solid var(--amber);">
+    <h4 style="color: var(--amber);">🟠 Fase 2: Alta Prioridad — Sprint actual</h4>
+    <ul>
+      <li><strong>B4</strong>: Agregar <code>role_id</code> a respuesta de <code>/auth/me</code></li>
+      <li><strong>B5</strong>: Unificar "básico"/"basic" en enrollment y middleware</li>
+      <li><strong>B6</strong>: Agregar validación en <code>toggleStatus()</code></li>
+      <li><strong>B7</strong>: Corregir stats de pagos para respetar filtros</li>
+      <li><strong>B8</strong>: Estandarizar respuestas de error con <code>success: false</code></li>
+      <li><strong>B9</strong>: Optimizar N+1 queries con <code>withAvg</code>/<code>withCount</code></li>
+      <li><strong>F5</strong>: Implementar interceptor global de errores HTTP</li>
+      <li><strong>F6</strong>: Agregar estado de carga inicial en subscription component</li>
+      <li><strong>F7</strong>: Eliminar guards duplicados en <code>auth.guard.ts</code></li>
+      <li><strong>F8</strong>: Extraer colores a variables CSS globales según <code>DESIGN.md</code></li>
+      <li><strong>F10</strong>: Corregir routerLinks muertos</li>
+      <li><strong>F11</strong>: Extraer sidebar a componente compartido</li>
+    </ul>
+  </div>
+
+  <div class="phase" style="border-left: 4px solid var(--cyan);">
+    <h4 style="color: var(--cyan);">🟡 Fase 3: Media Prioridad — Backlog</h4>
+    <ul>
+      <li><strong>B10</strong>: Eliminar <code>api.auth</code> redundante en rutas</li>
+      <li><strong>B11</strong>: Centralizar política de <code>published()</code></li>
+      <li><strong>B12</strong>: Extraer magic number 3600 a config</li>
+      <li><strong>B13</strong>: Usar <code>env()</code> para exchange rate</li>
+      <li><strong>B14</strong>: Implementar envío de email real en forgotPassword</li>
+      <li><strong>F9</strong>: Reemplazar 64 <code>any</code> types con tipos explícitos</li>
+      <li><strong>F12</strong>: Migrar admin layout de <code>*ngIf</code> a <code>@if</code></li>
+      <li><strong>F13</strong>: Adoptar i18n para 100+ strings</li>
+    </ul>
+  </div>
+
+  <div class="phase" style="border-left: 4px solid var(--text-muted);">
+    <h4 style="color: var(--text-muted);">🟢 Fase 4: Baja Prioridad — Backlog futuro</h4>
+    <ul>
+      <li>B15-B22: Limpieza de código, return types, consistencia de API</li>
+      <li>F14-F18: Archivos muertos, tests rotos, magic numbers</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== SECTION 6: ARCHITECTURE ===== -->
+<section id="s6">
+  <h2>6. Recomendaciones de Arquitectura</h2>
+
+  <div class="finding sev-high">
+    <div class="header"><span class="badge badge-high">ARQ-1</span><span class="title">Centralizar tema CSS según DESIGN.md</span></div>
+    <div class="details">
+      <strong>Problema:</strong> 6 enfoques CSS distintos. Colores definidos en 30+ archivos con hex hardcodeados.<br>
+      <strong>Solución:</strong> Extender <code>tailwind.config.js</code> con la paleta de <code>DESIGN.md</code> (zinc-950, cyan-500, emerald-500, rose-500, amber-500). 
+      Usar solo clases Tailwind en templates. Mover estilos de componentes a <code>@apply</code> en styles globales.
+    </div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header"><span class="badge badge-high">ARQ-2</span><span class="title">Estandarizar formato de respuesta API</span></div>
+    <div class="details">
+      <strong>Problema:</strong> Algunos endpoints retornan <code>{success, data, message}</code>, otros solo <code>{message}</code>. 
+      El campo <code>data</code> a veces es <code>{user: ...}</code>, a veces el objeto directo.<br>
+      <strong>Solución:</strong> Crear un <code>ApiResponse</code> trait/macro en Laravel que garantice el formato 
+      <code>{success: bool, message: string|null, data: mixed, errors: mixed|null}</code> en TODOS los endpoints.
+    </div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header"><span class="badge badge-high">ARQ-3</span><span class="title">Adoptar <code>takeUntilDestroyed()</code> en todos los componentes</span></div>
+    <div class="details">
+      <strong>Problema:</strong> 56 memory leaks por falta de cleanup de subscriptions.<br>
+      <strong>Solución:</strong> Angular 16+ ofrece <code>takeUntilDestroyed()</code>. Agregar a todos los <code>.subscribe()</code>:
+      <pre>.pipe(takeUntilDestroyed()).subscribe(...)</pre>
+      O usar <code>DestroyRef</code> + <code>takeUntil</code> para versiones anteriores.
+    </div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header"><span class="badge badge-high">ARQ-4</span><span class="title">Migrar servicios a <code>ApiService</code> (eliminar <code>HttpClient</code> directo)</span></div>
+    <div class="details">
+      <strong>Problema:</strong> 3 servicios usan <code>HttpClient</code> directo con URLs manuales, causando el bug de doble <code>/v1</code>.<br>
+      <strong>Solución:</strong> Todos los servicios deben inyectar <code>ApiService</code> que ya maneja <code>environment.apiUrl</code> como prefijo.
+    </div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header"><span class="badge badge-high">ARQ-5</span><span class="title">Extraer componentes compartidos (Sidebar, StatusBadge)</span></div>
+    <div class="details">
+      <strong>Problema:</strong> Sidebar duplicado 3 veces. Badge de estado duplicado en múltiples componentes.<br>
+      <strong>Solución:</strong> Crear <code>StudentSidebarComponent</code> y <code>StatusBadgeComponent</code> en <code>shared/</code>.
+    </div>
+  </div>
+
+  <div class="finding sev-high">
+    <div class="header"><span class="badge badge-high">ARQ-6</span><span class="title">Implementar ErrorInterceptor global</span></div>
+    <div class="details">
+      <strong>Problema:</strong> Solo se maneja 401. Errores 500, 403, 422 no tienen manejo centralizado.<br>
+      <strong>Solución:</strong> Crear <code>error.interceptor.ts</code> que capture todos los errores HTTP y:
+      <ul style="margin: 0.5rem 0 0 1.5rem; color: var(--text-secondary);">
+        <li>500 → Toast "Error del servidor"</li>
+        <li>403 → Toast "No tienes permisos"</li>
+        <li>422 → Dejar que el componente maneje validation errors</li>
+        <li>0 (network) → Toast "Sin conexión"</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 7: FILES ===== -->
+<section id="s7">
+  <h2>7. Resumen de Archivos Afectados</h2>
+  
+  <h3>Backend (22 archivos con issues)</h3>
+  <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+    <thead>
+      <tr style="border-bottom: 1px solid var(--border); text-align: left;">
+        <th style="padding: 0.5rem; color: var(--cyan);">Archivo</th>
+        <th style="padding: 0.5rem; color: var(--cyan);">Hallazgos</th>
+        <th style="padding: 0.5rem; color: var(--cyan);">Severidad</th>
+      </tr>
+    </thead>
+    <tbody style="color: var(--text-secondary);">
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/Http/Controllers/AuthController.php</code></td><td>B1, B4, B12, B14, B19</td><td>Crítico + Alto + Medio</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/Http/Controllers/CourseController.php</code></td><td>B1, B2, B11, B15, B17</td><td>Crítico + Medio</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/Http/Controllers/Api/V1/CourseReviewController.php</code></td><td>B3</td><td>Crítico</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/Http/Controllers/Instructor/InstructorDashboardController.php</code></td><td>B9, B21</td><td>Alto + Bajo</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/Http/Controllers/CourseEnrollmentController.php</code></td><td>B5</td><td>Alto</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/Http/Controllers/Admin/AdminUserController.php</code></td><td>B6</td><td>Alto</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/Http/Controllers/Admin/AdminPaymentController.php</code></td><td>B7</td><td>Alto</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/Http/Controllers/InstructorApplicationController.php</code></td><td>B8</td><td>Alto</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>routes/api.php</code></td><td>B10, B16</td><td>Medio + Bajo</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/Http/Middleware/SubscriptionAccess.php</code></td><td>B5</td><td>Alto</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>config/app.php</code></td><td>B13</td><td>Medio</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top: 2rem;">Frontend (20 archivos con issues)</h3>
+  <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+    <thead>
+      <tr style="border-bottom: 1px solid var(--border); text-align: left;">
+        <th style="padding: 0.5rem; color: var(--cyan);">Archivo</th>
+        <th style="padding: 0.5rem; color: var(--cyan);">Hallazgos</th>
+        <th style="padding: 0.5rem; color: var(--cyan);">Severidad</th>
+      </tr>
+    </thead>
+    <tbody style="color: var(--text-secondary);">
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/core/services/dashboard.service.ts</code></td><td>F2 (doble /v1)</td><td>Crítico</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/core/services/certificate.service.ts</code></td><td>F2 (doble /v1)</td><td>Crítico</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/core/services/application.service.ts</code></td><td>F2 (doble /v1)</td><td>Crítico</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/app.routes.ts</code></td><td>F1 (falta /profile)</td><td>Crítico</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/app.config.ts</code></td><td>F4 (provider inexistente)</td><td>Crítico</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>app/core/guards/auth.guard.ts</code></td><td>F7 (dead code)</td><td>Alto</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>features/student/student-subscriptions.component.ts</code></td><td>F6 (sin loading)</td><td>Alto</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>features/instructor/instructor-courses.component.ts</code></td><td>F14 (MatTable sin usar)</td><td>Bajo</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>features/layout/components/navbar.component.ts</code></td><td>F1 (link roto)</td><td>Crítico</td></tr>
+      <tr><td style="padding: 0.4rem 0.5rem;"><code>features/profile/profile.component.ts</code></td><td>F10 (routerLink muerto)</td><td>Medio</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  <p>KernelCrew QA Audit Report — Generado automáticamente por análisis de código</p>
+  <p style="margin-top: 0.5rem;">Total hallazgos: 40 · Críticos: 7 · Alta: 12 · Media: 12 · Baja: 9</p>
+</footer>
+
+</div>
+
+</body>
+</html>
