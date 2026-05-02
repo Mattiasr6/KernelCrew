@@ -19,6 +19,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CourseService } from '../../core/services/course.service';
 import { Course } from '../../core/models';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -38,6 +39,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     MatSnackBarModule,
     MatChipsModule,
     MatSlideToggleModule,
+    RouterLink,
   ],
   template: `
     <div class="instructor-courses-container animate-fade-in">
@@ -91,7 +93,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
                   <td class="font-mono text-emerald-400">\${{ course.price }}</td>
                   <td class="text-right">
                     <div class="action-group">
-                      <button class="icon-btn edit" (click)="openDialog(course)" title="Editar">
+                      <button class="icon-btn edit" [routerLink]="['/instructor', 'courses', course.id, 'curriculum']" title="Editar contenido">
                         <span class="material-symbols-outlined">edit</span>
                       </button>
                       <button class="icon-btn delete" (click)="deleteCourse(course)" title="Eliminar">

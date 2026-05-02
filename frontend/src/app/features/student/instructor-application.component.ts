@@ -2,13 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApplicationService } from '../../core/services/application.service';
-import { RouterLink } from '@angular/router';
 import { StudentSidebarComponent } from '../../shared/components/student-sidebar/student-sidebar.component';
 
 @Component({
   selector: 'app-instructor-application',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, StudentSidebarComponent],
+  imports: [CommonModule, ReactiveFormsModule, StudentSidebarComponent],
   template: `
     <!-- Estructura Neta de Stitch -->
     <div class="bg-background text-on-background min-h-screen flex font-body-md overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
