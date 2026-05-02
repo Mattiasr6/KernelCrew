@@ -161,7 +161,7 @@ import { SubscriptionService } from '../../core/services/subscription.service';
             <div class="empty-subscription">
               <mat-icon>warning</mat-icon>
               <p class="text-zinc-500">No tienes una suscripción activa</p>
-              <button class="upgrade-btn" routerLink="/student/subscriptions">Ver Planes</button>
+              <button class="upgrade-btn" routerLink="/subscriptions">Ver Planes</button>
             </div>
           }
         </div>

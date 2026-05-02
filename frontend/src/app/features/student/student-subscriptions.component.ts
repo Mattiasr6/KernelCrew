@@ -21,7 +21,12 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
 
         <!-- Pricing Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        @if (isLoading()) {
+          <div class="flex items-center justify-center py-24">
+            <mat-spinner diameter="50"></mat-spinner>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           @for (plan of plans(); track plan.id) {
             <div class="pricing-card" [class.featured]="isFeaturedPlan(plan)">
               @if (isFeaturedPlan(plan)) {
@@ -85,6 +90,7 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
           }
         </div>
+        }
 
         <!-- Loading Overlay -->
         @if (isProcessing()) {

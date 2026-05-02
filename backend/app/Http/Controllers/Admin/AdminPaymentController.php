@@ -46,9 +46,10 @@ class AdminPaymentController extends Controller
         $perPage = $request->query('per_page', 20);
         $payments = $query->latest('payment_date')->paginate($perPage);
 
-        // Calcular estadísticas
-        $total = Payment::where('status', 'completed')->sum('amount');
-        $count = Payment::where('status', 'completed')->count();
+        // Estadísticas basadas en los filtros actuales (clon del query antes de paginar)
+        $statsQuery = clone $query;
+        $total = (clone $statsQuery)->where('status', 'completed')->sum('amount');
+        $count = (clone $statsQuery)->where('status', 'completed')->count();
 
         return response()->json([
             'success' => true,
