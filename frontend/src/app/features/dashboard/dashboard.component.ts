@@ -46,7 +46,7 @@ import { AuthService } from '../../core/services/auth.service';
               <p>Gestiona tu plan de suscripción</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button routerLink="/plans">Ver Planes</button>
+              <button mat-button routerLink="/subscriptions">Ver Planes</button>
             </mat-card-actions>
           </mat-card>
 
@@ -93,7 +93,7 @@ import { AuthService } from '../../core/services/auth.service';
               <p>Ver estadísticas y reportes</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button routerLink="/admin/reports">Ver Reportes</button>
+              <button mat-button routerLink="/admin">Ver Reportes</button>
             </mat-card-actions>
           </mat-card>
         }
@@ -110,7 +110,7 @@ import { AuthService } from '../../core/services/auth.service';
               <p>Crea un nuevo curso</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button routerLink="/courses/create">Nuevo Curso</button>
+              <button mat-button routerLink="/instructor/courses">Nuevo Curso</button>
             </mat-card-actions>
           </mat-card>
         }

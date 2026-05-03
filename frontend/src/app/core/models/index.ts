@@ -109,6 +109,31 @@ export interface Course {
   requirements?: string;
   average_rating?: string | number;
   reviews_count?: number;
+  sections?: CourseSection[];
+}
+
+export interface CourseSection {
+  id: number;
+  course_id: number;
+  title: string;
+  order: number;
+  status: string;
+  lessons?: Lesson[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Lesson {
+  id: number;
+  course_section_id: number;
+  title: string;
+  content?: string;
+  video_url?: string;
+  duration_minutes: number;
+  order: number;
+  is_free: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CoursesMeta {

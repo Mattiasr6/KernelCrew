@@ -69,7 +69,7 @@ class AuthController extends Controller
             'is_active' => true,
         ]);
 
-        $user->assignRole('student');
+        $user->update(['role_id' => 3]);
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -182,8 +182,11 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->getRoleName(),
+                    'role_id' => $user->role_id,
                     'is_active' => $user->isActive(),
                     'avatar' => $user->avatar,
+                    'bio' => $user->bio,
+                    'phone' => $user->phone,
                     'subscription' => $subscription ? [
                         'id' => $subscription->id,
                         'plan_name' => $subscription->plan->name ?? 'N/A',

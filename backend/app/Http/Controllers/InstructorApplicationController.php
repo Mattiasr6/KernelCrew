@@ -38,11 +38,11 @@ class InstructorApplicationController extends Controller
         $user = $request->user();
 
         if ($user->role_id !== UserRole::Student->value) {
-            return response()->json(['message' => 'Solo los estudiantes pueden postularse'], 403);
+            return response()->json(['success' => false, 'message' => 'Solo los estudiantes pueden postularse'], 403);
         }
 
         if ($user->instructorApplication()->exists()) {
-            return response()->json(['message' => 'Ya tienes una postulación en curso'], 422);
+            return response()->json(['success' => false, 'message' => 'Ya tienes una postulación en curso'], 422);
         }
 
         $application = InstructorApplication::create([
@@ -92,7 +92,7 @@ class InstructorApplicationController extends Controller
             $application = InstructorApplication::findOrFail($id);
             
             if ($application->status !== 'pending') {
-                return response()->json(['message' => 'Esta postulación ya fue procesada'], 422);
+                return response()->json(['success' => false, 'message' => 'Esta postulación ya fue procesada'], 422);
             }
 
             $application->update([

@@ -38,47 +38,40 @@ class InstructorDashboardController extends Controller
     {
         $user = $request->user();
 
-        // 1. Cursos del instructor
-        $courses = $user->courses()->get();
-        
-        // 2. Total de estudiantes activos (inscritos en cursos publicados del instructor)
-        $activeStudents = \App\Models\CourseEnrollment::whereIn('course_id', $courses->pluck('id'))
-            ->distinct('user_id')
-            ->count('user_id');
-
-        // 3. Calificación promedio de los cursos del instructor
-        $totalRating = 0;
-        $coursesWithReviews = 0;
-        foreach ($courses as $course) {
-            $avgRating = $course->reviews()->avg('rating');
-            if ($avgRating) {
-                $totalRating += $avgRating;
-                $coursesWithReviews++;
-            }
-        }
-        $averageRating = $coursesWithReviews > 0 ? round($totalRating / $coursesWithReviews, 1) : 0;
-
-        // 4. Ingresos del instructor (suma de pagos de sus cursos - si aplica)
-        $totalEarnings = 0;
-        $completedEnrollments = \App\Models\CourseEnrollment::whereIn('course_id', $courses->pluck('id'))
-            ->where('progress', '>=', 100)
-            ->with('course')
+        // 1. Cursos del instructor con estadísticas agregadas (withAvg + withCount = 1 query)
+        $courses = $user->courses()
+            ->withAvg('reviews', 'rating')
+            ->withCount('enrollments')
+            ->withCount(['enrollments as completed_count' => function ($q) {
+                $q->where('progress', '>=', 100);
+            }])
             ->get();
         
-        // Calcular ingresos basados en precios de cursos (lógica simplificada)
-        foreach ($completedEnrollments as $enrollment) {
-            if ($enrollment->course && $enrollment->course->price > 0) {
-                $totalEarnings += $enrollment->course->price;
-            }
-        }
+        // 2. Total de estudiantes activos (inscritos en cursos del instructor)
+        $activeStudents = \App\Models\CourseEnrollment::whereIn('course_id', $courses->pluck('id'))
+            ->distinct()
+            ->count('user_id');
 
-        // 5. Distribución de estudiantes por curso
+        // 3. Calificación promedio (usando withAvg - ZERO queries extra)
+        $coursesWithReviews = $courses->filter(fn($c) => $c->reviews_avg_rating !== null);
+        $averageRating = $coursesWithReviews->isNotEmpty()
+            ? round($coursesWithReviews->avg('reviews_avg_rating'), 1)
+            : 0;
+
+        // 4. Ingresos del instructor (una sola query con eager loading)
+        $totalEarnings = \App\Models\CourseEnrollment::whereIn('course_id', $courses->pluck('id'))
+            ->where('progress', '>=', 100)
+            ->with('course')
+            ->get()
+            ->sum(fn($e) => $e->course && $e->course->price > 0 ? $e->course->price : 0);
+
+        // 5. Distribución de estudiantes por curso (usando withCount - sin N+1)
         $studentsPerCourse = $courses->map(function ($course) {
             return [
                 'course_id' => $course->id,
                 'course_title' => $course->title,
-                'students_count' => $course->enrollments()->count(),
-                'completed_count' => $course->enrollments()->where('progress', '>=', 100)->count(),
+                'students_count' => $course->enrollments_count,
+                'completed_count' => $course->completed_count,
             ];
         });
 
@@ -90,7 +83,7 @@ class InstructorDashboardController extends Controller
         
         $progress = $totalCounted % 3;
 
-        // 7. Obtener feed de actividades recientes
+        // 7. Actividades recientes
         $activities = Activity::where('user_id', $user->id)
             ->latest('created_at')
             ->take(5)

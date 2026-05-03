@@ -77,7 +77,7 @@ class CourseController extends Controller
         $perPage = $request->query('per_page', 10);
 
         $user = $request->user();
-        $isAdminOrInstructor = $user && ($user->hasRole('admin') || $user->hasRole('instructor'));
+        $isAdminOrInstructor = $user && ($user->isAdmin() || $user->isInstructor());
 
         $query = Course::with(['instructor', 'category']);
 
@@ -218,6 +218,20 @@ class CourseController extends Controller
                 'message' => 'Curso no encontrado',
                 'data' => null,
             ], 404);
+        }
+
+        $user = request()->user();
+
+        if ($course->status !== 'published') {
+            $isOwner = $user && $course->instructor_id === $user->id;
+            $isAdmin = $user && $user->isAdmin();
+            if (!$isOwner && !$isAdmin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Curso no encontrado',
+                    'data' => null,
+                ], 404);
+            }
         }
 
         return response()->json([

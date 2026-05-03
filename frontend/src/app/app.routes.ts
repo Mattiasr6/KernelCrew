@@ -87,6 +87,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/profile.component').then(
+        (m) => m.ProfileComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'subscriptions',
     title: 'Planes de Suscripción - KernelLearn',
     loadComponent: () =>
@@ -184,6 +192,13 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/instructor/instructor-courses.component').then(
                 (m) => m.InstructorCoursesComponent,
+              ),
+        },
+        {
+            path: 'courses/:id/curriculum',
+            loadComponent: () =>
+              import('./features/instructor/instructor-curriculum.component').then(
+                (m) => m.InstructorCurriculumComponent,
               ),
         }
     ]

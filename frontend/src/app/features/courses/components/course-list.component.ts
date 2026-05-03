@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, Provider } from '@angular/core';
+import { Component, inject, OnInit, signal, Provider, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -17,6 +17,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { Course, Category } from '../../../core/models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 class SpanishPaginatorIntl extends MatPaginatorIntl {
   override itemsPerPageLabel = 'Ítems por página';
@@ -213,10 +214,11 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
 })
 export class CourseListComponent implements OnInit {
   private courseService = inject(CourseService);
-  public authService = inject(AuthService);
+  authService = inject(AuthService);
   private subscriptionService = inject(SubscriptionService);
   private enrollmentService = inject(EnrollmentService);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   courses = signal<Course[]>([]);
   totalItems = signal(0);
@@ -240,7 +242,7 @@ export class CourseListComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.courseService.getCategories().subscribe({
+    this.courseService.getCategories().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
           this.categories.set(Array.isArray(res.data) ? res.data : res.data.data || []);
@@ -252,7 +254,7 @@ export class CourseListComponent implements OnInit {
 
   loadUserPlan(): void {
     if (this.authService.isAuthenticated() && this.authService.isStudent()) {
-      this.subscriptionService.getActive().subscribe({
+      this.subscriptionService.getActive().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response: any) => {
           if (response.success && response.data?.subscription) {
             this.userPlanName = response.data.subscription.plan?.name || '';
@@ -265,7 +267,7 @@ export class CourseListComponent implements OnInit {
   }
 
   checkCourseAccess(courseId: number): void {
-    this.enrollmentService.checkCourseAccess(courseId).subscribe({
+    this.enrollmentService.checkCourseAccess(courseId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         if (res.success) {
           const map = this.courseAccessMap();
@@ -345,6 +347,7 @@ export class CourseListComponent implements OnInit {
         ...(this.category ? { category_id: this.category } : {}),
         ...(this.search ? { search: this.search } : {}),
       })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response: any) => {
           if (response.data && response.data.courses) {

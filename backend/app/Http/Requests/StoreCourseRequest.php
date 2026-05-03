@@ -14,7 +14,7 @@ class StoreCourseRequest extends BaseFormRequest
             return false;
         }
 
-        return $user->hasRole('instructor') || $user->hasRole('admin');
+        return $user->isInstructor() || $user->isAdmin();
     }
 
     public function rules(): array

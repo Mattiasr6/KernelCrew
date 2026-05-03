@@ -9,7 +9,7 @@ import { ApiResponse, DashboardData } from '../models';
 })
 export class DashboardService {
   private http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/v1/instructor`;
+  private readonly apiUrl = `${environment.apiUrl}/instructor`;
 
   /**
    * Obtener estadísticas, progreso de créditos y actividad reciente del instructor
