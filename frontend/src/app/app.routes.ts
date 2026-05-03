@@ -11,6 +11,7 @@ export const routes: Routes = [
   },
   {
     path: 'login',
+    title: 'Iniciar Sesión - KernelLearn',
     loadComponent: () =>
       import('./features/auth/components/login.component').then((m) => m.LoginComponent),
     canActivate: [guestGuard],
@@ -34,6 +35,7 @@ export const routes: Routes = [
   },
   {
     path: 'register',
+    title: 'Crear Cuenta - KernelLearn',
     loadComponent: () =>
       import('./features/auth/components/register.component').then((m) => m.RegisterComponent),
     canActivate: [guestGuard],
@@ -46,6 +48,7 @@ export const routes: Routes = [
   },
   {
     path: 'courses',
+    title: 'Catálogo de Cursos - KernelLearn',
     loadComponent: () =>
       import('./features/courses/components/course-list.component').then(
         (m) => m.CourseListComponent,
@@ -53,6 +56,7 @@ export const routes: Routes = [
   },
   {
     path: 'courses/:id',
+    title: 'Curso - KernelLearn',
     loadComponent: () =>
       import('./features/courses/components/course-detail.component').then(
         (m) => m.CourseDetailComponent,
@@ -84,6 +88,7 @@ export const routes: Routes = [
   },
   {
     path: 'subscriptions',
+    title: 'Planes de Suscripción - KernelLearn',
     loadComponent: () =>
       import('./features/student/student-subscriptions.component').then(
         (m) => m.StudentSubscriptionsComponent,
@@ -92,6 +97,7 @@ export const routes: Routes = [
   },
   {
     path: 'my-courses',
+    title: 'Mis Cursos - KernelLearn',
     loadComponent: () =>
       import('./features/student/my-courses.component').then(
         (m) => m.MyCoursesComponent,
@@ -185,6 +191,7 @@ export const routes: Routes = [
 
   {
     path: '**',
+    title: 'KernelLearn - Plataforma de Cursos',
     redirectTo: 'courses',
   },
 ];

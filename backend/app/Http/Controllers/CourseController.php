@@ -270,17 +270,7 @@ class CourseController extends Controller
             ], 404);
         }
 
-        $user = $request->user();
-        $isOwner = $course->instructor_id === $user->id;
-        $isAdmin = $user->hasRole('admin');
-
-        if (!$isOwner && !$isAdmin) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No tienes permiso para editar este curso',
-                'data' => null,
-            ], 403);
-        }
+        $this->authorize('update', $course);
 
         $validated = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
@@ -324,7 +314,7 @@ class CourseController extends Controller
      * )
      */
     #[OA\Delete(path: '/api/v1/courses/{id}', tags: ['Cursos'], summary: 'Eliminar curso')]
-    public function destroy(int $id): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
         $course = Course::withTrashed()->find($id);
 
@@ -336,17 +326,7 @@ class CourseController extends Controller
             ], 404);
         }
 
-        $user = request()->user();
-        $isOwner = $course->instructor_id === $user->id;
-        $isAdmin = $user->hasRole('admin');
-
-        if (!$isOwner && !$isAdmin) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No tienes permiso para eliminar este curso',
-                'data' => null,
-            ], 403);
-        }
+        $this->authorize('delete', $course);
 
         if (!$course->trashed()) {
             $course->delete();

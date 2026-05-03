@@ -1,28 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckRoleId
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  int  $roleId
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function handle(Request $request, Closure $next, $roleId): Response
+    public function handle(Request $request, Closure $next, string $roleId): Response
     {
-        if (!$request->user() || (int) $request->user()->role_id !== (int) $roleId) {
+        $requiredRole = UserRole::tryFrom((int) $roleId);
+
+        if (!$requiredRole || !$request->user() || (int) $request->user()->role_id !== $requiredRole->value) {
             return response()->json([
                 'success' => false,
                 'message' => 'Acceso denegado. Rol incorrecto.',
-                'error_code' => 'INSUFFICIENT_PERMISSIONS'
+                'error_code' => 'INSUFFICIENT_PERMISSIONS',
             ], 403);
         }
 

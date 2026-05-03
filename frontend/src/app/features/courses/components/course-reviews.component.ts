@@ -45,7 +45,8 @@ import { CourseReview } from '../../../core/models';
                   type="button" 
                   (click)="setRating(star)"
                   class="star-btn transition-transform active:scale-90"
-                  [class.active]="star <= currentRating()">
+                  [class.active]="star <= currentRating()"
+                  [attr.aria-label]="'Calificar ' + star + ' de 5 estrellas'">
                   <span class="material-symbols-outlined text-[36px]" 
                         [style.font-variation-settings]="getStarFill(star)">
                     star

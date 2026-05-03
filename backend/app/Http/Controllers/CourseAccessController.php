@@ -1,14 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\CourseEnrollment;
+use App\Services\PlanLevelService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CourseAccessController extends Controller
 {
+    public function __construct(
+        private readonly PlanLevelService $planLevelService,
+    ) {}
+
     public function getAccessibleCourses(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -21,7 +28,7 @@ class CourseAccessController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes suscripción activa',
-                'data' => []
+                'data' => [],
             ], 403);
         }
 
@@ -33,7 +40,7 @@ class CourseAccessController extends Controller
             'success' => true,
             'data' => $courses,
             'plan_name' => $subscription->plan->name,
-            'allowed_levels' => $this->getAllowedLevels($subscription->plan->name)
+            'allowed_levels' => $this->planLevelService->getAllowedLevels($subscription->plan->name),
         ]);
     }
 
@@ -52,25 +59,25 @@ class CourseAccessController extends Controller
                 'success' => false,
                 'has_access' => false,
                 'reason' => 'Sin suscripción activa',
-                'course_level' => $course->level
+                'course_level' => $course->level,
             ]);
         }
 
-        $hasAccess = $this->canAccessLevel($course->level, $subscription->plan->name);
+        $hasAccess = $this->planLevelService->canAccess($subscription->plan->name, $course->level);
 
         return response()->json([
             'success' => true,
             'has_access' => $hasAccess,
             'course_level' => $course->level,
             'plan_name' => $subscription->plan->name,
-            'message' => $hasAccess ? 'Acceso permitido' : 'Tu plan no incluye este nivel'
+            'message' => $hasAccess ? 'Acceso permitido' : 'Tu plan no incluye este nivel',
         ]);
     }
 
     public function getMyCourses(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         $enrollments = CourseEnrollment::where('user_id', $user->id)
             ->with(['course.instructor'])
             ->get()
@@ -85,7 +92,7 @@ class CourseAccessController extends Controller
                     'progress' => $enrollment->progress,
                     'is_completed' => $enrollment->completed_at !== null,
                     'enrollment_date' => $enrollment->enrollment_date,
-                    'completed_at' => $enrollment->completed_at
+                    'completed_at' => $enrollment->completed_at,
                 ];
             });
 
@@ -99,47 +106,28 @@ class CourseAccessController extends Controller
             'stats' => [
                 'total' => $total,
                 'completed' => $completed,
-                'in_progress' => $inProgress
-            ]
+                'in_progress' => $inProgress,
+            ],
         ]);
     }
 
     public function markComplete(Request $request, int $courseId): JsonResponse
     {
         $user = $request->user();
-        
+
         $enrollment = CourseEnrollment::where('user_id', $user->id)
             ->where('course_id', $courseId)
             ->firstOrFail();
 
         $enrollment->update([
             'progress' => 100,
-            'completed_at' => now()
+            'completed_at' => now(),
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Curso marcado como completado',
-            'data' => $enrollment
+            'data' => $enrollment,
         ]);
-    }
-
-    private function getAllowedLevels(string $planName): array
-    {
-        $plan = strtolower($planName);
-        
-        if (str_contains($plan, 'enterprise') || str_contains($plan, 'premium')) {
-            return ['beginner', 'intermediate', 'advanced'];
-        }
-        if (str_contains($plan, 'pro') || str_contains($plan, 'professional')) {
-            return ['beginner', 'intermediate'];
-        }
-        return ['beginner'];
-    }
-
-    private function canAccessLevel(string $courseLevel, string $planName): bool
-    {
-        $allowed = $this->getAllowedLevels($planName);
-        return in_array($courseLevel, $allowed);
     }
 }

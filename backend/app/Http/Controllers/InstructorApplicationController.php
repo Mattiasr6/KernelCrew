@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Models\InstructorApplication;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -36,7 +37,7 @@ class InstructorApplicationController extends Controller
 
         $user = $request->user();
 
-        if ($user->role_id !== 3) {
+        if ($user->role_id !== UserRole::Student->value) {
             return response()->json(['message' => 'Solo los estudiantes pueden postularse'], 403);
         }
 
@@ -101,7 +102,7 @@ class InstructorApplicationController extends Controller
 
             // Cambio automático de ROL de 3 (Estudiante) a 2 (Docente)
             $user = $application->user;
-            $user->update(['role_id' => 2]);
+            $user->update(['role_id' => UserRole::Instructor->value]);
 
             return response()->json([
                 'success' => true,

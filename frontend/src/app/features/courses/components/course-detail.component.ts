@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -157,6 +158,8 @@ export class CourseDetailComponent implements OnInit {
   private courseService = inject(CourseService);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
 
   course = signal<Course | null>(null);
   enrolled = signal(false);
@@ -175,7 +178,12 @@ export class CourseDetailComponent implements OnInit {
     this.courseService.getCourse(id).subscribe({
       next: (response) => {
         if (response.data) {
-          this.course.set(response.data.course);
+          const course = response.data.course;
+          this.course.set(course);
+          this.titleService.setTitle(course.title + ' - KernelLearn');
+          this.metaService.updateTag({ name: 'description', content: course.short_description || course.description });
+          this.metaService.updateTag({ property: 'og:title', content: course.title + ' - KernelLearn' });
+          this.metaService.updateTag({ property: 'og:description', content: course.short_description || course.description });
         }
         this.loading = false;
       },

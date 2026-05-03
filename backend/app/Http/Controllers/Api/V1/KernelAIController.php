@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Services\KernelAIService;
 use Illuminate\Http\JsonResponse;
@@ -36,7 +37,7 @@ class KernelAIController extends Controller
             ->with('plan')
             ->first();
 
-        if (!$subscription && (int)$user->role_id !== 1) {
+        if (!$subscription && (int) $user->role_id !== UserRole::Admin->value) {
             return response()->json([
                 'success' => false,
                 'message' => 'Necesitas una suscripción activa para usar el asistente de IA.'

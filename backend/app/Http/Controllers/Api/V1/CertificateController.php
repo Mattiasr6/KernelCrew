@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Certificate;
 use App\Services\CertificateService;
@@ -38,7 +39,7 @@ class CertificateController extends Controller
         $certificate = Certificate::where('certificate_code', $uuid)->firstOrFail();
 
         // Validar que el usuario sea el dueño o sea Admin (role_id = 1)
-        if (auth()->id() !== $certificate->user_id && auth()->user()->role_id !== 1) {
+        if (auth()->id() !== $certificate->user_id && auth()->user()->role_id !== UserRole::Admin->value) {
             return response()->json(['message' => 'Acceso no autorizado a este certificado.'], 403);
         }
 

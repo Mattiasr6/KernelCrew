@@ -1,13 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Auth;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\BaseFormRequest;
 
-class RegisterRequest extends FormRequest
+class RegisterRequest extends BaseFormRequest
 {
     public function authorize(): bool
     {
@@ -37,37 +36,18 @@ class RegisterRequest extends FormRequest
             'name.required' => 'El nombre es obligatorio.',
             'name.string' => 'El nombre debe ser texto válido.',
             'name.max' => 'El nombre no puede exceder 255 caracteres.',
-            
+
             'email.required' => 'El correo electrónico es obligatorio.',
             'email.string' => 'El correo debe ser texto válido.',
             'email.email' => 'El correo electrónico no tiene un formato válido.',
             'email.max' => 'El correo no puede exceder 255 caracteres.',
             'email.unique' => 'El correo electrónico ya está registrado.',
-            
+
             'password.required' => 'La contraseña es obligatoria.',
             'password.string' => 'La contraseña debe ser texto válido.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'password.regex' => 'La contraseña debe contener al menos una mayúscula, una minúscula y un número.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator): void
-    {
-        $errors = $validator->errors()->toArray();
-        
-        $formattedErrors = [];
-        foreach ($errors as $field => $messages) {
-            $formattedErrors[$field] = is_array($messages) ? $messages : [$messages];
-        }
-
-        throw new HttpResponseException(
-            response()->json([
-                'success' => false,
-                'message' => 'Error de validación',
-                'data' => $formattedErrors,
-                'errors' => $formattedErrors,
-            ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY)
-        );
     }
 }

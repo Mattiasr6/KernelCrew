@@ -91,7 +91,7 @@ import { AuthService } from '../../../core/services/auth.service';
             </div>
 
             <!-- Avatar Inteligente -->
-            <button mat-icon-button [matMenuTriggerFor]="menu" class="profile-btn">
+            <button mat-icon-button [matMenuTriggerFor]="menu" class="profile-btn" aria-label="Menú de usuario">
               @if (authService.user()?.avatar) {
                 <img [src]="authService.user()?.avatar" 
                      class="w-9 h-9 rounded-full border border-zinc-700 object-cover" 

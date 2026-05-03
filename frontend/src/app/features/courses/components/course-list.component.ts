@@ -90,7 +90,7 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
         } @else {
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             @for (course of courses(); track course.id) {
-              <div class="course-card" [routerLink]="['/courses', course.id]">
+              <a class="course-card" [routerLink]="['/courses', course.id]" tabindex="0">
                 <div class="relative">
                   <img
                     [src]="course.thumbnail || 'https://placehold.co/600x400/18181b/06b6d4?text=Course'"
@@ -125,7 +125,7 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
                     <span class="text-lg font-bold text-cyan-400">Bs. {{ course.price_in_bob || (course.price / 100 * 6.96 | number:'1.2-2') }}</span>
                   </div>
                 </div>
-              </div>
+              </a>
             }
           </div>
 

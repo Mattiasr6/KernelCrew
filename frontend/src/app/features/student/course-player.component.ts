@@ -93,15 +93,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
           <aside class="lesson-sidebar glass-card bg-slate-900/40 border-l border-white/10">
             <h3 class="p-6 font-bold text-white border-b border-white/5">Contenido del Curso</h3>
             <div class="lessons-list p-4 space-y-2">
-               <div class="lesson-item active">
+               <div class="lesson-item active" tabindex="0" role="button" (keydown.enter)="selectLesson(1)" (keydown.space)="selectLesson(1); $event.preventDefault()">
                   <span class="material-symbols-outlined">play_circle</span>
                   <span>1. Introducción</span>
                </div>
-               <div class="lesson-item locked">
+               <div class="lesson-item locked" tabindex="0" role="button" aria-disabled="true" (keydown.enter)="selectLesson(2)" (keydown.space)="selectLesson(2); $event.preventDefault()">
                   <span class="material-symbols-outlined">lock</span>
                   <span>2. Fundamentos</span>
                </div>
-               <div class="lesson-item locked">
+               <div class="lesson-item locked" tabindex="0" role="button" aria-disabled="true" (keydown.enter)="selectLesson(3)" (keydown.space)="selectLesson(3); $event.preventDefault()">
                   <span class="material-symbols-outlined">lock</span>
                   <span>3. Proyecto Final</span>
                </div>
@@ -218,6 +218,10 @@ export class CoursePlayerComponent implements OnInit {
       },
       error: () => this.isUpdating.set(false)
     });
+  }
+
+  selectLesson(index: number): void {
+    console.log('Lección seleccionada:', index);
   }
 
   downloadCertificate() {
