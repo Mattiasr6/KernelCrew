@@ -111,6 +111,11 @@ class User extends Authenticatable
         return $this->hasMany(Payment::class, 'user_id');
     }
 
+    public function certificates(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
     public function activeSubscription()
     {
         return $this->subscriptionPlans()->where('user_subscriptions.status', 'active');

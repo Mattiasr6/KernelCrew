@@ -291,12 +291,14 @@ class CourseController extends Controller
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'string', 'min:50'],
             'price' => ['sometimes', 'numeric', 'min:0'],
-            'status' => ['sometimes', 'string', 'in:DRAFT,IN_REVIEW,PUBLISHED,REJECTED'],
         ]);
 
         if (isset($validated['title']) && $validated['title'] !== $course->title) {
             $validated['slug'] = Course::generateSlug($validated['title']);
         }
+
+        // Seguridad: nunca permitir cambiar status desde este endpoint
+        unset($validated['status']);
 
         $course->update($validated);
 

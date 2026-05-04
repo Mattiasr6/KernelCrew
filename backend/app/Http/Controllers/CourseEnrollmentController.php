@@ -213,11 +213,10 @@ class CourseEnrollmentController extends Controller
             ? round(($completedLessons / $totalLessons) * 100, 2)
             : 0;
 
-        // Actualizar enrollment
-        $enrollment->update([
+        $updateData = [
             'progress' => $progressPct,
             'last_lesson_id' => $lesson->id,
-        ]);
+        ];
 
         // Auto-generar certificado si llegó al 100%
         if ($progressPct >= 100) {
@@ -225,8 +224,11 @@ class CourseEnrollmentController extends Controller
                 ['user_id' => $user->id, 'course_id' => $course->id],
                 ['issued_at' => now()]
             );
-            $enrollment->update(['completed_at' => now()]);
+            $updateData['completed_at'] = now();
         }
+
+        // Actualización única
+        $enrollment->update($updateData);
 
         return response()->json([
             'success' => true,

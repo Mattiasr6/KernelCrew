@@ -244,6 +244,9 @@ export class CreditStoreComponent implements OnInit {
         next: (res) => {
           if (res.data?.url) {
             window.location.href = res.data.url;
+          } else {
+            this.isProcessing.set(false);
+            this.notification.error('Error al generar la sesión de pago con Stripe');
           }
         },
         error: () => {
