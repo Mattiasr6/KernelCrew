@@ -25,6 +25,7 @@ class User extends Authenticatable
         'provider_id',
         'avatar',
         'enrollment_credits',
+        'credits_balance',
         'bio',
         'phone',
     ];

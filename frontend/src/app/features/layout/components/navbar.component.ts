@@ -33,9 +33,9 @@ import { AuthService } from '../../../core/services/auth.service';
           <nav class="hidden md:flex items-center gap-1">
             <a routerLink="/courses" routerLinkActive="active" class="nav-link">Explorar</a>
             @if (authService.user()?.role_id !== 2) {
-              <a routerLink="/subscriptions" routerLinkActive="active" class="nav-link">
-                <span class="material-symbols-outlined text-sm mr-1">card_membership</span>
-                Planes
+              <a routerLink="/credits" routerLinkActive="active" class="nav-link">
+                <span class="material-symbols-outlined text-sm mr-1">payments</span>
+                Tienda
               </a>
             }
             
@@ -70,6 +70,14 @@ import { AuthService } from '../../../core/services/auth.service';
 
         <div class="flex items-center gap-4">
           @if (authService.isAuthenticated()) {
+            <div class="hidden sm:flex items-center gap-2 mr-2">
+              @if (authService.user()?.credits_balance !== undefined) {
+                <div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                  <span class="material-symbols-outlined text-amber-400 text-[16px]" style="font-variation-settings: 'FILL' 1;">database</span>
+                  <span class="text-xs font-bold text-amber-400">{{ authService.user()?.credits_balance || 0 }}</span>
+                </div>
+              }
+            </div>
             <div class="user-info hidden sm:flex flex-col items-end mr-2">
               <span class="text-zinc-50 text-xs font-bold">{{ authService.user()?.name }}</span>
               <div class="flex items-center gap-2">
@@ -124,6 +132,10 @@ import { AuthService } from '../../../core/services/auth.service';
                 <button mat-menu-item routerLink="/my-courses">
                   <span class="material-symbols-outlined text-cyan-400">school</span>
                   <span class="text-zinc-300">Mis Cursos</span>
+                </button>
+                <button mat-menu-item routerLink="/credits">
+                  <span class="material-symbols-outlined text-emerald-400">payments</span>
+                  <span class="text-zinc-300">Tienda de Créditos</span>
                 </button>
                 <button mat-menu-item routerLink="/subscriptions">
                   <span class="material-symbols-outlined text-emerald-400">card_membership</span>

@@ -181,7 +181,7 @@ class CourseSeeder extends Seeder
                 'duration_hours' => $courseData['duration_hours'],
                 'instructor_id' => $instructor->id,
                 'category_id' => $category?->id,
-                'status' => 'published',
+                'status' => \App\Enums\CourseStatus::PUBLISHED,
                 'is_published' => true,
                 'thumbnail' => 'https://placehold.co/800x450/18181b/06b6d4?text=' . urlencode($courseData['title']),
             ]);

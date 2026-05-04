@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\SubscriptionPlan;
+use App\Models\CreditPackage;
 use App\Models\User;
+use App\Models\Payment;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Stripe\Checkout\Session;
 use Stripe\Stripe;
@@ -65,6 +68,48 @@ class StripeController extends Controller
     }
 
     /**
+     * Crear sesión de Stripe para comprar un paquete de créditos
+     */
+    public function buyCredits(Request $request): JsonResponse
+    {
+        $request->validate([
+            'credit_package_id' => 'required|exists:credit_packages,id',
+        ]);
+
+        $user = $request->user();
+        $package = CreditPackage::findOrFail($request->credit_package_id);
+
+        $session = Session::create([
+            'payment_method_types' => ['card'],
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'usd',
+                    'product_data' => [
+                        'name' => "{$package->name} - {$package->credits_amount} Créditos",
+                        'description' => "Paquete de {$package->credits_amount} créditos para KernelLearn",
+                    ],
+                    'unit_amount' => (int) ($package->price_usd * 100),
+                ],
+                'quantity' => 1,
+            ]],
+            'mode' => 'payment',
+            'success_url' => config('app.frontend_url') . '/payment/success?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => config('app.frontend_url') . '/payment/cancel',
+            'client_reference_id' => (string) $user->id,
+            'metadata' => [
+                'type' => 'credit_purchase',
+                'user_id' => (string) $user->id,
+                'package_id' => (string) $package->id,
+            ],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => ['url' => $session->url],
+        ]);
+    }
+
+    /**
      * Manejar el Webhook de Stripe
      */
     public function handleWebhook(Request $request): JsonResponse
@@ -83,18 +128,42 @@ class StripeController extends Controller
 
         if ($event->type === 'checkout.session.completed') {
             $session = $event->data->object;
+            $metadata = $session->metadata ?? [];
 
-            $user = User::findOrFail($session->client_reference_id);
-            $plan = SubscriptionPlan::findOrFail($session->metadata->plan_id);
+            if (($metadata['type'] ?? '') === 'credit_purchase') {
+                // Compra de créditos
+                $user = User::findOrFail($metadata['user_id']);
+                $package = CreditPackage::findOrFail($metadata['package_id']);
 
-            $this->subscriptionService->activate(
-                user: $user,
-                plan: $plan,
-                paymentMethod: 'stripe',
-                amount: (float) $plan->price,
-                transactionId: $session->payment_intent,
-                registerActivity: true,
-            );
+                DB::transaction(function () use ($user, $package, $session) {
+                    $user->increment('credits_balance', $package->credits_amount);
+
+                    Payment::create([
+                        'user_id' => $user->id,
+                        'credit_package_id' => $package->id,
+                        'amount' => $package->price_usd,
+                        'payment_date' => now(),
+                        'transaction_id' => $session->payment_intent,
+                        'payment_method' => 'stripe',
+                        'status' => 'completed',
+                    ]);
+
+                    Log::info("Créditos otorgados: {$package->credits_amount} a usuario {$user->id}");
+                });
+            } else {
+                // Suscripción (legacy)
+                $user = User::findOrFail($session->client_reference_id);
+                $plan = SubscriptionPlan::findOrFail($session->metadata->plan_id);
+
+                $this->subscriptionService->activate(
+                    user: $user,
+                    plan: $plan,
+                    paymentMethod: 'stripe',
+                    amount: (float) $plan->price,
+                    transactionId: $session->payment_intent,
+                    registerActivity: true,
+                );
+            }
         }
 
         return response()->json(['status' => 'success']);

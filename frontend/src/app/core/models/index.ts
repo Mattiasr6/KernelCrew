@@ -28,6 +28,7 @@ export interface User {
   created_at: string;
   updated_at?: string;
   subscription?: UserSubscription;
+  credits_balance?: number;
 }
 
 export interface Instructor {
@@ -89,6 +90,7 @@ export interface Course {
   price: number;
   price_in_bob?: number;
   price_display?: string;
+  price_in_credits?: number;
   instructor_id: number;
   status: 'draft' | 'published';
   instructor?: Instructor;

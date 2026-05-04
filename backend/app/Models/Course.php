@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
+use App\Enums\CourseStatus;
 
 class Course extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'slug', 'description', 'price',
+        'title', 'slug', 'description', 'price', 'price_in_credits',
         'instructor_id', 'status', 'is_credit_counted', 'level'
     ];
 
@@ -30,6 +31,7 @@ class Course extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'status' => CourseStatus::class,
     ];
 
     public function getPriceInBobAttribute(): float
@@ -66,12 +68,12 @@ class Course extends Model
 
     public function isPublished(): bool
     {
-        return $this->status === 'published';
+        return $this->status === CourseStatus::PUBLISHED;
     }
 
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('status', 'published');
+        return $query->where('status', CourseStatus::PUBLISHED->value);
     }
 
     public function scopeSearch(Builder $query, ?string $search): Builder

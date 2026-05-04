@@ -7,8 +7,10 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Services\PlanLevelService;
+use App\Enums\CourseStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CourseEnrollmentController extends Controller
 {
@@ -67,6 +69,60 @@ class CourseEnrollmentController extends Controller
             'success' => true,
             'message' => '¡Inscripción exitosa! Bienvenido al curso.',
             'data' => $enrollment,
+        ], 201);
+    }
+
+    /**
+     * Inscribir al usuario en un curso usando créditos
+     */
+    public function enrollWithCredits(Request $request, Course $course): JsonResponse
+    {
+        $user = $request->user();
+
+        // Validar que el curso esté publicado
+        if ($course->status !== CourseStatus::PUBLISHED->value) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Este curso no está disponible.',
+            ], 404);
+        }
+
+        // Validar que no esté ya inscrito
+        $exists = CourseEnrollment::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya estás inscrito en este curso.',
+            ], 422);
+        }
+
+        // Validar saldo de créditos
+        if ($user->credits_balance < $course->price_in_credits) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes suficientes créditos. Necesitas ' . $course->price_in_credits . ' créditos.',
+                'redirect_to' => '/credits',
+            ], 403);
+        }
+
+        // Ejecutar transacción: restar créditos + crear inscripción
+        DB::transaction(function () use ($user, $course) {
+            $user->decrement('credits_balance', $course->price_in_credits);
+
+            CourseEnrollment::create([
+                'user_id' => $user->id,
+                'course_id' => $course->id,
+                'enrollment_date' => now(),
+                'progress' => 0,
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => '¡Inscripción exitosa! Se descontaron ' . $course->price_in_credits . ' créditos.',
         ], 201);
     }
 

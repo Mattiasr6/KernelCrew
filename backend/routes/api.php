@@ -11,6 +11,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseEnrollmentController;
 use App\Http\Controllers\CourseCurriculumController;
+use App\Http\Controllers\CreditPackageController;
 use App\Http\Controllers\Instructor\InstructorDashboardController;
 use App\Http\Controllers\InstructorApplicationController;
 use App\Http\Controllers\SubscriptionController;
@@ -48,6 +49,9 @@ Route::prefix('v1')->group(function () {
     // Planes de Suscripción (Público)
     Route::get('/subscriptions/plans', [SubscriptionController::class, 'index']);
 
+    // Paquetes de Créditos (Público)
+    Route::get('/credit-packages', [CreditPackageController::class, 'index']);
+
     // Webhook de Stripe (Público)
     Route::post('/webhooks/stripe', [StripeController::class, 'handleWebhook']);
 
@@ -59,6 +63,12 @@ Route::prefix('v1')->group(function () {
         
         // Checkout de Suscripción (Stripe Real Sandbox)
         Route::post('/checkout/session', [StripeController::class, 'createSession']);
+
+        // Compra de Créditos vía Stripe
+        Route::post('/stripe/credits/checkout', [StripeController::class, 'buyCredits']);
+
+        // Inscripción con Créditos
+        Route::post('/courses/{course}/enroll-credits', [CourseEnrollmentController::class, 'enrollWithCredits']);
 
         // Acceso a Cursos y Suscripción (Middleaware de validación)
         Route::middleware('subscription.access')->group(function () {

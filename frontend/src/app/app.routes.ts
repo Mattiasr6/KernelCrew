@@ -113,6 +113,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'credits',
+    loadComponent: () =>
+      import('./features/student/credit-store/credit-store.component').then(
+        (m) => m.CreditStoreComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'my-subscriptions',
     loadComponent: () =>
       import('./features/student/subscription-history.component').then(

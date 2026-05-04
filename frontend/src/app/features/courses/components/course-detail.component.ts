@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CourseService } from '../../../core/services/course.service';
 import { CurriculumService } from '../../../core/services/curriculum.service';
+import { ApiService } from '../../../core/services/api.service';
 import { Course, CourseSection } from '../../../core/models';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseReviewsComponent } from './course-reviews.component';
@@ -72,14 +73,34 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
             <div class="actions-section">
               @if (!enrolled()) {
-                <button class="enroll-btn" (click)="enroll()" [disabled]="isEnrolling()">
-                  @if (isEnrolling()) {
-                    <mat-spinner diameter="20"></mat-spinner>
-                  } @else {
-                    <span class="material-symbols-outlined">auto_awesome</span>
-                    Inscribirme ahora
+                @if (course()!.price_in_credits && course()!.price_in_credits! > 0) {
+                  <button class="enroll-btn" (click)="enrollWithCredits()" [disabled]="isEnrolling()">
+                    @if (isEnrolling()) {
+                      <mat-spinner diameter="20"></mat-spinner>
+                    } @else if (!authService.isAuthenticated()) {
+                      <span>Inicia sesión para inscribirte</span>
+                    } @else if ((authService.user()?.credits_balance ?? 0) < (course()!.price_in_credits ?? 0)) {
+                      <span>Necesitas {{ course()!.price_in_credits }} créditos</span>
+                    } @else {
+                      <span class="material-symbols-outlined">auto_awesome</span>
+                      Adquirir por {{ course()!.price_in_credits }} créditos
+                    }
+                  </button>
+                  @if (authService.isAuthenticated() && (authService.user()?.credits_balance ?? 0) < (course()!.price_in_credits ?? 0)) {
+                    <a routerLink="/credits" class="block text-center text-xs text-amber-400 hover:text-amber-300 mt-2 underline underline-offset-2">
+                      Saldo insuficiente — Recargar créditos
+                    </a>
                   }
-                </button>
+                } @else {
+                  <button class="enroll-btn" (click)="enroll()" [disabled]="isEnrolling()">
+                    @if (isEnrolling()) {
+                      <mat-spinner diameter="20"></mat-spinner>
+                    } @else {
+                      <span class="material-symbols-outlined">auto_awesome</span>
+                      Inscribirme ahora
+                    }
+                  </button>
+                }
               } @else {
                 <button class="go-to-course-btn" [routerLink]="['/courses', course()!.id, 'learn']">
                   <span class="material-symbols-outlined">play_circle</span>
@@ -187,7 +208,8 @@ export class CourseDetailComponent implements OnInit {
   private router = inject(Router);
   private courseService = inject(CourseService);
   private curriculumService = inject(CurriculumService);
-  private authService = inject(AuthService);
+  private api = inject(ApiService);
+  authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
   private titleService = inject(Title);
   private metaService = inject(Meta);
@@ -281,5 +303,44 @@ export class CourseDetailComponent implements OnInit {
         }
       }
     });
+  }
+
+  enrollWithCredits(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.snackBar.open('Inicia sesión para inscribirte', 'OK', { duration: 3000 });
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const course = this.course();
+    if (!course) return;
+
+    if ((this.authService.user()?.credits_balance ?? 0) < (course.price_in_credits ?? 0)) {
+      this.snackBar.open('No tienes suficientes créditos', 'Recargar', { duration: 5000 })
+        .onAction().subscribe(() => this.router.navigate(['/credits']));
+      return;
+    }
+
+    this.isEnrolling.set(true);
+    this.api.post<{ success: boolean; message: string }>(`courses/${course.id}/enroll-credits`, {})
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isEnrolling.set(false);
+          this.enrolled.set(true);
+          // Actualizar saldo local inmediatamente
+          const currentUser = this.authService.user();
+          if (currentUser) {
+            currentUser.credits_balance = (currentUser.credits_balance ?? 0) - (course.price_in_credits ?? 0);
+            this.authService.userSignal.set(currentUser);
+            localStorage.setItem('user', JSON.stringify(currentUser));
+          }
+          this.snackBar.open(res.message || '¡Inscripción exitosa!', 'OK', { duration: 5000 });
+        },
+        error: (err) => {
+          this.isEnrolling.set(false);
+          this.snackBar.open(err.error?.message || 'Error al inscribirse', 'Cerrar');
+        }
+      });
   }
 }
