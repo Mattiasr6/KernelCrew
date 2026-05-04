@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\CourseStatus;
+use App\Events\CoursePublished;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;
@@ -28,6 +29,8 @@ class AdminCourseController extends Controller
         $this->authorize('approve', $course);
 
         $course->update(['status' => CourseStatus::PUBLISHED]);
+
+        event(new CoursePublished($course));
 
         return response()->json([
             'success' => true,

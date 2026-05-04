@@ -22,14 +22,14 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
         <div class="loading">
           <mat-spinner diameter="50"></mat-spinner>
         </div>
-      } @else {
+      } @else if (course(); as c) {
         <!-- Navigation Header -->
         <header class="player-header">
-          <button class="back-btn" [routerLink]="['/courses', course()!.id]">
+          <button class="back-btn" [routerLink]="['/courses', c.id]">
             <span class="material-symbols-outlined">arrow_back</span>
             <span class="hidden sm:inline">Volver</span>
           </button>
-          <h1 class="text-base sm:text-lg font-bold text-white truncate mx-4">{{ course()!.title }}</h1>
+          <h1 class="text-base sm:text-lg font-bold text-white truncate mx-4">{{ c.title }}</h1>
           <a routerLink="/my-courses" class="text-xs text-zinc-500 hover:text-zinc-300 shrink-0">Mis Cursos</a>
         </header>
 
@@ -348,7 +348,7 @@ export class CoursePlayerComponent implements OnInit {
   }
 
   markLessonComplete(lesson: Lesson) {
-    if (this.isLessonCompleted(lesson.id)) return;
+    if (this.isLessonCompleted(lesson.id) || this.isCompleting()) return;
 
     this.isCompleting.set(true);
     this.enrollmentService.completeLesson(lesson.id)

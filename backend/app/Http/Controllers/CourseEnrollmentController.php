@@ -89,38 +89,42 @@ class CourseEnrollmentController extends Controller
             ], 404);
         }
 
-        // Validar que no esté ya inscrito
-        $exists = CourseEnrollment::where('user_id', $user->id)
-            ->where('course_id', $course->id)
-            ->exists();
+        // Ejecutar transacción atómica: validar + restar créditos + crear inscripción
+        try {
+            DB::transaction(function () use ($user, $course) {
+                // Validar que no esté ya inscrito (dentro de la transacción para evitar TOCTOU)
+                $exists = CourseEnrollment::where('user_id', $user->id)
+                    ->where('course_id', $course->id)
+                    ->lockForUpdate()
+                    ->exists();
 
-        if ($exists) {
+                if ($exists) {
+                    throw new \RuntimeException('Ya estás inscrito en este curso.');
+                }
+
+                // Refrescar saldo dentro de la transacción
+                $user->refresh();
+
+                if ($user->credits_balance < $course->price_in_credits) {
+                    throw new \RuntimeException('No tienes suficientes créditos.');
+                }
+
+                $user->decrement('credits_balance', $course->price_in_credits);
+
+                CourseEnrollment::create([
+                    'user_id' => $user->id,
+                    'course_id' => $course->id,
+                    'enrollment_date' => now(),
+                    'progress' => 0,
+                ]);
+            });
+        } catch (\RuntimeException $e) {
+            $code = str_contains($e->getMessage(), 'inscrito') ? 422 : 403;
             return response()->json([
                 'success' => false,
-                'message' => 'Ya estás inscrito en este curso.',
-            ], 422);
+                'message' => $e->getMessage(),
+            ], $code);
         }
-
-        // Validar saldo de créditos
-        if ($user->credits_balance < $course->price_in_credits) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No tienes suficientes créditos. Necesitas ' . $course->price_in_credits . ' créditos.',
-                'redirect_to' => '/credits',
-            ], 403);
-        }
-
-        // Ejecutar transacción: restar créditos + crear inscripción
-        DB::transaction(function () use ($user, $course) {
-            $user->decrement('credits_balance', $course->price_in_credits);
-
-            CourseEnrollment::create([
-                'user_id' => $user->id,
-                'course_id' => $course->id,
-                'enrollment_date' => now(),
-                'progress' => 0,
-            ]);
-        });
 
         return response()->json([
             'success' => true,
@@ -266,10 +270,20 @@ class CourseEnrollmentController extends Controller
             ->where('lesson_user.user_id', $user->id)
             ->pluck('lesson_user.lesson_id');
 
+        // Recalcular progreso en tiempo real (no confiar en el valor guardado)
+        $totalLessons = \App\Models\Lesson::whereHas('section', fn($q) => $q->where('course_id', $courseId))->count();
+        $completedCount = $completedLessonIds->count();
+        $progress = $totalLessons > 0
+            ? round(($completedCount / $totalLessons) * 100, 2)
+            : 0;
+
+        // Sincronizar si cambió
+        $enrollment->update(['progress' => $progress]);
+
         return response()->json([
             'success' => true,
             'data' => [
-                'progress' => $enrollment->progress,
+                'progress' => $progress,
                 'completed_lesson_ids' => $completedLessonIds,
                 'last_lesson_id' => $enrollment->last_lesson_id,
                 'completed_at' => $enrollment->completed_at,

@@ -21,7 +21,7 @@ export class AuthService {
 
   // Computeds basados en el nombre del rol (RBAC Custom)
   user = computed(() => this.userSignal());
-  isAuthenticated = computed(() => !!this.tokenSignal());
+  isAuthenticated = computed(() => !!this.tokenSignal() && !!this.userSignal());
   isAdmin = computed(() => this.userSignal()?.role === 'admin');
   isInstructor = computed(() => this.userSignal()?.role === 'instructor' || this.userSignal()?.role === 'docente');
   isStudent = computed(() => this.userSignal()?.role === 'student');

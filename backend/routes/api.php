@@ -47,6 +47,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/courses/{courseId}/curriculum', [CourseCurriculumController::class, 'index']);
     Route::get('/lessons/{lessonId}', [CourseCurriculumController::class, 'show']);
 
+    Route::get('/certificates/{uuid}/verify', [CertificateController::class, 'verify']);
+    
     // Planes de Suscripción (Público)
     Route::get('/subscriptions/plans', [SubscriptionController::class, 'index']);
 
