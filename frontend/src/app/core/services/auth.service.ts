@@ -97,8 +97,8 @@ export class AuthService {
   refreshUserSession(): void {
     this.api.get<any>('auth/me').subscribe({
       next: (response) => {
-        if (response.success && response.data) {
-          const updatedUser = response.data;
+        if (response.success && response.data?.user) {
+          const updatedUser = response.data.user;
           // Merge subscription data if available
           if (updatedUser.subscription) {
             updatedUser.subscription = {
