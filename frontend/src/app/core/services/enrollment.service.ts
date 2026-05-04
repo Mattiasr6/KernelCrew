@@ -52,6 +52,19 @@ export interface AccessCheckResponse {
   message?: string;
 }
 
+export interface MyProgressResponse {
+  progress: number;
+  completed_lesson_ids: number[];
+  last_lesson_id: number | null;
+  completed_at: string | null;
+}
+
+export interface CompleteLessonResponse {
+  progress: number;
+  completed_lesson_id: number;
+  certificate_ready: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -72,5 +85,13 @@ export class EnrollmentService {
 
   markCourseComplete(courseId: number): Observable<ApiResponse<any>> {
     return this.api.post<ApiResponse<any>>(`courses/${courseId}/complete`, {});
+  }
+
+  getMyProgress(courseId: number): Observable<ApiResponse<MyProgressResponse>> {
+    return this.api.get<ApiResponse<MyProgressResponse>>(`courses/${courseId}/my-progress`);
+  }
+
+  completeLesson(lessonId: number): Observable<ApiResponse<CompleteLessonResponse>> {
+    return this.api.post<ApiResponse<CompleteLessonResponse>>(`lessons/${lessonId}/complete`, {});
   }
 }

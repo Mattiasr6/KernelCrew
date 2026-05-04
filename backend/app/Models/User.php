@@ -92,6 +92,13 @@ class User extends Authenticatable
         return $this->hasMany(UserSubscription::class, 'user_id');
     }
 
+    public function completedLessons(): BelongsToMany
+    {
+        return $this->belongsToMany(Lesson::class, 'lesson_user')
+            ->withPivot('completed_at')
+            ->withTimestamps();
+    }
+
     public function subscriptionPlans(): BelongsToMany
     {
         return $this->belongsToMany(SubscriptionPlan::class, 'user_subscriptions')

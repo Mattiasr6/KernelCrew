@@ -86,6 +86,10 @@ Route::prefix('v1')->group(function () {
             Route::post('/courses/{id}/complete', [CourseAccessController::class, 'markComplete']);
         });
         
+        // Progreso detallado y lecciones (requiere autenticación)
+        Route::post('/lessons/{id}/complete', [CourseEnrollmentController::class, 'completeLesson']);
+        Route::get('/courses/{id}/my-progress', [CourseEnrollmentController::class, 'myProgress']);
+        
         // Checkout de Suscripción (Legacy / Mock)
         Route::post('/subscriptions/checkout', [SubscriptionController::class, 'checkout']);
         

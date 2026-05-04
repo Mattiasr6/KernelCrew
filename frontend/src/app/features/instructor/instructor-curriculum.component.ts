@@ -203,56 +203,33 @@ import { LessonEditorComponent } from './lesson-editor.component';
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     .add-section-btn {
-      display: flex; align-items: center; gap: 6px;
-      padding: 10px 20px; border-radius: 10px;
-      background: linear-gradient(135deg, #06b6d4, #0891b2);
-      color: white; font-weight: 600; font-size: 0.9rem;
-      border: none; cursor: pointer; transition: all 0.2s;
+      @apply flex items-center gap-1.5 px-5 py-2.5 rounded-xl border-none font-semibold text-sm text-white cursor-pointer transition-all;
+      background: linear-gradient(135deg, theme('colors.cyan.500'), theme('colors.cyan.600'));
     }
-    .add-section-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(6,182,212,0.3); }
+    .add-section-btn:hover { @apply -translate-y-0.5; box-shadow: 0 4px 15px rgba(6,182,212,0.3); }
 
-    .section-card {
-      background: #18181b; border: 1px solid #27272a;
-      border-radius: 12px; overflow: hidden;
-      transition: border-color 0.2s;
-    }
-    .section-card:hover { border-color: #3f3f46; }
+    .section-card { @apply bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden transition-colors; }
+    .section-card:hover { @apply border-zinc-700; }
 
-    .section-header {
-      display: flex; align-items: center; gap: 8px;
-      padding: 14px 18px; cursor: pointer;
-      user-select: none; transition: background 0.2s;
-    }
+    .section-header { @apply flex items-center gap-2 px-[18px] py-3.5 cursor-pointer select-none transition-colors; }
     .section-header:hover { background: rgba(255,255,255,0.02); }
     .rotate-90 { transform: rotate(90deg); }
 
-    .lessons-list {
-      border-top: 1px solid #27272a; padding: 8px 12px 8px 48px;
-    }
+    .lessons-list { @apply border-t pt-2 pb-2 pr-3 pl-12; border-color: theme('colors.zinc.800'); }
 
-    .lesson-item {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 10px; border-radius: 8px;
-      transition: background 0.15s;
-    }
+    .lesson-item { @apply flex items-center gap-2 px-2.5 py-2 rounded-lg transition-colors; }
     .lesson-item:hover { background: rgba(255,255,255,0.03); }
 
     .add-lesson-btn {
-      display: flex; align-items: center; gap: 4px;
-      padding: 6px 12px; margin-top: 4px;
-      border-radius: 8px; border: 1px dashed #3f3f46;
-      background: transparent; color: #a1a1aa; font-size: 0.8rem; font-weight: 500;
-      cursor: pointer; transition: all 0.2s; width: 100%; justify-content: center;
+      @apply flex items-center justify-center gap-1 w-full px-3 py-1.5 mt-1 rounded-lg border border-dashed text-zinc-400 text-xs font-medium bg-transparent cursor-pointer transition-all;
+      border-color: theme('colors.zinc.700');
     }
-    .add-lesson-btn:hover { border-color: #06b6d4; color: #06b6d4; background: rgba(6,182,212,0.05); }
+    .add-lesson-btn:hover { @apply border-cyan-500 text-cyan-500; background: rgba(6,182,212,0.05); }
 
     .icon-btn-ghost {
-      display: flex; align-items: center; justify-content: center;
-      width: 32px; height: 32px; border-radius: 8px;
-      background: transparent; border: none; color: #a1a1aa;
-      cursor: pointer; transition: all 0.15s;
+      @apply flex items-center justify-center w-8 h-8 rounded-lg bg-transparent border-none text-zinc-400 cursor-pointer transition-colors;
     }
-    .icon-btn-ghost:hover { background: rgba(255,255,255,0.05); color: #fafafa; }
+    .icon-btn-ghost:hover { background: rgba(255,255,255,0.05); @apply text-zinc-50; }
   `]
 })
 export class InstructorCurriculumComponent implements OnInit {
