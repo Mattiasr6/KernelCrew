@@ -73,12 +73,10 @@ import { AuthService } from '../../../core/services/auth.service';
         <div class="flex items-center gap-4">
           @if (authService.isAuthenticated()) {
             <div class="hidden sm:flex items-center gap-2 mr-2">
-              @if (authService.user()?.credits_balance !== undefined) {
-                <div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                  <span class="material-symbols-outlined text-amber-400 text-[16px]" style="font-variation-settings: 'FILL' 1;">database</span>
-                  <span class="text-xs font-bold text-amber-400">{{ authService.user()?.credits_balance || 0 }}</span>
-                </div>
-              }
+              <div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                <span class="material-symbols-outlined text-amber-400 text-[16px]" style="font-variation-settings: 'FILL' 1;">database</span>
+                <span class="text-xs font-bold text-amber-400">{{ authService.user()?.credits_balance ?? 0 }}</span>
+              </div>
             </div>
             <div class="user-info hidden sm:flex flex-col items-end mr-2">
               <span class="text-zinc-50 text-xs font-bold">{{ authService.user()?.name }}</span>
@@ -92,11 +90,6 @@ import { AuthService } from '../../../core/services/auth.service';
                   }">
                   {{ authService.user()?.role }}
                 </span>
-                @if (authService.user()?.subscription?.plan_name) {
-                  <span class="bg-amber-500/20 text-amber-500 text-xs px-2 py-1 rounded-full font-medium">
-                    {{ authService.user()?.subscription?.plan_name }}
-                  </span>
-                }
               </div>
             </div>
 

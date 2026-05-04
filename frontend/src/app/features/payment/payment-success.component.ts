@@ -36,8 +36,8 @@ export class PaymentSuccessComponent implements OnInit {
   private notification = inject(NotificationService);
 
   ngOnInit() {
-    // Sincronizar sesión para reflejar la nueva suscripción
+    // Sincronizar sesión para reflejar el nuevo saldo/suscripción
     this.authService.refreshUserSession();
-    this.notification.success('¡Bienvenido al nivel Pro!');
+    this.notification.success('Pago procesado correctamente.');
   }
 }
