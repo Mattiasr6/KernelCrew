@@ -121,14 +121,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'my-subscriptions',
-    loadComponent: () =>
-      import('./features/student/subscription-history.component').then(
-        (m) => m.SubscriptionHistoryComponent,
-      ),
-    canActivate: [authGuard],
-  },
-  {
     path: 'payment/success',
     loadComponent: () =>
       import('./features/payment/payment-success.component').then((m) => m.PaymentSuccessComponent),

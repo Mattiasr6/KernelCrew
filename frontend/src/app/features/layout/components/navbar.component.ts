@@ -132,13 +132,9 @@ import { AuthService } from '../../../core/services/auth.service';
                   <span class="material-symbols-outlined text-emerald-400">payments</span>
                   <span class="text-zinc-300">Tienda de Créditos</span>
                 </button>
-                <button mat-menu-item routerLink="/subscriptions">
-                  <span class="material-symbols-outlined text-emerald-400">card_membership</span>
-                  <span class="text-zinc-300">Planes de Suscripción</span>
-                </button>
-                <button mat-menu-item routerLink="/my-subscriptions">
-                  <span class="material-symbols-outlined text-zinc-400">history</span>
-                  <span class="text-zinc-300">Mi Historial</span>
+                <button mat-menu-item routerLink="/credits">
+                  <span class="material-symbols-outlined text-zinc-400">receipt_long</span>
+                  <span class="text-zinc-300">Historial de Compras</span>
                 </button>
               }
               <button mat-menu-item routerLink="/profile">

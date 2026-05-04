@@ -12,6 +12,15 @@ interface CreditPackage {
   price_usd: number;
 }
 
+interface Transaction {
+  id: number;
+  date: string;
+  amount: number;
+  status: string;
+  package_name: string;
+  credits_amount: number;
+}
+
 @Component({
   selector: 'app-credit-store',
   standalone: true,
@@ -71,6 +80,41 @@ interface CreditPackage {
               </div>
             }
           </div>
+
+          @if (transactions().length > 0) {
+            <div class="mt-16 border-t border-zinc-800 pt-12">
+              <h2 class="text-2xl font-bold text-zinc-50 mb-6">Últimas Transacciones</h2>
+              <div class="overflow-x-auto rounded-xl border border-zinc-800">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="bg-zinc-900 text-zinc-400 text-left">
+                      <th class="px-5 py-4 font-semibold">Fecha</th>
+                      <th class="px-5 py-4 font-semibold">Paquete</th>
+                      <th class="px-5 py-4 font-semibold">Créditos</th>
+                      <th class="px-5 py-4 font-semibold">Monto (USD)</th>
+                      <th class="px-5 py-4 font-semibold">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-zinc-800">
+                    @for (tx of transactions(); track tx.id) {
+                      <tr class="hover:bg-zinc-900/50 transition-colors">
+                        <td class="px-5 py-4 text-zinc-300">{{ tx.date }}</td>
+                        <td class="px-5 py-4 text-zinc-100 font-medium">{{ tx.package_name }}</td>
+                        <td class="px-5 py-4 text-amber-400 font-bold">{{ tx.credits_amount }}</td>
+                        <td class="px-5 py-4 text-zinc-300">&#36;{{ tx.amount }}</td>
+                        <td class="px-5 py-4">
+                          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
+                            [ngClass]="tx.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'">
+                            {{ tx.status === 'completed' ? 'Completado' : tx.status }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
 
           <div class="text-center mt-12">
             <div class="inline-flex items-center gap-2 text-zinc-500 text-sm">
@@ -153,12 +197,24 @@ export class CreditStoreComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   packages = signal<CreditPackage[]>([]);
+  transactions = signal<Transaction[]>([]);
   isLoading = signal(true);
   isProcessing = signal(false);
   selectedId = signal<number | null>(null);
 
   ngOnInit() {
     this.loadPackages();
+    this.loadTransactions();
+  }
+
+  loadTransactions() {
+    this.api.get<{ success: boolean; data: Transaction[] }>('payments')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.transactions.set(res.data || []);
+        }
+      });
   }
 
   loadPackages() {

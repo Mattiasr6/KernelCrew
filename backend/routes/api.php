@@ -92,6 +92,9 @@ Route::prefix('v1')->group(function () {
         // Suscripciones del Usuario
         Route::get('/subscriptions/active', [SubscriptionController::class, 'getActive']);
         Route::get('/subscriptions/history', [SubscriptionController::class, 'getHistory']);
+
+        // Historial de Pagos del usuario autenticado (para créditos)
+        Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'myPayments']);
         Route::patch('/subscriptions/{id}/auto-renew', [SubscriptionController::class, 'updateAutoRenew']);
         
         // Certificados
