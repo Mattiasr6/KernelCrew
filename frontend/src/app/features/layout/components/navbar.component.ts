@@ -31,39 +31,41 @@ import { AuthService } from '../../../core/services/auth.service';
           </a>
 
           <nav class="hidden md:flex items-center gap-1">
-            <a routerLink="/courses" routerLinkActive="active" class="nav-link">Explorar</a>
-            @if (authService.user()?.role_id !== 2) {
-              <a routerLink="/credits" routerLinkActive="active" class="nav-link">
-                <span class="material-symbols-outlined text-sm mr-1">payments</span>
-                Tienda
-              </a>
-            }
-            
-            @if (authService.isAdmin()) {
-              <a routerLink="/admin" class="nav-link admin-glow">
-                <span class="material-symbols-outlined text-sm mr-1">admin_panel_settings</span>
-                Panel Admin
-              </a>
-              <a routerLink="/admin/payments" class="nav-link admin-glow">
-                <span class="material-symbols-outlined text-sm mr-1">receipt</span>
-                Transacciones
-              </a>
-            }
-            @if (authService.isInstructor()) {
-              <a routerLink="/instructor" class="nav-link instructor-glow">
+            @if (authService.isViewingAsInstructor() && (authService.isAdmin() || authService.isInstructor())) {
+              <!-- Modo Instructor/Creador -->
+              <a routerLink="/instructor" routerLinkActive="active" class="nav-link instructor-glow" [routerLinkActiveOptions]="{ exact: true }">
                 <span class="material-symbols-outlined text-sm mr-1">dashboard</span>
-                Panel Instructor
+                Panel
               </a>
-            }
-            @if (authService.user()?.role_id === 3) {
-              <a routerLink="/my-courses" class="nav-link">
+              <a routerLink="/instructor/courses" routerLinkActive="active" class="nav-link">
+                <span class="material-symbols-outlined text-sm mr-1">menu_book</span>
+                Mis Cursos
+              </a>
+              @if (authService.isAdmin()) {
+                <a routerLink="/admin" class="nav-link admin-glow">
+                  <span class="material-symbols-outlined text-sm mr-1">admin_panel_settings</span>
+                  Admin
+                </a>
+              }
+            } @else {
+              <!-- Modo Estudiante -->
+              <a routerLink="/courses" routerLinkActive="active" class="nav-link">Explorar</a>
+              @if (authService.user()?.role_id !== 2) {
+                <a routerLink="/credits" routerLinkActive="active" class="nav-link">
+                  <span class="material-symbols-outlined text-sm mr-1">payments</span>
+                  Tienda
+                </a>
+              }
+              <a routerLink="/my-courses" routerLinkActive="active" class="nav-link">
                 <span class="material-symbols-outlined text-sm mr-1">school</span>
                 Mis Cursos
               </a>
-              <a routerLink="/my-subscriptions" class="nav-link">
-                <span class="material-symbols-outlined text-sm mr-1">history</span>
-                Mi Historial
-              </a>
+              @if (authService.isAdmin()) {
+                <a routerLink="/admin" class="nav-link admin-glow">
+                  <span class="material-symbols-outlined text-sm mr-1">admin_panel_settings</span>
+                  Admin
+                </a>
+              }
             }
           </nav>
         </div>
@@ -150,6 +152,14 @@ import { AuthService } from '../../../core/services/auth.service';
                 <span class="material-symbols-outlined text-zinc-400">person</span>
                 <span class="text-zinc-300">Mi Perfil</span>
               </button>
+              @if (authService.user()?.role_id === 1 || authService.user()?.role_id === 2) {
+                <button mat-menu-item (click)="authService.toggleViewMode()">
+                  <span class="material-symbols-outlined text-violet-400">swap_horiz</span>
+                  <span class="text-zinc-300">
+                    {{ authService.isViewingAsInstructor() ? 'Ver como Estudiante' : 'Ver como Docente' }}
+                  </span>
+                </button>
+              }
               <mat-divider class="border-zinc-700"></mat-divider>
               <button mat-menu-item (click)="logout()">
                 <span class="material-symbols-outlined text-rose-400">logout</span>

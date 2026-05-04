@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\CourseSection;
 use App\Models\Lesson;
+use App\Enums\CourseStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -257,6 +258,11 @@ class CourseCurriculumController extends Controller
         $user = request()->user();
         if (!$user || (!$user->isAdmin() && $course->instructor_id !== $user->id)) {
             abort(403, 'No tienes permiso para modificar este curso');
+        }
+
+        // Bloqueo de integridad: solo se puede editar contenido si el curso está en DRAFT
+        if ($course->status !== CourseStatus::DRAFT) {
+            abort(403, 'No puedes modificar el contenido de un curso que no está en borrador');
         }
     }
 }

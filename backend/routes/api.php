@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminPaymentController;
+use App\Http\Controllers\Admin\AdminCourseController;
 use App\Http\Controllers\Api\V1\Auth\SocialAuthController;
 use App\Http\Controllers\Api\V1\CertificateController;
 use App\Http\Controllers\Api\V1\CourseReviewController;
@@ -110,6 +111,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
             Route::put('/courses/{id}', [CourseController::class, 'update'])->can('update', 'course');
             Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->can('delete', 'course');
+            Route::patch('/courses/{id}/request-review', [CourseController::class, 'requestReview'])->can('submitForReview', 'course');
 
             // Curriculum Builder (Secciones y Lecciones)
             Route::get('/courses/{courseId}/curriculum', [CourseCurriculumController::class, 'index']);
@@ -144,6 +146,11 @@ Route::prefix('v1')->group(function () {
             Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
             Route::put('/courses/{id}', [CourseController::class, 'update'])->can('update', 'course');
             Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->can('delete', 'course');
+            
+            // Moderación de Cursos (Admin)
+            Route::get('/courses/pending', [AdminCourseController::class, 'pending']);
+            Route::patch('/courses/{id}/approve', [AdminCourseController::class, 'approve'])->can('approve', 'course');
+            Route::patch('/courses/{id}/reject', [AdminCourseController::class, 'reject'])->can('reject', 'course');
             
             // Transacciones y Pagos (Admin)
             Route::get('/payments', [AdminPaymentController::class, 'index']);

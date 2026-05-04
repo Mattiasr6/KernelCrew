@@ -93,6 +93,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
                   <td class="font-mono text-emerald-400">\${{ course.price }}</td>
                   <td class="text-right">
                     <div class="action-group">
+                      @if (course.status === 'DRAFT' || course.status === 'REJECTED') {
+                        <button class="icon-btn review" (click)="requestReview(course)" title="Enviar a revisión">
+                          <span class="material-symbols-outlined">how_to_vote</span>
+                        </button>
+                      }
                       <button class="icon-btn edit" [routerLink]="['/instructor', 'courses', course.id, 'curriculum']" title="Editar contenido">
                         <span class="material-symbols-outlined">edit</span>
                       </button>
@@ -326,6 +331,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
     .icon-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
     .icon-btn.delete:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: #f8717144; }
+    .icon-btn.review:hover { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: #f59e0b44; }
 
     .dialog-overlay {
       position: fixed;
@@ -501,24 +507,36 @@ export class InstructorCoursesComponent implements OnInit {
     }
   }
 
+  requestReview(course: Course): void {
+    this.courseService.requestReview(course.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Curso enviado a revisión', 'OK', { duration: 3000 });
+          this.loadMyCourses();
+        },
+        error: (err) => {
+          this.snackBar.open(err.error?.message || 'Error al enviar a revisión', 'Cerrar');
+        }
+      });
+  }
+
   getStatusClass(status: string): string {
     const classes: Record<string, string> = {
-      'draft': 'status-badge draft',
-      'pending': 'status-badge pending',
-      'approved': 'status-badge approved',
-      'published': 'status-badge published',
-      'rejected': 'status-badge rejected'
+      'DRAFT': 'status-badge draft',
+      'IN_REVIEW': 'status-badge pending',
+      'PUBLISHED': 'status-badge published',
+      'REJECTED': 'status-badge rejected'
     };
     return classes[status] || 'status-badge';
   }
 
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      'draft': 'Borrador',
-      'pending': 'Pendiente',
-      'approved': 'Aprobado',
-      'published': 'Publicado',
-      'rejected': 'Rechazado'
+      'DRAFT': 'Borrador',
+      'IN_REVIEW': 'En Revisión',
+      'PUBLISHED': 'Publicado',
+      'REJECTED': 'Rechazado'
     };
     return labels[status] || status;
   }

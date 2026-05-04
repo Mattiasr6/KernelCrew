@@ -1,8 +1,9 @@
-import { Component, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CurriculumService } from '../../core/services/curriculum.service';
+import { CourseService } from '../../core/services/course.service';
 import { CourseSection, Lesson } from '../../core/models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LessonEditorComponent } from './lesson-editor.component';
@@ -22,12 +23,41 @@ import { LessonEditorComponent } from './lesson-editor.component';
           </a>
           <h1 class="text-3xl font-bold tracking-tight text-zinc-50">Curriculum Builder</h1>
           <p class="text-zinc-400 mt-1">Estructura las secciones y lecciones de tu curso.</p>
+          @if (courseStatus(); as status) {
+            <div class="mt-3 flex items-center gap-2">
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider"
+                [ngClass]="{
+                  'bg-zinc-800 text-zinc-400': status === 'DRAFT',
+                  'bg-amber-500/10 text-amber-400': status === 'IN_REVIEW',
+                  'bg-emerald-500/10 text-emerald-400': status === 'PUBLISHED',
+                  'bg-rose-500/10 text-rose-400': status === 'REJECTED'
+                }">
+                <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">
+                  {{ status === 'DRAFT' ? 'edit_note' : status === 'IN_REVIEW' ? 'hourglass_top' : status === 'PUBLISHED' ? 'check_circle' : 'block' }}
+                </span>
+                {{ status === 'DRAFT' ? 'Borrador' : status === 'IN_REVIEW' ? 'En Revisión' : status === 'PUBLISHED' ? 'Publicado' : 'Rechazado' }}
+              </span>
+            </div>
+          }
         </div>
-        <button class="add-section-btn" (click)="addSection()">
-          <span class="material-symbols-outlined text-[18px]">add</span>
-          Nueva Sección
-        </button>
+        @if (courseStatus() === 'DRAFT' || courseStatus() === 'REJECTED') {
+          <button class="add-section-btn" (click)="addSection()">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            Nueva Sección
+          </button>
+        }
       </div>
+
+      @if (isReadonly()) {
+        <div class="mb-6 px-5 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3">
+          <span class="material-symbols-outlined text-amber-400">info</span>
+          <span class="text-sm text-amber-300">
+            @if (courseStatus() === 'IN_REVIEW') { Este curso está en revisión. No puedes modificar su contenido hasta que un administrador lo apruebe. }
+            @else if (courseStatus() === 'PUBLISHED') { Este curso está publicado. Para modificarlo, crea una nueva versión. }
+            @else if (courseStatus() === 'REJECTED') { Este curso fue rechazado. Puedes editarlo y enviarlo a revisión nuevamente. }
+          </span>
+        </div>
+      }
 
       <!-- Loading State -->
       @if (isLoading()) {
@@ -67,12 +97,14 @@ import { LessonEditorComponent } from './lesson-editor.component';
                   </div>
                 </div>
                 <div class="flex items-center gap-2" (click)="$event.stopPropagation()">
-                  <button class="icon-btn-ghost" (click)="editSection(section)" title="Editar sección">
-                    <span class="material-symbols-outlined text-[18px]">edit</span>
-                  </button>
-                  <button class="icon-btn-ghost text-rose-400 hover:bg-rose-500/10" (click)="confirmDeleteSection(section)" title="Eliminar sección">
-                    <span class="material-symbols-outlined text-[18px]">delete</span>
-                  </button>
+                  @if (!isReadonly()) {
+                    <button class="icon-btn-ghost" (click)="editSection(section)" title="Editar sección">
+                      <span class="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
+                    <button class="icon-btn-ghost text-rose-400 hover:bg-rose-500/10" (click)="confirmDeleteSection(section)" title="Eliminar sección">
+                      <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  }
                 </div>
               </div>
 
@@ -93,22 +125,25 @@ import { LessonEditorComponent } from './lesson-editor.component';
                           <span class="text-xs text-zinc-600">{{ lesson.duration_minutes }} min</span>
                         </div>
                         <div class="flex items-center gap-1">
-                          <button class="icon-btn-ghost text-xs" (click)="editLesson(lesson)" title="Editar lección">
-                            <span class="material-symbols-outlined text-[16px]">edit</span>
-                          </button>
-                          <button class="icon-btn-ghost text-rose-400 hover:bg-rose-500/10" (click)="confirmDeleteLesson(lesson)" title="Eliminar lección">
-                            <span class="material-symbols-outlined text-[16px]">delete</span>
-                          </button>
+                          @if (!isReadonly()) {
+                            <button class="icon-btn-ghost text-xs" (click)="editLesson(lesson)" title="Editar lección">
+                              <span class="material-symbols-outlined text-[16px]">edit</span>
+                            </button>
+                            <button class="icon-btn-ghost text-rose-400 hover:bg-rose-500/10" (click)="confirmDeleteLesson(lesson)" title="Eliminar lección">
+                              <span class="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                          }
                         </div>
                       </div>
                     }
                   }
 
-                  <!-- Add Lesson Button -->
-                  <button class="add-lesson-btn" (click)="addLesson(section.id)">
-                    <span class="material-symbols-outlined text-[16px]">add</span>
-                    Añadir Lección
-                  </button>
+                  @if (!isReadonly()) {
+                    <button class="add-lesson-btn" (click)="addLesson(section.id)">
+                      <span class="material-symbols-outlined text-[16px]">add</span>
+                      Añadir Lección
+                    </button>
+                  }
                 </div>
               }
             </div>
@@ -223,10 +258,13 @@ import { LessonEditorComponent } from './lesson-editor.component';
 export class InstructorCurriculumComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private curriculumService = inject(CurriculumService);
+  private courseService = inject(CourseService);
   private destroyRef = inject(DestroyRef);
 
   courseId = signal<number>(0);
   sections = signal<CourseSection[]>([]);
+  courseStatus = signal<string | null>(null);
+  isReadonly = computed(() => this.courseStatus() !== 'DRAFT' && this.courseStatus() !== 'REJECTED');
   isLoading = signal(true);
   collapsedSections = signal<boolean[]>([]);
 
@@ -248,7 +286,20 @@ export class InstructorCurriculumComponent implements OnInit {
     if (id) {
       this.courseId.set(id);
       this.loadCurriculum();
+      this.loadCourseStatus();
     }
+  }
+
+  loadCourseStatus() {
+    this.courseService.getCourse(this.courseId())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          if (res.data?.course) {
+            this.courseStatus.set(res.data.course.status);
+          }
+        }
+      });
   }
 
   loadCurriculum() {

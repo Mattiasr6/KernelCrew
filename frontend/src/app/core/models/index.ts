@@ -92,7 +92,7 @@ export interface Course {
   price_display?: string;
   price_in_credits?: number;
   instructor_id: number;
-  status: 'draft' | 'published';
+  status: 'DRAFT' | 'IN_REVIEW' | 'PUBLISHED' | 'REJECTED';
   instructor?: Instructor;
   created_at: string;
   updated_at?: string;

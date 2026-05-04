@@ -175,6 +175,13 @@ export const routes: Routes = [
           import('./features/admin/components/admin-transactions.component').then(
             (m) => m.AdminTransactionsComponent,
           ),
+      },
+      {
+        path: 'courses',
+        loadComponent: () =>
+          import('./features/admin/admin-moderation.component').then(
+            (m) => m.AdminModerationComponent,
+          ),
       }
     ],
   },

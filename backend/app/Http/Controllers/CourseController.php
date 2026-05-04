@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCourseRequest;
+use App\Enums\CourseStatus;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -290,7 +291,7 @@ class CourseController extends Controller
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'string', 'min:50'],
             'price' => ['sometimes', 'numeric', 'min:0'],
-            'status' => ['sometimes', 'string', 'in:draft,published'],
+            'status' => ['sometimes', 'string', 'in:DRAFT,IN_REVIEW,PUBLISHED,REJECTED'],
         ]);
 
         if (isset($validated['title']) && $validated['title'] !== $course->title) {
@@ -372,6 +373,20 @@ class CourseController extends Controller
      *     )
      * )
      */
+    #[OA\Patch(path: '/api/v1/courses/{id}/restore', tags: ['Cursos'], summary: 'Restaurar curso')]
+    public function requestReview(int $id): JsonResponse
+    {
+        $course = Course::findOrFail($id);
+        $this->authorize('submitForReview', $course);
+
+        $course->update(['status' => CourseStatus::IN_REVIEW]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Curso enviado a revisión.',
+        ]);
+    }
+
     #[OA\Patch(path: '/api/v1/courses/{id}/restore', tags: ['Cursos'], summary: 'Restaurar curso')]
     public function restore(int $id): JsonResponse
     {
