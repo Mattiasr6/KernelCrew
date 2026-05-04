@@ -219,7 +219,7 @@ export class StudentSubscriptionsComponent implements OnInit {
     this.subscriptionService.getActive().subscribe({
       next: (res) => {
         if (res.success && res.data) {
-          this.currentSubscription.set(res.data.subscription || null);
+          this.currentSubscription.set(res.data || null);
         }
       },
       error: () => {}

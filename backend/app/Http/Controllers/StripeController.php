@@ -43,7 +43,7 @@ class StripeController extends Controller
                         'name' => "Plan {$plan->name} - EduPortal",
                         'description' => $plan->description,
                     ],
-                    'unit_amount' => (int) rtrim((string) $plan->price, '.00'),
+                    'unit_amount' => (int) $plan->price,
                 ],
                 'quantity' => 1,
             ]],
@@ -91,7 +91,7 @@ class StripeController extends Controller
                 user: $user,
                 plan: $plan,
                 paymentMethod: 'stripe',
-                amount: (float) ($plan->price * 100),
+                amount: (float) $plan->price,
                 transactionId: $session->payment_intent,
                 registerActivity: true,
             );
