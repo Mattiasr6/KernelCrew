@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Services\KernelAIService;
 use Illuminate\Http\JsonResponse;
@@ -30,26 +29,10 @@ class KernelAIController extends Controller
 
         $user = $request->user();
 
-        // CA-15: Validar suscripción activa para usar IA
-        $subscription = $user->subscriptions()
-            ->where('status', 'active')
-            ->where('end_date', '>=', now()->toDateString())
-            ->with('plan')
-            ->first();
-
-        if (!$subscription && (int) $user->role_id !== UserRole::Admin->value) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Necesitas una suscripción activa para usar el asistente de IA.'
-            ], 403);
-        }
-
         // Construir contexto dinámico del usuario
         $userContext = [
             'name' => $user->name,
             'role' => $user->role ?? 'student',
-            'plan' => $subscription && $subscription->plan ? $subscription->plan->name : 'admin',
-            'subscription_status' => $subscription ? 'active' : 'admin',
         ];
 
         // Agregar system message con contexto
@@ -81,8 +64,6 @@ Eres "MattClaw", el asistente de inteligencia artificial de la plataforma educat
 INFORMACIÓN DEL USUARIO:
 - Nombre: {$userContext['name']}
 - Rol: {$userContext['role']}
-- Plan de suscripción: {$userContext['plan']}
-- Estado de suscripción: {$userContext['subscription_status']}
 
 INSTRUCCIONES:
 1. Estás en una plataforma de cursos de programación y tecnología para desarrolladores.

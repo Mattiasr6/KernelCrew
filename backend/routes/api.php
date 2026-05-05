@@ -75,20 +75,17 @@ Route::prefix('v1')->group(function () {
         // Inscripción con Créditos
         Route::post('/courses/{course}/enroll-credits', [CourseEnrollmentController::class, 'enrollWithCredits'])->middleware('throttle:3,1');
 
-        // Acceso a Cursos y Suscripción (Middleaware de validación)
-        Route::middleware('subscription.access')->group(function () {
-            // Inscripciones y Progreso
-            Route::post('/courses/{id}/enroll', [CourseEnrollmentController::class, 'enroll']);
-            Route::patch('/courses/{id}/progress', [CourseEnrollmentController::class, 'updateProgress']);
-            Route::get('/courses/{id}/enrollment-status', [CourseEnrollmentController::class, 'status']);
-            Route::post('/courses/{id}/reviews', [CourseReviewController::class, 'store']);
-            
-            // Epic 5: Control de Acceso
-            Route::get('/courses/accessible', [CourseAccessController::class, 'getAccessibleCourses']);
-            Route::get('/courses/{id}/access-check', [CourseAccessController::class, 'checkAccess']);
-            Route::get('/my-courses', [CourseAccessController::class, 'getMyCourses']);
-            Route::post('/courses/{id}/complete', [CourseAccessController::class, 'markComplete']);
-        });
+        // Inscripciones y Progreso
+        Route::post('/courses/{id}/enroll', [CourseEnrollmentController::class, 'enroll']);
+        Route::patch('/courses/{id}/progress', [CourseEnrollmentController::class, 'updateProgress']);
+        Route::get('/courses/{id}/enrollment-status', [CourseEnrollmentController::class, 'status']);
+        Route::post('/courses/{id}/reviews', [CourseReviewController::class, 'store']);
+        
+        // Control de Acceso
+        Route::get('/courses/accessible', [CourseAccessController::class, 'getAccessibleCourses']);
+        Route::get('/courses/{id}/access-check', [CourseAccessController::class, 'checkAccess']);
+        Route::get('/my-courses', [CourseAccessController::class, 'getMyCourses']);
+        Route::post('/courses/{id}/complete', [CourseAccessController::class, 'markComplete']);
         
         // Progreso detallado y lecciones (requiere autenticación)
         Route::post('/lessons/{id}/complete', [CourseEnrollmentController::class, 'completeLesson'])->middleware('throttle:5,1');

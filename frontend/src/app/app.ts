@@ -4,7 +4,6 @@ import { NavbarComponent } from './features/layout/components/navbar.component';
 import { NotificationComponent } from './core/components/notification.component';
 import { KernelAIComponent } from './features/student/kernel-ai/kernel-ai.component';
 import { AuthService } from './core/services/auth.service';
-import { SubscriptionService } from './core/services/subscription.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -36,7 +35,6 @@ import { CommonModule } from '@angular/common';
 })
 export class App {
   private authService = inject(AuthService);
-  private subscriptionService = inject(SubscriptionService);
   
   showKernelAI = () => {
     const user = this.authService.user();
