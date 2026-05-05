@@ -39,7 +39,7 @@ import { AuthService } from '../../../core/services/auth.service';
               </a>
               <a routerLink="/instructor/courses" routerLinkActive="active" class="nav-link">
                 <span class="material-symbols-outlined text-sm mr-1">menu_book</span>
-                Mis Cursos
+                Contenido
               </a>
               @if (authService.isAdmin()) {
                 <a routerLink="/admin" class="nav-link admin-glow">

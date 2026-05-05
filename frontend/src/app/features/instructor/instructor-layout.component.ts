@@ -27,6 +27,13 @@ import { RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
             <span class="material-symbols-outlined text-[20px]">menu_book</span>
             <span class="font-medium text-sm">Mis Cursos</span>
           </a>
+          <a 
+            class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-all"
+            routerLink="/credits"
+            routerLinkActive="active">
+            <span class="material-symbols-outlined text-[20px]">database</span>
+            <span class="font-medium text-sm">Comprar Créditos</span>
+          </a>
         </div>
 
         <div class="px-6 mt-auto">

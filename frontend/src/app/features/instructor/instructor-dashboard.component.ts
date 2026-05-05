@@ -9,12 +9,29 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-instructor-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <!-- Ambient Background Glow -->
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
     <div class="max-w-7xl mx-auto space-y-8 animate-fade-in relative z-10">
+
+          <!-- CTA: Crear Nuevo Curso -->
+          <div class="bg-cyan-500/5 border border-cyan-500/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-cyan-400" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+              </div>
+              <div>
+                <h3 class="text-base sm:text-lg font-bold text-zinc-100">Comienza algo nuevo</h3>
+                <p class="text-xs sm:text-sm text-zinc-500 mt-0.5">Crea un curso y compártelo con la comunidad</p>
+              </div>
+            </div>
+            <a routerLink="/instructor/courses" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] w-full sm:w-auto justify-center">
+              <span class="material-symbols-outlined text-[16px]">add</span>
+              Crear Nuevo Curso
+            </a>
+          </div>
 
           <!-- Métricas del Instructor -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -53,12 +70,12 @@ import { RouterLink } from '@angular/router';
             </div>
             <div class="metric-card">
               <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-lg bg-violet-500/10 flex items-center justify-center">
-                  <span class="material-symbols-outlined text-violet-400">attach_money</span>
+                <div class="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-emerald-400">check_circle</span>
                 </div>
                 <div>
-                  <p class="text-2xl font-bold text-zinc-50">{{ dashboardData()?.stats?.total_earnings || 0 }}</p>
-                  <p class="text-xs text-zinc-500 uppercase tracking-wider">Ingresos</p>
+                  <p class="text-2xl font-bold text-zinc-50">{{ dashboardData()?.stats?.courses_count || 0 }}</p>
+                  <p class="text-xs text-zinc-500 uppercase tracking-wider">Publicados</p>
                 </div>
               </div>
             </div>
@@ -107,10 +124,14 @@ import { RouterLink } from '@angular/router';
                       <span class="material-symbols-outlined text-xs">info</span>
                       Publica {{ 3 - (dashboardData()?.gamification?.progress_current ?? 0) }} cursos más para obtener 1 crédito adicional.
                     </p>
+
+                    <a routerLink="/credits" class="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 transition-colors mt-5">
+                      <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                      Gastar créditos en otros cursos
+                    </a>
                   </div>
                 </div>
               </div>
-            </div>
 
             <!-- Supporting Card: Actividad Reciente -->
             <div class="lg:col-span-5">
