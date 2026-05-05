@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\CourseReviewController;
 use App\Http\Controllers\Api\V1\KernelAIController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CourseAccessController;
 use App\Http\Controllers\CourseEnrollmentController;
 use App\Http\Controllers\CourseCurriculumController;
 use App\Http\Controllers\CreditPackageController;
@@ -42,6 +43,7 @@ Route::prefix('v1')->group(function () {
     // Rutas Públicas de Cursos
     Route::get('/courses', [CourseController::class, 'index']);
     Route::get('/courses/categories', [CourseController::class, 'categories']);
+    Route::get('/courses/featured', [CourseController::class, 'featured']);
     Route::get('/courses/{id}', [CourseController::class, 'show']);
     Route::get('/courses/{id}/reviews', [CourseReviewController::class, 'index']);
     Route::get('/courses/{courseId}/curriculum', [CourseCurriculumController::class, 'index']);
@@ -118,9 +120,12 @@ Route::prefix('v1')->group(function () {
             Route::get('/dashboard', [InstructorDashboardController::class, 'index']);
             Route::get('/courses', [CourseController::class, 'getInstructorCourses']);
             Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
+            Route::get('/courses/{id}', [CourseController::class, 'showForEditor'])->can('update', 'course');
             Route::put('/courses/{id}', [CourseController::class, 'update'])->can('update', 'course');
             Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->can('delete', 'course');
             Route::patch('/courses/{id}/request-review', [CourseController::class, 'requestReview'])->can('submitForReview', 'course');
+            Route::patch('/courses/{id}/basic', [CourseController::class, 'updateBasic'])->can('update', 'course');
+            Route::patch('/courses/{id}/pricing', [CourseController::class, 'updatePricing'])->can('update', 'course');
 
             // Curriculum Builder (Secciones y Lecciones)
             Route::get('/courses/{courseId}/curriculum', [CourseCurriculumController::class, 'index']);

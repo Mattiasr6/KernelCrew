@@ -15,8 +15,9 @@ class Course extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'slug', 'description', 'price', 'price_in_credits',
-        'instructor_id', 'status', 'is_credit_counted', 'level'
+        'title', 'slug', 'description', 'short_description', 'price', 'price_in_credits',
+        'instructor_id', 'category_id', 'status', 'is_credit_counted', 'level',
+        'duration_hours', 'thumbnail',
     ];
 
     public function activities(): \Illuminate\Database\Eloquent\Relations\MorphMany

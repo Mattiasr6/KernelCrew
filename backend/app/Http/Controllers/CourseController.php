@@ -425,4 +425,143 @@ class CourseController extends Controller
             'data' => $categories
         ], 200);
     }
+
+    /**
+     * Cursos destacados para la landing page (público).
+     */
+    public function featured(): JsonResponse
+    {
+        $courses = Course::with(['instructor', 'category'])
+            ->published()
+            ->withCount('students')
+            ->orderByDesc('students_count')
+            ->take(6)
+            ->get();
+
+        $coursesData = $courses->map(function ($course) {
+            // Ocultar URLs de video del contenido del curso
+            $course->makeHidden(['content', 'video_url']);
+            return [
+                'id' => $course->id,
+                'title' => $course->title,
+                'slug' => $course->slug,
+                'description' => \Illuminate\Support\Str::limit($course->description, 120),
+                'thumbnail' => $course->thumbnail,
+                'level' => $course->level,
+                'category' => $course->category,
+                'instructor' => [
+                    'id' => $course->instructor->id,
+                    'name' => $course->instructor->name,
+                    'avatar_url' => $course->instructor->avatar_url ?? null,
+                ],
+                'students_count' => $course->students_count,
+                'rating_avg' => $course->reviews()->avg('rating') ?? 0,
+                'price_in_credits' => $course->price_in_credits,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $coursesData,
+        ]);
+    }
+
+    /**
+     * Obtener curso completo para el editor del instructor.
+     */
+    public function showForEditor(int $id): JsonResponse
+    {
+        $course = Course::with(['instructor', 'category'])
+            ->withCount(['sections', 'students'])
+            ->find($id);
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Curso no encontrado.',
+            ], 404);
+        }
+
+        $this->authorize('update', $course);
+
+        $lessonsCount = \App\Models\Lesson::whereHas('section', function ($q) use ($course) {
+            $q->where('course_id', $course->id);
+        })->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                ...$course->toArray(),
+                'sections_count' => $course->sections_count,
+                'lessons_count' => $lessonsCount,
+                'students_count' => $course->students_count,
+            ],
+        ]);
+    }
+
+    /**
+     * Actualizar información básica del curso (instructor).
+     */
+    public function updateBasic(Request $request, int $id): JsonResponse
+    {
+        $course = Course::withTrashed()->find($id);
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Curso no encontrado.',
+            ], 404);
+        }
+
+        $this->authorize('update', $course);
+
+        $validated = $request->validate([
+            'title' => ['sometimes', 'string', 'max:255'],
+            'description' => ['sometimes', 'string', 'min:50'],
+            'category_id' => ['sometimes', 'integer', 'exists:categories,id'],
+            'level' => ['sometimes', 'string', 'in:beginner,intermediate,advanced'],
+            'thumbnail' => ['sometimes', 'nullable', 'url'],
+        ]);
+
+        if (isset($validated['title']) && $validated['title'] !== $course->title) {
+            $validated['slug'] = Course::generateSlug($validated['title']);
+        }
+
+        $course->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Información del curso actualizada.',
+            'data' => $course->fresh(),
+        ]);
+    }
+
+    /**
+     * Actualizar precio en créditos del curso (instructor).
+     */
+    public function updatePricing(Request $request, int $id): JsonResponse
+    {
+        $course = Course::withTrashed()->find($id);
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Curso no encontrado.',
+            ], 404);
+        }
+
+        $this->authorize('update', $course);
+
+        $validated = $request->validate([
+            'price_in_credits' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $course->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Precio en créditos actualizado.',
+            'data' => $course->fresh(),
+        ]);
+    }
 }
