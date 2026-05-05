@@ -273,7 +273,10 @@ export class CoursePlayerComponent implements OnInit {
       next: (res) => {
         if (res.data) this.course.set(res.data.course);
       },
-      error: () => this.router.navigate(['/courses'])
+      error: () => {
+        this.loading.set(false);
+        this.snackBar.open('No se pudo cargar el curso. Intenta de nuevo.', 'Cerrar', { duration: 5000 });
+      }
     });
   }
 
