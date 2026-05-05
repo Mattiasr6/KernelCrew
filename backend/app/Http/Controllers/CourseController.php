@@ -223,7 +223,7 @@ class CourseController extends Controller
 
         $user = request()->user();
 
-        if ($course->status !== 'published') {
+        if (!$course->isPublished()) {
             $isOwner = $user && $course->instructor_id === $user->id;
             $isAdmin = $user && $user->isAdmin();
             if (!$isOwner && !$isAdmin) {
