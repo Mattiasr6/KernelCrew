@@ -232,7 +232,9 @@ export class CourseDetailComponent implements OnInit {
   }
 
   loadCurriculum(courseId: number) {
-    this.courseService.getCourse(courseId).subscribe({
+    this.courseService.getCourse(courseId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: () => {
         this.curriculumService.getPublicCurriculum(courseId)
           .pipe(takeUntilDestroyed(this.destroyRef))
@@ -252,7 +254,9 @@ export class CourseDetailComponent implements OnInit {
   }
 
   loadCourse(id: number): void {
-    this.courseService.getCourse(id).subscribe({
+    this.courseService.getCourse(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (response) => {
         if (response.data) {
           const course = response.data.course;
@@ -272,7 +276,9 @@ export class CourseDetailComponent implements OnInit {
 
   checkEnrollment(id: number): void {
     if (!this.authService.isAuthenticated()) return;
-    this.courseService.getEnrollmentStatus(id).subscribe({
+    this.courseService.getEnrollmentStatus(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         if (res.data) this.enrolled.set(true);
       }
@@ -287,7 +293,9 @@ export class CourseDetailComponent implements OnInit {
     }
 
     this.isEnrolling.set(true);
-    this.courseService.enrollInCourse(this.course()!.id).subscribe({
+    this.courseService.enrollInCourse(this.course()!.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => {
         this.isEnrolling.set(false);
         this.enrolled.set(true);

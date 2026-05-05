@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { SubscriptionService } from '../../core/services/subscription.service';
 import { SubscriptionPlan, UserSubscription } from '../../core/models';
@@ -203,6 +204,7 @@ export class StudentSubscriptionsComponent implements OnInit {
   private subscriptionService = inject(SubscriptionService);
   private notification = inject(NotificationService);
   private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
   plans = signal<SubscriptionPlan[]>([]);
   isLoading = signal(true);
@@ -216,7 +218,7 @@ export class StudentSubscriptionsComponent implements OnInit {
   }
 
   loadCurrentSubscription() {
-    this.subscriptionService.getActive().subscribe({
+    this.subscriptionService.getActive().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         if (res.success && res.data) {
           this.currentSubscription.set(res.data || null);
@@ -250,7 +252,7 @@ export class StudentSubscriptionsComponent implements OnInit {
 
   loadPlans() {
     this.isLoading.set(true);
-    this.subscriptionService.getPlans().subscribe({
+    this.subscriptionService.getPlans().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         const plans = Array.isArray(res.data) ? res.data : [];
         this.plans.set(plans);
@@ -267,7 +269,7 @@ export class StudentSubscriptionsComponent implements OnInit {
     this.isProcessing.set(true);
     this.selectedPlanId.set(plan.id);
 
-    this.subscriptionService.createCheckoutSession(plan.id).subscribe({
+    this.subscriptionService.createCheckoutSession(plan.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         if (res.success && res.data?.url) {
           window.location.href = res.data.url;

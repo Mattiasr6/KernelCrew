@@ -259,7 +259,11 @@ export class InstructorCurriculumComponent implements OnInit {
   deleteTarget = signal<{ type: 'sección' | 'lección'; id: number } | null>(null);
 
   ngOnInit() {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    const id = Number(
+      this.route.snapshot.paramMap.get('id') ??
+      this.route.snapshot.paramMap.get('courseId') ??
+      this.route.parent?.snapshot.paramMap.get('courseId')
+    );
     if (id) {
       this.courseId.set(id);
       this.loadCurriculum();

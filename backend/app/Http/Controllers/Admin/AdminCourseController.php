@@ -7,12 +7,13 @@ use App\Events\CoursePublished;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AdminCourseController extends Controller
 {
     public function pending(): JsonResponse
     {
-        $courses = Course::with('instructor')
+        $courses = Course::with(['instructor', 'category'])
             ->where('status', CourseStatus::IN_REVIEW)
             ->latest()
             ->get();
@@ -28,7 +29,10 @@ class AdminCourseController extends Controller
         $course = Course::findOrFail($id);
         $this->authorize('approve', $course);
 
-        $course->update(['status' => CourseStatus::PUBLISHED]);
+        $course->update([
+            'status' => CourseStatus::PUBLISHED,
+            'rejection_reason' => null,
+        ]);
 
         event(new CoursePublished($course));
 
@@ -38,12 +42,19 @@ class AdminCourseController extends Controller
         ]);
     }
 
-    public function reject(int $id): JsonResponse
+    public function reject(Request $request, int $id): JsonResponse
     {
         $course = Course::findOrFail($id);
         $this->authorize('reject', $course);
 
-        $course->update(['status' => CourseStatus::REJECTED]);
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:500'],
+        ]);
+
+        $course->update([
+            'status' => CourseStatus::REJECTED,
+            'rejection_reason' => $validated['reason'],
+        ]);
 
         return response()->json([
             'success' => true,

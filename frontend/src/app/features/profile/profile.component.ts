@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -224,6 +225,7 @@ export class ProfileComponent {
   private userService = inject(UserService);
   private notification = inject(NotificationService);
   private subscriptionService = inject(SubscriptionService);
+  private destroyRef = inject(DestroyRef);
 
   isEditing = signal(false);
   isSaving = signal(false);
@@ -240,7 +242,7 @@ export class ProfileComponent {
 
   loadSubscription() {
     this.subscriptionLoading.set(true);
-    this.subscriptionService.getActive().subscribe({
+    this.subscriptionService.getActive().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         if (res.success && res.data?.subscription) {
           this.activeSubscription.set(res.data.subscription);
@@ -270,7 +272,7 @@ export class ProfileComponent {
 
   saveProfile() {
     this.isSaving.set(true);
-    this.userService.updateProfile(this.formData).subscribe({
+    this.userService.updateProfile(this.formData).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         if (res.success) {
           this.authService.refreshUserSession();
@@ -292,7 +294,7 @@ export class ProfileComponent {
     const target = event.target as HTMLInputElement;
     const sub = this.activeSubscription();
     if (sub) {
-      this.subscriptionService.updateAutoRenew(sub.id, target.checked).subscribe({
+      this.subscriptionService.updateAutoRenew(sub.id, target.checked).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           sub.auto_renew = target.checked;
           this.activeSubscription.set({...sub});

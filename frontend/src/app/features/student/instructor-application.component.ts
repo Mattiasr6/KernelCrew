@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApplicationService } from '../../core/services/application.service';
@@ -114,6 +115,7 @@ import { StudentSidebarComponent } from '../../shared/components/student-sidebar
 export class InstructorApplicationComponent {
   private fb = inject(FormBuilder);
   private applicationService = inject(ApplicationService);
+  private destroyRef = inject(DestroyRef);
 
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
@@ -129,7 +131,7 @@ export class InstructorApplicationComponent {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.applicationService.submitApplication(this.applicationForm.value).subscribe({
+    this.applicationService.submitApplication(this.applicationForm.value).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         this.isLoading.set(false);
         this.applicationStatus.set('pending');

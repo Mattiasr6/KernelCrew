@@ -6,8 +6,9 @@ import { authGuard, guestGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'courses',
-    pathMatch: 'full',
+    title: 'KernelLearn - Domina el Código. Certifícate.',
+    loadComponent: () =>
+      import('./features/landing/landing.component').then((m) => m.LandingComponent),
   },
   {
     path: 'login',
@@ -207,13 +208,54 @@ export const routes: Routes = [
               import('./features/instructor/instructor-curriculum.component').then(
                 (m) => m.InstructorCurriculumComponent,
               ),
+        },
+        {
+            path: 'courses/:courseId',
+            loadComponent: () =>
+              import('./features/instructor/course-editor/course-editor-layout.component').then(
+                (m) => m.CourseEditorLayoutComponent,
+              ),
+            children: [
+                {
+                    path: '',
+                    redirectTo: 'basic',
+                    pathMatch: 'full',
+                },
+                {
+                    path: 'basic',
+                    loadComponent: () =>
+                      import('./features/instructor/course-editor/components/basic-editor.component').then(
+                        (m) => m.BasicEditorComponent,
+                      ),
+                },
+                {
+                    path: 'curriculum',
+                    loadComponent: () =>
+                      import('./features/instructor/instructor-curriculum.component').then(
+                        (m) => m.InstructorCurriculumComponent,
+                      ),
+                },
+                {
+                    path: 'pricing',
+                    loadComponent: () =>
+                      import('./features/instructor/course-editor/components/pricing-editor.component').then(
+                        (m) => m.PricingEditorComponent,
+                      ),
+                },
+                {
+                    path: 'settings',
+                    loadComponent: () =>
+                      import('./features/instructor/course-editor/components/course-editor-settings.component').then(
+                        (m) => m.CourseEditorSettingsComponent,
+                      ),
+                },
+            ],
         }
     ]
   },
 
   {
     path: '**',
-    title: 'KernelLearn - Plataforma de Cursos',
-    redirectTo: 'courses',
+    redirectTo: '',
   },
 ];

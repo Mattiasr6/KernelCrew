@@ -1,4 +1,5 @@
-import { Component, inject, input, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, input, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ReviewService, ReviewResponse } from '../../../core/services/review.service';
@@ -140,6 +141,7 @@ export class CourseReviewsComponent implements OnInit {
   private reviewService = inject(ReviewService);
   private notification = inject(NotificationService);
   private fb = inject(FormBuilder);
+  private destroyRef = inject(DestroyRef);
 
   reviewData = signal<ReviewResponse | null>(null);
   currentRating = signal(0);
@@ -157,7 +159,7 @@ export class CourseReviewsComponent implements OnInit {
   }
 
   loadReviews() {
-    this.reviewService.getReviews(this.courseId()).subscribe({
+    this.reviewService.getReviews(this.courseId()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => this.reviewData.set(res.data)
     });
   }
@@ -181,7 +183,7 @@ export class CourseReviewsComponent implements OnInit {
     if (this.reviewForm.invalid) return;
 
     this.isSubmitting.set(true);
-    this.reviewService.submitReview(this.courseId(), this.reviewForm.value).subscribe({
+    this.reviewService.submitReview(this.courseId(), this.reviewForm.value).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         this.notification.success('¡Gracias por tu opinión!');
         this.isSubmitting.set(false);

@@ -290,4 +290,71 @@ class CourseEnrollmentController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Listar todos los cursos inscritos por el usuario con progreso real.
+     */
+    public function myCourses(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $enrollments = CourseEnrollment::where('user_id', $user->id)
+            ->with(['course.instructor', 'course.category'])
+            ->get();
+
+        $data = $enrollments->map(function ($enrollment) use ($user) {
+            $course = $enrollment->course;
+
+            // Calcular progreso real desde lesson_user
+            $totalLessons = Lesson::whereHas('section', fn($q) => $q->where('course_id', $course->id))->count();
+            $completedCount = DB::table('lesson_user')
+                ->join('lessons', 'lessons.id', '=', 'lesson_user.lesson_id')
+                ->join('course_sections', 'course_sections.id', '=', 'lessons.course_section_id')
+                ->where('course_sections.course_id', $course->id)
+                ->where('lesson_user.user_id', $user->id)
+                ->count();
+
+            $progress = $totalLessons > 0
+                ? round(($completedCount / $totalLessons) * 100, 2)
+                : 0;
+
+            // Sincronizar progreso
+            $enrollment->update(['progress' => $progress]);
+
+            return [
+                'id' => $course->id,
+                'title' => $course->title,
+                'slug' => $course->slug,
+                'description' => $course->description,
+                'level' => $course->level,
+                'thumbnail' => $course->thumbnail,
+                'price_in_credits' => $course->price_in_credits,
+                'instructor' => $course->instructor ? [
+                    'id' => $course->instructor->id,
+                    'name' => $course->instructor->name,
+                    'avatar' => $course->instructor->avatar_url ?? null,
+                ] : null,
+                'category' => $course->category,
+                'progress' => $progress,
+                'total_lessons' => $totalLessons,
+                'completed_lessons' => $completedCount,
+                'is_completed' => $progress >= 100,
+                'enrollment_date' => $enrollment->enrollment_date,
+                'completed_at' => $enrollment->completed_at,
+            ];
+        });
+
+        $total = $data->count();
+        $completed = $data->where('is_completed', true)->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => $data->values(),
+            'stats' => [
+                'total' => $total,
+                'completed' => $completed,
+                'in_progress' => $total - $completed,
+            ],
+        ]);
+    }
 }

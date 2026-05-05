@@ -47,7 +47,7 @@ import { AuthService } from '../../../core/services/auth.service';
                   Admin
                 </a>
               }
-            } @else {
+            } @else if (authService.isAuthenticated()) {
               <!-- Modo Estudiante -->
               <a routerLink="/courses" routerLinkActive="active" class="nav-link">Explorar</a>
               @if (authService.user()?.role_id !== 2) {

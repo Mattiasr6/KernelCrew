@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CertificateService } from '../../core/services/certificate.service';
 import { Certificate } from '../../core/models';
@@ -83,6 +84,7 @@ import { StudentSidebarComponent } from '../../shared/components/student-sidebar
 })
 export class StudentCertificatesComponent implements OnInit {
   private certService = inject(CertificateService);
+  private destroyRef = inject(DestroyRef);
 
   certificates = signal<Certificate[]>([]);
   isLoading = signal(true);
@@ -94,7 +96,7 @@ export class StudentCertificatesComponent implements OnInit {
 
   loadCertificates() {
   this.isLoading.set(true);
-  this.certService.getMyCertificates().subscribe({
+  this.certService.getMyCertificates().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
     next: (res) => {
       // Usamos '?? []' para asegurar que siempre haya una lista
       this.certificates.set(res.data ?? []);
@@ -107,7 +109,7 @@ export class StudentCertificatesComponent implements OnInit {
   download(cert: Certificate) {
     this.downloadingUuid.set(cert.certificate_code);
     
-    this.certService.downloadPdf(cert.certificate_code).subscribe({
+    this.certService.downloadPdf(cert.certificate_code).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');

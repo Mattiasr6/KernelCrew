@@ -73,7 +73,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/stripe/credits/checkout', [StripeController::class, 'buyCredits']);
 
         // Inscripción con Créditos
-        Route::post('/courses/{course}/enroll-credits', [CourseEnrollmentController::class, 'enrollWithCredits']);
+        Route::post('/courses/{course}/enroll-credits', [CourseEnrollmentController::class, 'enrollWithCredits'])->middleware('throttle:3,1');
 
         // Acceso a Cursos y Suscripción (Middleaware de validación)
         Route::middleware('subscription.access')->group(function () {
@@ -91,8 +91,9 @@ Route::prefix('v1')->group(function () {
         });
         
         // Progreso detallado y lecciones (requiere autenticación)
-        Route::post('/lessons/{id}/complete', [CourseEnrollmentController::class, 'completeLesson']);
+        Route::post('/lessons/{id}/complete', [CourseEnrollmentController::class, 'completeLesson'])->middleware('throttle:5,1');
         Route::get('/courses/{id}/my-progress', [CourseEnrollmentController::class, 'myProgress']);
+        Route::get('/student/my-courses', [CourseEnrollmentController::class, 'myCourses']);
         
         // Checkout de Suscripción (Legacy / Mock)
         Route::post('/subscriptions/checkout', [SubscriptionController::class, 'checkout']);

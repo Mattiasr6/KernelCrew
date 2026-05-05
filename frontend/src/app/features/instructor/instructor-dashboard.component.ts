@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -191,6 +192,7 @@ import { RouterLink } from '@angular/router';
 export class InstructorDashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);
   private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
   dashboardData = signal<DashboardData | null>(null);
   isLoading = signal(true);
@@ -207,7 +209,7 @@ export class InstructorDashboardComponent implements OnInit {
 
   loadStats() {
   this.isLoading.set(true);
-  this.dashboardService.getInstructorStats().subscribe({
+  this.dashboardService.getInstructorStats().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
     next: (res) => {
       // Usamos '?? null' para que nunca sea undefined
       this.dashboardData.set(res.data ?? null);

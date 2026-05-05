@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { AdminService, AdminStats } from '../../../core/services/admin.service';
 
@@ -88,10 +89,11 @@ import { AdminService, AdminStats } from '../../../core/services/admin.service';
 })
 export class DashboardComponent implements OnInit {
   private adminService = inject(AdminService);
+  private destroyRef = inject(DestroyRef);
   stats = signal<AdminStats | null>(null);
 
   ngOnInit() {
-    this.adminService.getStats().subscribe({
+    this.adminService.getStats().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => this.stats.set(res.data),
       error: () => {}
     });

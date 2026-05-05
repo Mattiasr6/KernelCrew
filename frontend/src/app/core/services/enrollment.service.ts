@@ -9,12 +9,17 @@ export interface EnrolledCourse {
   slug: string;
   description: string;
   level: string;
+  thumbnail?: string;
+  price_in_credits?: number;
   instructor: {
     id: number;
     name: string;
     avatar?: string;
-  };
+  } | null;
+  category?: { id: number; name: string; slug: string } | null;
   progress: number;
+  total_lessons: number;
+  completed_lessons: number;
   is_completed: boolean;
   enrollment_date: string;
   completed_at?: string;
@@ -71,8 +76,8 @@ export interface CompleteLessonResponse {
 export class EnrollmentService {
   private api = inject(ApiService);
 
-  getMyCourses(): Observable<ApiResponse<MyCoursesResponse>> {
-    return this.api.get<ApiResponse<MyCoursesResponse>>('my-courses');
+  getMyCourses(): Observable<ApiResponse<any>> {
+    return this.api.get<ApiResponse<any>>('student/my-courses');
   }
 
   getAccessibleCourses(): Observable<ApiResponse<AccessibleCoursesResponse>> {

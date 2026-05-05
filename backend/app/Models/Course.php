@@ -17,7 +17,7 @@ class Course extends Model
     protected $fillable = [
         'title', 'slug', 'description', 'short_description', 'price', 'price_in_credits',
         'instructor_id', 'category_id', 'status', 'is_credit_counted', 'level',
-        'duration_hours', 'thumbnail',
+        'duration_hours', 'thumbnail', 'rejection_reason',
     ];
 
     public function activities(): \Illuminate\Database\Eloquent\Relations\MorphMany

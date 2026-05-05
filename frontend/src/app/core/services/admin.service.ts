@@ -30,7 +30,7 @@ export class AdminService {
     return this.api.patch<ApiResponse<null>>(`admin/courses/${id}/approve`, {});
   }
 
-  rejectCourse(id: number): Observable<ApiResponse<null>> {
-    return this.api.patch<ApiResponse<null>>(`admin/courses/${id}/reject`, {});
+  rejectCourse(id: number, reason: string): Observable<ApiResponse<null>> {
+    return this.api.patch<ApiResponse<null>>(`admin/courses/${id}/reject`, { reason });
   }
 }
