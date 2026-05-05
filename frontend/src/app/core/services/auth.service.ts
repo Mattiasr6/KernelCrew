@@ -1,9 +1,9 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { ApiService } from './api.service';
 import { User, LoginRequest, RegisterRequest, AuthResponse } from '../models';
-import { tap } from 'rxjs';
+import { tap, catchError, finalize } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -86,10 +86,10 @@ export class AuthService {
   }
 
   logout(): void {
-    this.api.post('auth/logout', {}).subscribe({
-      complete: () => this.clearSession(),
-      error: () => this.clearSession(),
-    });
+    this.api.post('auth/logout', {}).pipe(
+      catchError(() => of(null)),
+      finalize(() => this.clearSession()),
+    ).subscribe();
   }
 
   clearSession(): void {
@@ -97,7 +97,8 @@ export class AuthService {
     this.userSignal.set(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    this.router.navigate(['/auth/login']);
+    localStorage.removeItem('viewMode');
+    this.router.navigate(['/']);
   }
 
   /**

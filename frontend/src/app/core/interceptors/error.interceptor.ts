@@ -8,6 +8,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      // Silenciar errores de logout — el AuthService los maneja internamente
+      if (req.url.includes('/logout')) {
+        return throwError(() => error);
+      }
+
       if (error.status === 0) {
         notification.error('Sin conexión con el servidor');
       } else if (error.status === 403) {
