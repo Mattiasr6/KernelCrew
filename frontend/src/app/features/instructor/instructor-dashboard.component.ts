@@ -81,7 +81,7 @@ import { RouterLink } from '@angular/router';
             </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             <!-- Main Focus Card: Créditos de Inscripción -->
             <div class="lg:col-span-7">
@@ -89,14 +89,14 @@ import { RouterLink } from '@angular/router';
                 <div class="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
                 
                 <div class="relative z-10">
-                  <div class="flex items-center gap-3 mb-8">
+                  <div class="flex items-center gap-3 mb-5">
                     <div class="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                       <span class="material-symbols-outlined text-emerald-400" style="font-variation-settings: 'FILL' 1;">stars</span>
                     </div>
                     <h2 class="text-2xl font-bold text-zinc-50">Créditos de Inscripción</h2>
                   </div>
 
-                  <div class="mb-10">
+                  <div class="mb-6">
                     <div class="flex items-baseline gap-3">
                       <span class="text-7xl font-black text-emerald-400 leading-none drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]">
                         {{ dashboardData()?.credits_available ?? 0 }}
@@ -105,7 +105,7 @@ import { RouterLink } from '@angular/router';
                     </div>
                   </div>
 
-                  <div class="mt-auto pt-8 border-t border-zinc-800">
+                  <div class="mt-auto pt-5 border-t border-zinc-800">
                     <div class="flex justify-between items-center mb-3">
                       <span class="text-sm font-semibold text-zinc-300">Progreso para tu próximo crédito</span>
                       <span class="text-sm font-bold text-emerald-400">
