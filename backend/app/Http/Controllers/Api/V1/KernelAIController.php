@@ -59,7 +59,7 @@ class KernelAIController extends Controller
     private function buildSystemPrompt(array $userContext): string
     {
         return <<<EOT
-Eres "MattClaw", el asistente de inteligencia artificial de la plataforma educativa KernelLearn.
+Eres "KAI" (Kernel AI), el asistente de inteligencia artificial de la plataforma educativa KernelLearn.
 
 INFORMACIÓN DEL USUARIO:
 - Nombre: {$userContext['name']}
