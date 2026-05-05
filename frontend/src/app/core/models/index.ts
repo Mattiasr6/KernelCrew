@@ -27,6 +27,8 @@ export interface User {
   phone?: string;
   created_at: string;
   updated_at?: string;
+  subscription?: UserSubscription;
+  credits_balance?: number;
 }
 
 export interface Instructor {
@@ -86,8 +88,11 @@ export interface Course {
   slug?: string;
   description: string;
   price: number;
+  price_in_bob?: number;
+  price_display?: string;
+  price_in_credits?: number;
   instructor_id: number;
-  status: 'draft' | 'published';
+  status: 'DRAFT' | 'IN_REVIEW' | 'PUBLISHED' | 'REJECTED';
   instructor?: Instructor;
   created_at: string;
   updated_at?: string;
@@ -106,6 +111,31 @@ export interface Course {
   requirements?: string;
   average_rating?: string | number;
   reviews_count?: number;
+  sections?: CourseSection[];
+}
+
+export interface CourseSection {
+  id: number;
+  course_id: number;
+  title: string;
+  order: number;
+  status: string;
+  lessons?: Lesson[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Lesson {
+  id: number;
+  course_section_id: number;
+  title: string;
+  content?: string;
+  video_url?: string;
+  duration_minutes: number;
+  order: number;
+  is_free: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CoursesMeta {
@@ -316,6 +346,7 @@ export interface SubscriptionPlan {
   is_active?: boolean;
   created_at: string;
   updated_at: string;
+  is_current?: boolean;
 }
 
 export interface UserSubscription {

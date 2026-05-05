@@ -37,7 +37,10 @@ class DatabaseSeeder extends Seeder
             // 8. Transacciones/Pagos
             PaymentSeeder::class,
 
-            // 9. Certificados (cursos completados)
+            // 9. Paquetes de Créditos
+            CreditPackageSeeder::class,
+
+            // 10. Certificados (cursos completados)
             CertificateSeeder::class,
         ]);
 

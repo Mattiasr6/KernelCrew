@@ -1,27 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\SubscriptionPlan;
 use App\Models\UserSubscription;
-use App\Models\Payment;
+use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class SubscriptionController extends Controller
 {
+    public function __construct(
+        private readonly SubscriptionService $subscriptionService,
+    ) {}
+
     /**
      * Listar todos los planes de suscripción (Público)
      */
     public function index(): JsonResponse
     {
         $plans = SubscriptionPlan::where('is_active', true)->get();
+
         return response()->json([
             'success' => true,
             'message' => 'Planes obtenidos exitosamente',
-            'data' => $plans
+            'data' => $plans,
         ]);
     }
 
@@ -38,7 +44,7 @@ class SubscriptionController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $subscription
+            'data' => $subscription,
         ]);
     }
 
@@ -63,7 +69,7 @@ class SubscriptionController extends Controller
                 'total' => $subscriptions->total(),
                 'current_page' => $subscriptions->currentPage(),
                 'last_page' => $subscriptions->lastPage(),
-            ]
+            ],
         ]);
     }
 
@@ -74,7 +80,7 @@ class SubscriptionController extends Controller
     {
         $user = $request->user();
         $request->validate([
-            'auto_renew' => 'required|boolean'
+            'auto_renew' => 'required|boolean',
         ]);
 
         $subscription = UserSubscription::findOrFail($subscriptionId);
@@ -82,7 +88,7 @@ class SubscriptionController extends Controller
         if ($subscription->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'No tienes permiso para editar esta suscripción'
+                'message' => 'No tienes permiso para editar esta suscripción',
             ], 403);
         }
 
@@ -91,7 +97,7 @@ class SubscriptionController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Renovación automática ' . ($request->auto_renew ? 'activada' : 'desactivada'),
-            'data' => $subscription
+            'data' => $subscription,
         ]);
     }
 
@@ -108,39 +114,22 @@ class SubscriptionController extends Controller
         $user = $request->user();
         $plan = SubscriptionPlan::findOrFail($request->plan_id);
 
-        return DB::transaction(function () use ($user, $plan) {
-            // 1. Desactivar suscripciones anteriores si existen
-            $user->subscriptions()->where('status', 'active')->update(['status' => 'expired']);
+        $subscription = $this->subscriptionService->activate(
+            user: $user,
+            plan: $plan,
+            paymentMethod: 'simulated',
+            amount: (float) $plan->price,
+            transactionId: 'SIM-' . strtoupper(Str::random(10)),
+            registerActivity: false,
+        );
 
-            // 2. Crear la nueva suscripción
-            $subscription = UserSubscription::create([
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
-                'start_date' => now(),
-                'end_date' => now()->addDays($plan->duration_days),
-                'status' => 'active',
-                'auto_renew' => true
-            ]);
-
-            // 3. Registrar el pago simulado
-            Payment::create([
-                'user_id' => $user->id,
-                'user_subscription_id' => $subscription->id,
-                'amount' => $plan->price,
-                'payment_date' => now(),
-                'transaction_id' => 'SIM-' . strtoupper(Str::random(10)),
-                'status' => 'completed',
-                'payment_method' => 'simulated'
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => "¡Suscripción al plan {$plan->name} activada!",
-                'data' => [
-                    'subscription' => $subscription->load('plan'),
-                    'plan' => $plan
-                ]
-            ]);
-        });
+        return response()->json([
+            'success' => true,
+            'message' => "¡Suscripción al plan {$plan->name} activada!",
+            'data' => [
+                'subscription' => $subscription->load('plan'),
+                'plan' => $plan,
+            ],
+        ]);
     }
 }

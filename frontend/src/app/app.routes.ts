@@ -6,11 +6,13 @@ import { authGuard, guestGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'courses',
-    pathMatch: 'full',
+    title: 'KernelLearn - Domina el Código. Certifícate.',
+    loadComponent: () =>
+      import('./features/landing/landing.component').then((m) => m.LandingComponent),
   },
   {
     path: 'login',
+    title: 'Iniciar Sesión - KernelLearn',
     loadComponent: () =>
       import('./features/auth/components/login.component').then((m) => m.LoginComponent),
     canActivate: [guestGuard],
@@ -34,6 +36,7 @@ export const routes: Routes = [
   },
   {
     path: 'register',
+    title: 'Crear Cuenta - KernelLearn',
     loadComponent: () =>
       import('./features/auth/components/register.component').then((m) => m.RegisterComponent),
     canActivate: [guestGuard],
@@ -46,6 +49,7 @@ export const routes: Routes = [
   },
   {
     path: 'courses',
+    title: 'Catálogo de Cursos - KernelLearn',
     loadComponent: () =>
       import('./features/courses/components/course-list.component').then(
         (m) => m.CourseListComponent,
@@ -53,6 +57,7 @@ export const routes: Routes = [
   },
   {
     path: 'courses/:id',
+    title: 'Curso - KernelLearn',
     loadComponent: () =>
       import('./features/courses/components/course-detail.component').then(
         (m) => m.CourseDetailComponent,
@@ -83,7 +88,16 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/profile.component').then(
+        (m) => m.ProfileComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'subscriptions',
+    title: 'Planes de Suscripción - KernelLearn',
     loadComponent: () =>
       import('./features/student/student-subscriptions.component').then(
         (m) => m.StudentSubscriptionsComponent,
@@ -92,6 +106,7 @@ export const routes: Routes = [
   },
   {
     path: 'my-courses',
+    title: 'Mis Cursos - KernelLearn',
     loadComponent: () =>
       import('./features/student/my-courses.component').then(
         (m) => m.MyCoursesComponent,
@@ -99,10 +114,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'my-subscriptions',
+    path: 'credits',
     loadComponent: () =>
-      import('./features/student/subscription-history.component').then(
-        (m) => m.SubscriptionHistoryComponent,
+      import('./features/student/credit-store/credit-store.component').then(
+        (m) => m.CreditStoreComponent,
       ),
     canActivate: [authGuard],
   },
@@ -153,6 +168,13 @@ export const routes: Routes = [
           import('./features/admin/components/admin-transactions.component').then(
             (m) => m.AdminTransactionsComponent,
           ),
+      },
+      {
+        path: 'courses',
+        loadComponent: () =>
+          import('./features/admin/admin-moderation.component').then(
+            (m) => m.AdminModerationComponent,
+          ),
       }
     ],
   },
@@ -161,6 +183,10 @@ export const routes: Routes = [
   {
     path: 'instructor',
     canActivate: [authGuard, instructorGuard],
+    loadComponent: () =>
+      import('./features/instructor/instructor-layout.component').then(
+        (m) => m.InstructorLayoutComponent,
+      ),
     children: [
         {
             path: '',
@@ -175,12 +201,61 @@ export const routes: Routes = [
               import('./features/instructor/instructor-courses.component').then(
                 (m) => m.InstructorCoursesComponent,
               ),
+        },
+        {
+            path: 'courses/:id/curriculum',
+            loadComponent: () =>
+              import('./features/instructor/instructor-curriculum.component').then(
+                (m) => m.InstructorCurriculumComponent,
+              ),
+        },
+        {
+            path: 'courses/:courseId',
+            loadComponent: () =>
+              import('./features/instructor/course-editor/course-editor-layout.component').then(
+                (m) => m.CourseEditorLayoutComponent,
+              ),
+            children: [
+                {
+                    path: '',
+                    redirectTo: 'basic',
+                    pathMatch: 'full',
+                },
+                {
+                    path: 'basic',
+                    loadComponent: () =>
+                      import('./features/instructor/course-editor/components/basic-editor.component').then(
+                        (m) => m.BasicEditorComponent,
+                      ),
+                },
+                {
+                    path: 'curriculum',
+                    loadComponent: () =>
+                      import('./features/instructor/instructor-curriculum.component').then(
+                        (m) => m.InstructorCurriculumComponent,
+                      ),
+                },
+                {
+                    path: 'pricing',
+                    loadComponent: () =>
+                      import('./features/instructor/course-editor/components/pricing-editor.component').then(
+                        (m) => m.PricingEditorComponent,
+                      ),
+                },
+                {
+                    path: 'settings',
+                    loadComponent: () =>
+                      import('./features/instructor/course-editor/components/course-editor-settings.component').then(
+                        (m) => m.CourseEditorSettingsComponent,
+                      ),
+                },
+            ],
         }
     ]
   },
 
   {
     path: '**',
-    redirectTo: 'courses',
+    redirectTo: '',
   },
 ];

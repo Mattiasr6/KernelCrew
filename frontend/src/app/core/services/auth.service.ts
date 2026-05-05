@@ -16,15 +16,38 @@ export class AuthService {
   public userSignal = signal<User | null>(null);
   private tokenSignal = signal<string | null>(null);
 
+  // Modo de vista: permite a instructores/admin alternar entre faceta creadora y estudiante
+  public viewModeSignal = signal<'student' | 'instructor'>('student');
+
   // Computeds basados en el nombre del rol (RBAC Custom)
   user = computed(() => this.userSignal());
-  isAuthenticated = computed(() => !!this.tokenSignal());
+  isAuthenticated = computed(() => !!this.tokenSignal() && !!this.userSignal());
   isAdmin = computed(() => this.userSignal()?.role === 'admin');
   isInstructor = computed(() => this.userSignal()?.role === 'instructor' || this.userSignal()?.role === 'docente');
   isStudent = computed(() => this.userSignal()?.role === 'student');
+  viewMode = computed(() => this.viewModeSignal());
+  isViewingAsStudent = computed(() => this.viewModeSignal() === 'student');
+  isViewingAsInstructor = computed(() => this.viewModeSignal() === 'instructor');
 
   constructor() {
     this.loadFromStorage();
+    this.loadViewMode();
+  }
+
+  private loadViewMode(): void {
+    const saved = localStorage.getItem('viewMode');
+    if (saved === 'instructor' || saved === 'student') {
+      this.viewModeSignal.set(saved);
+    }
+  }
+
+  toggleViewMode(): void {
+    const user = this.userSignal();
+    if (!user || (user.role_id !== 1 && user.role_id !== 2)) return;
+
+    const next = this.viewModeSignal() === 'student' ? 'instructor' : 'student';
+    this.viewModeSignal.set(next);
+    localStorage.setItem('viewMode', next);
   }
 
   private loadFromStorage(): void {
@@ -97,8 +120,15 @@ export class AuthService {
   refreshUserSession(): void {
     this.api.get<any>('auth/me').subscribe({
       next: (response) => {
-        if (response.success && response.data) {
-          const updatedUser = response.data;
+        if (response.success && response.data?.user) {
+          const updatedUser = response.data.user;
+          // Merge subscription data if available
+          if (updatedUser.subscription) {
+            updatedUser.subscription = {
+              ...updatedUser.subscription,
+              plan: { name: updatedUser.subscription.plan_name }
+            };
+          }
           this.userSignal.set(updatedUser);
           localStorage.setItem('user', JSON.stringify(updatedUser));
         }

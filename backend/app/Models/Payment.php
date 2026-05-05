@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Payment extends Model
 {
     protected $fillable = [
-        'user_id', 'user_subscription_id', 'amount', 'payment_date',
+        'user_id', 'user_subscription_id', 'credit_package_id', 'amount', 'payment_date',
         'transaction_id', 'payment_method', 'status',
         'payment_gateway_response',
     ];
@@ -27,5 +27,10 @@ class Payment extends Model
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(UserSubscription::class, 'user_subscription_id');
+    }
+
+    public function creditPackage(): BelongsTo
+    {
+        return $this->belongsTo(CreditPackage::class);
     }
 }

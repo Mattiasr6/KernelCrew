@@ -212,12 +212,10 @@ class AdminUserController extends Controller
             ], 404);
         }
 
-        $isActive = $request->input('is_active');
-        
-        if ($isActive !== null) {
-            $user->is_active = (bool) $isActive;
-            $user->save();
-        }
+        $request->validate(['is_active' => 'required|boolean']);
+
+        $user->is_active = $request->boolean('is_active');
+        $user->save();
 
         return response()->json([
             'success' => true,

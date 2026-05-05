@@ -37,6 +37,10 @@ export class CourseService {
     return this.api.delete<ApiResponse<null>>(`instructor/courses/${id}`);
   }
 
+  requestReview(id: number): Observable<ApiResponse<null>> {
+    return this.api.patch<ApiResponse<null>>(`instructor/courses/${id}/request-review`, {});
+  }
+
   /**
    * Obtener catálogo público de cursos
    */

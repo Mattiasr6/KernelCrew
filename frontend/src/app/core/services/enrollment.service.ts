@@ -9,12 +9,17 @@ export interface EnrolledCourse {
   slug: string;
   description: string;
   level: string;
+  thumbnail?: string;
+  price_in_credits?: number;
   instructor: {
     id: number;
     name: string;
     avatar?: string;
-  };
+  } | null;
+  category?: { id: number; name: string; slug: string } | null;
   progress: number;
+  total_lessons: number;
+  completed_lessons: number;
   is_completed: boolean;
   enrollment_date: string;
   completed_at?: string;
@@ -52,14 +57,27 @@ export interface AccessCheckResponse {
   message?: string;
 }
 
+export interface MyProgressResponse {
+  progress: number;
+  completed_lesson_ids: number[];
+  last_lesson_id: number | null;
+  completed_at: string | null;
+}
+
+export interface CompleteLessonResponse {
+  progress: number;
+  completed_lesson_id: number;
+  certificate_ready: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class EnrollmentService {
   private api = inject(ApiService);
 
-  getMyCourses(): Observable<ApiResponse<MyCoursesResponse>> {
-    return this.api.get<ApiResponse<MyCoursesResponse>>('my-courses');
+  getMyCourses(): Observable<ApiResponse<any>> {
+    return this.api.get<ApiResponse<any>>('student/my-courses');
   }
 
   getAccessibleCourses(): Observable<ApiResponse<AccessibleCoursesResponse>> {
@@ -72,5 +90,13 @@ export class EnrollmentService {
 
   markCourseComplete(courseId: number): Observable<ApiResponse<any>> {
     return this.api.post<ApiResponse<any>>(`courses/${courseId}/complete`, {});
+  }
+
+  getMyProgress(courseId: number): Observable<ApiResponse<MyProgressResponse>> {
+    return this.api.get<ApiResponse<MyProgressResponse>>(`courses/${courseId}/my-progress`);
+  }
+
+  completeLesson(lessonId: number): Observable<ApiResponse<CompleteLessonResponse>> {
+    return this.api.post<ApiResponse<CompleteLessonResponse>>(`lessons/${lessonId}/complete`, {});
   }
 }

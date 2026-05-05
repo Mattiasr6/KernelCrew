@@ -21,6 +21,10 @@
         <i class="icon">📝</i>
         <span *ngIf="!isCollapsed()">Postulaciones</span>
       </a>
+      <a routerLink="/admin/courses" routerLinkActive="active" [class.centered]="isCollapsed()">
+        <i class="icon">🎓</i>
+        <span *ngIf="!isCollapsed()">Moderación</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">

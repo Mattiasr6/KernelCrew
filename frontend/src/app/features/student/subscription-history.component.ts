@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { SubscriptionService } from '../../core/services/subscription.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -99,6 +100,7 @@ import { NotificationService } from '../../core/services/notification.service';
 export class SubscriptionHistoryComponent implements OnInit {
   private subscriptionService = inject(SubscriptionService);
   private notification = inject(NotificationService);
+  private destroyRef = inject(DestroyRef);
 
   subscriptions = signal<any[]>([]);
   isLoading = signal(false);
@@ -109,7 +111,7 @@ export class SubscriptionHistoryComponent implements OnInit {
 
   loadHistory() {
     this.isLoading.set(true);
-    this.subscriptionService.getHistory().subscribe({
+    this.subscriptionService.getHistory().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response: any) => {
         this.subscriptions.set(response.data.subscriptions);
         this.isLoading.set(false);
@@ -123,7 +125,7 @@ export class SubscriptionHistoryComponent implements OnInit {
 
   toggleAutoRenew(subscription: any) {
     this.subscriptionService.updateAutoRenew(subscription.id, !subscription.auto_renew)
-      .subscribe({
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           subscription.auto_renew = !subscription.auto_renew;
           this.notification.success('Auto-renovación actualizada');

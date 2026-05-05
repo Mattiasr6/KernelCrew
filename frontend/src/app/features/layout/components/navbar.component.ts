@@ -31,57 +31,70 @@ import { AuthService } from '../../../core/services/auth.service';
           </a>
 
           <nav class="hidden md:flex items-center gap-1">
-            <a routerLink="/courses" routerLinkActive="active" class="nav-link">Explorar</a>
-            <a routerLink="/subscriptions" routerLinkActive="active" class="nav-link">
-              <span class="material-symbols-outlined text-sm mr-1">card_membership</span>
-              Planes
-            </a>
-            
-            @if (authService.isAdmin()) {
-              <a routerLink="/admin" class="nav-link admin-glow">
-                <span class="material-symbols-outlined text-sm mr-1">admin_panel_settings</span>
-                Panel Admin
-              </a>
-              <a routerLink="/admin/payments" class="nav-link admin-glow">
-                <span class="material-symbols-outlined text-sm mr-1">receipt</span>
-                Transacciones
-              </a>
-            }
-            @if (authService.isInstructor()) {
-              <a routerLink="/instructor" class="nav-link instructor-glow">
+            @if (authService.isViewingAsInstructor() && (authService.isAdmin() || authService.isInstructor())) {
+              <!-- Modo Instructor/Creador -->
+              <a routerLink="/instructor" routerLinkActive="active" class="nav-link instructor-glow" [routerLinkActiveOptions]="{ exact: true }">
                 <span class="material-symbols-outlined text-sm mr-1">dashboard</span>
-                Panel Instructor
+                Panel
               </a>
-            }
-            @if (authService.user()?.role_id === 3) {
-              <a routerLink="/my-courses" class="nav-link">
+              <a routerLink="/instructor/courses" routerLinkActive="active" class="nav-link">
+                <span class="material-symbols-outlined text-sm mr-1">menu_book</span>
+                Mis Cursos
+              </a>
+              @if (authService.isAdmin()) {
+                <a routerLink="/admin" class="nav-link admin-glow">
+                  <span class="material-symbols-outlined text-sm mr-1">admin_panel_settings</span>
+                  Admin
+                </a>
+              }
+            } @else if (authService.isAuthenticated()) {
+              <!-- Modo Estudiante -->
+              <a routerLink="/courses" routerLinkActive="active" class="nav-link">Explorar</a>
+              @if (authService.user()?.role_id !== 2) {
+                <a routerLink="/credits" routerLinkActive="active" class="nav-link">
+                  <span class="material-symbols-outlined text-sm mr-1">payments</span>
+                  Tienda
+                </a>
+              }
+              <a routerLink="/my-courses" routerLinkActive="active" class="nav-link">
                 <span class="material-symbols-outlined text-sm mr-1">school</span>
                 Mis Cursos
               </a>
-              <a routerLink="/my-subscriptions" class="nav-link">
-                <span class="material-symbols-outlined text-sm mr-1">history</span>
-                Mi Historial
-              </a>
+              @if (authService.isAdmin()) {
+                <a routerLink="/admin" class="nav-link admin-glow">
+                  <span class="material-symbols-outlined text-sm mr-1">admin_panel_settings</span>
+                  Admin
+                </a>
+              }
             }
           </nav>
         </div>
 
         <div class="flex items-center gap-4">
           @if (authService.isAuthenticated()) {
+            <div class="hidden sm:flex items-center gap-2 mr-2">
+              <div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                <span class="material-symbols-outlined text-amber-400 text-[16px]" style="font-variation-settings: 'FILL' 1;">database</span>
+                <span class="text-xs font-bold text-amber-400">{{ authService.user()?.credits_balance ?? 0 }}</span>
+              </div>
+            </div>
             <div class="user-info hidden sm:flex flex-col items-end mr-2">
               <span class="text-zinc-50 text-xs font-bold">{{ authService.user()?.name }}</span>
-              <span class="text-[10px] uppercase tracking-widest text-zinc-500" 
-                    [ngClass]="{
-                      'text-violet-400': authService.isAdmin(),
-                      'text-cyan-400': authService.isInstructor(),
-                      'text-emerald-400': authService.isStudent()
-                    }">
-                {{ authService.user()?.role }}
-              </span>
+              <div class="flex items-center gap-2">
+                <span 
+                  class="text-[10px] uppercase tracking-widest"
+                  [ngClass]="{
+                    'text-violet-400': authService.isAdmin(),
+                    'text-cyan-400': authService.isInstructor(),
+                    'text-emerald-400': authService.isStudent()
+                  }">
+                  {{ authService.user()?.role }}
+                </span>
+              </div>
             </div>
 
             <!-- Avatar Inteligente -->
-            <button mat-icon-button [matMenuTriggerFor]="menu" class="profile-btn">
+            <button mat-icon-button [matMenuTriggerFor]="menu" class="profile-btn" aria-label="Menú de usuario">
               @if (authService.user()?.avatar) {
                 <img [src]="authService.user()?.avatar" 
                      class="w-9 h-9 rounded-full border border-zinc-700 object-cover" 
@@ -96,41 +109,49 @@ import { AuthService } from '../../../core/services/auth.service';
             <mat-menu #menu="matMenu" class="dark-menu">
               @if (authService.isAdmin()) {
                 <button mat-menu-item routerLink="/admin">
-                  <mat-icon class="text-violet-400">admin_panel_settings</mat-icon>
+                  <span class="material-symbols-outlined text-violet-400">admin_panel_settings</span>
                   <span class="text-zinc-300">Administración</span>
                 </button>
                 <button mat-menu-item routerLink="/admin/payments">
-                  <mat-icon class="text-cyan-400">receipt</mat-icon>
+                  <span class="material-symbols-outlined text-cyan-400">receipt</span>
                   <span class="text-zinc-300">Transacciones</span>
                 </button>
               }
               @if (authService.isInstructor()) {
                 <button mat-menu-item routerLink="/instructor">
-                  <mat-icon class="text-cyan-400">dashboard</mat-icon>
+                  <span class="material-symbols-outlined text-cyan-400">dashboard</span>
                   <span class="text-zinc-300">Mi Dashboard</span>
                 </button>
               }
               @if (authService.isAuthenticated() && authService.isStudent()) {
                 <button mat-menu-item routerLink="/my-courses">
-                  <mat-icon class="text-cyan-400">school</mat-icon>
+                  <span class="material-symbols-outlined text-cyan-400">school</span>
                   <span class="text-zinc-300">Mis Cursos</span>
                 </button>
-                <button mat-menu-item routerLink="/subscriptions">
-                  <mat-icon class="text-emerald-400">card_membership</mat-icon>
-                  <span class="text-zinc-300">Planes de Suscripción</span>
+                <button mat-menu-item routerLink="/credits">
+                  <span class="material-symbols-outlined text-emerald-400">payments</span>
+                  <span class="text-zinc-300">Tienda de Créditos</span>
                 </button>
-                <button mat-menu-item routerLink="/my-subscriptions">
-                  <mat-icon class="text-zinc-400">history</mat-icon>
-                  <span class="text-zinc-300">Mi Historial</span>
+                <button mat-menu-item routerLink="/credits">
+                  <span class="material-symbols-outlined text-zinc-400">receipt_long</span>
+                  <span class="text-zinc-300">Historial de Compras</span>
                 </button>
               }
               <button mat-menu-item routerLink="/profile">
-                <mat-icon class="text-zinc-400">person</mat-icon>
+                <span class="material-symbols-outlined text-zinc-400">person</span>
                 <span class="text-zinc-300">Mi Perfil</span>
               </button>
+              @if (authService.user()?.role_id === 1 || authService.user()?.role_id === 2) {
+                <button mat-menu-item (click)="authService.toggleViewMode()">
+                  <span class="material-symbols-outlined text-violet-400">swap_horiz</span>
+                  <span class="text-zinc-300">
+                    {{ authService.isViewingAsInstructor() ? 'Ver como Estudiante' : 'Ver como Docente' }}
+                  </span>
+                </button>
+              }
               <mat-divider class="border-zinc-700"></mat-divider>
               <button mat-menu-item (click)="logout()">
-                <mat-icon class="text-rose-400">logout</mat-icon>
+                <span class="material-symbols-outlined text-rose-400">logout</span>
                 <span class="text-rose-400">Cerrar Sesión</span>
               </button>
             </mat-menu>
@@ -215,9 +236,11 @@ import { AuthService } from '../../../core/services/auth.service';
 export class NavbarComponent {
   authService = inject(AuthService);
 
-  getInitials(name: string | undefined): string {
-    if (!name) return '??';
-    const parts = name.trim().split(' ');
+  getInitials(name: string | undefined | null): string {
+    if (!name || typeof name !== 'string') return '??';
+    const trimmed = name.trim();
+    if (!trimmed) return '??';
+    const parts = trimmed.split(' ').filter(p => p.length > 0);
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }

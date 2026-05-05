@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -169,6 +170,7 @@ import { NotificationService } from '../../../core/services/notification.service
 export class AdminTransactionsComponent implements OnInit {
   private subscriptionService = inject(SubscriptionService);
   private notification = inject(NotificationService);
+  private destroyRef = inject(DestroyRef);
 
   transactions = signal<any[]>([]);
   stats = signal<any>({
@@ -202,7 +204,7 @@ export class AdminTransactionsComponent implements OnInit {
     if (this.statusFilter) params.status = this.statusFilter;
     if (this.methodFilter) params.payment_method = this.methodFilter;
 
-    this.subscriptionService.getAdminPayments(params).subscribe({
+    this.subscriptionService.getAdminPayments(params).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response: any) => {
         this.transactions.set(response.data.payments);
         this.meta.set(response.meta);
@@ -216,7 +218,7 @@ export class AdminTransactionsComponent implements OnInit {
   }
 
   loadStats() {
-    this.subscriptionService.getAdminStats().subscribe({
+    this.subscriptionService.getAdminStats().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response: any) => {
         this.stats.set(response.data);
       },

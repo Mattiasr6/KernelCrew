@@ -8,14 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
+use App\Enums\CourseStatus;
 
 class Course extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'slug', 'description', 'price',
-        'instructor_id', 'status', 'is_credit_counted', 'level'
+        'title', 'slug', 'description', 'short_description', 'price', 'price_in_credits',
+        'instructor_id', 'category_id', 'status', 'is_credit_counted', 'level',
+        'duration_hours', 'thumbnail', 'rejection_reason',
     ];
 
     public function activities(): \Illuminate\Database\Eloquent\Relations\MorphMany
@@ -30,11 +32,22 @@ class Course extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'status' => CourseStatus::class,
     ];
+
+    public function getPriceInBobAttribute(): float
+    {
+        return round(($this->price / 100) * config('app.exchange_rate_usd_to_bob', 6.96), 2);
+    }
 
     public function instructor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'instructor_id');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Category::class, 'category_id');
     }
 
     public function students(): BelongsToMany
@@ -49,14 +62,19 @@ class Course extends Model
         return $this->hasMany(CourseEnrollment::class, 'course_id');
     }
 
+    public function sections(): HasMany
+    {
+        return $this->hasMany(CourseSection::class)->orderBy('order');
+    }
+
     public function isPublished(): bool
     {
-        return $this->status === 'published';
+        return $this->status === CourseStatus::PUBLISHED;
     }
 
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('status', 'published');
+        return $query->where('status', CourseStatus::PUBLISHED->value);
     }
 
     public function scopeSearch(Builder $query, ?string $search): Builder

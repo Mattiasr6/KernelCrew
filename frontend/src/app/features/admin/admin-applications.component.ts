@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ApplicationService } from '../../core/services/application.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -103,6 +104,7 @@ import { InstructorApplication } from '../../core/models';
 export class AdminApplicationsComponent implements OnInit {
   private applicationService = inject(ApplicationService);
   private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
   applications = signal<InstructorApplication[]>([]);
   isLoading = signal(false);
@@ -113,7 +115,7 @@ export class AdminApplicationsComponent implements OnInit {
 
   loadApplications() {
     this.isLoading.set(true);
-    this.applicationService.getPendingApplications().subscribe({
+    this.applicationService.getPendingApplications().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         // Ajuste para la respuesta paginada de Laravel
         this.applications.set(res.data.data || res.data);
@@ -126,7 +128,7 @@ export class AdminApplicationsComponent implements OnInit {
   approve(appId: number, userId: number) {
     if (!confirm('¿Estás seguro de aprobar esta solicitud? El usuario se convertirá en Docente.')) return;
 
-    this.applicationService.approveApplication(appId).subscribe({
+    this.applicationService.approveApplication(appId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         if (userId === this.authService.user()?.id) {
           this.authService.refreshUserSession();
@@ -139,7 +141,7 @@ export class AdminApplicationsComponent implements OnInit {
   reject(appId: number) {
     if (!confirm('¿Rechazar esta postulación?')) return;
     
-    this.applicationService.rejectApplication(appId).subscribe({
+    this.applicationService.rejectApplication(appId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => this.loadApplications()
     });
   }

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -19,6 +19,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CourseService } from '../../core/services/course.service';
 import { Course } from '../../core/models';
+import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-instructor-courses',
@@ -37,6 +39,7 @@ import { Course } from '../../core/models';
     MatSnackBarModule,
     MatChipsModule,
     MatSlideToggleModule,
+    RouterLink,
   ],
   template: `
     <div class="instructor-courses-container animate-fade-in">
@@ -74,8 +77,8 @@ import { Course } from '../../core/models';
               @for (course of courses(); track course.id) {
                 <tr class="hover-row">
                   <td>
-                    <span class="status-badge" [class.published]="course.status === 'published'">
-                      {{ course.status === 'published' ? 'Publicado' : 'Borrador' }}
+                    <span class="status-badge" [ngClass]="getStatusClass(course.status)">
+                      {{ getStatusLabel(course.status) }}
                     </span>
                   </td>
                   <td>
@@ -90,7 +93,12 @@ import { Course } from '../../core/models';
                   <td class="font-mono text-emerald-400">\${{ course.price }}</td>
                   <td class="text-right">
                     <div class="action-group">
-                      <button class="icon-btn edit" (click)="openDialog(course)" title="Editar">
+                      @if (course.status === 'DRAFT' || course.status === 'REJECTED') {
+                        <button class="icon-btn review" (click)="requestReview(course)" title="Enviar a revisión">
+                          <span class="material-symbols-outlined">how_to_vote</span>
+                        </button>
+                      }
+                      <button class="icon-btn edit" [routerLink]="['/instructor', 'courses', course.id, 'curriculum']" title="Editar contenido">
                         <span class="material-symbols-outlined">edit</span>
                       </button>
                       <button class="icon-btn delete" (click)="deleteCourse(course)" title="Eliminar">
@@ -270,10 +278,34 @@ import { Course } from '../../core/models';
       border: 1px solid rgba(148, 163, 184, 0.2);
     }
 
+    .status-badge.draft {
+      background: rgba(39, 39, 42, 0.1);
+      color: #a1a1aa;
+      border: 1px solid rgba(63, 63, 70, 0.2);
+    }
+
+    .status-badge.pending {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .status-badge.approved {
+      background: rgba(6, 182, 212, 0.1);
+      color: #06b6d4;
+      border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
     .status-badge.published {
       background: rgba(16, 185, 129, 0.1);
-      color: #34d399;
+      color: #10b981;
       border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge.rejected {
+      background: rgba(244, 63, 94, 0.1);
+      color: #f43f5e;
+      border: 1px solid rgba(244, 63, 94, 0.2);
     }
 
     .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; }
@@ -299,6 +331,7 @@ import { Course } from '../../core/models';
 
     .icon-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
     .icon-btn.delete:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: #f8717144; }
+    .icon-btn.review:hover { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: #f59e0b44; }
 
     .dialog-overlay {
       position: fixed;
@@ -366,6 +399,7 @@ export class InstructorCoursesComponent implements OnInit {
   private courseService = inject(CourseService);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
 
   courses = signal<Course[]>([]);
   isLoading = signal(true);
@@ -392,7 +426,7 @@ export class InstructorCoursesComponent implements OnInit {
 
   loadMyCourses(): void {
     this.isLoading.set(true);
-    this.courseService.getInstructorCourses().subscribe({
+    this.courseService.getInstructorCourses().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         this.courses.set(res.data?.courses || res.data || []);
         this.isLoading.set(false);
@@ -429,7 +463,7 @@ export class InstructorCoursesComponent implements OnInit {
       ? this.courseService.updateCourse(this.editingCourse.id, data)
       : this.courseService.createCourse(data);
 
-    request.subscribe({
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.snackBar.open(`Curso ${this.editingCourse ? 'actualizado' : 'creado'} con éxito`, 'OK', { duration: 3000 });
         this.isSaving.set(false);
@@ -464,12 +498,46 @@ export class InstructorCoursesComponent implements OnInit {
 
   deleteCourse(course: Course): void {
     if (confirm(`¿Estás seguro de eliminar "${course.title}"?`)) {
-      this.courseService.deleteCourse(course.id).subscribe({
+      this.courseService.deleteCourse(course.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.snackBar.open('Curso eliminado', 'OK', { duration: 3000 });
           this.loadMyCourses();
         }
       });
     }
+  }
+
+  requestReview(course: Course): void {
+    this.courseService.requestReview(course.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Curso enviado a revisión', 'OK', { duration: 3000 });
+          this.loadMyCourses();
+        },
+        error: (err) => {
+          this.snackBar.open(err.error?.message || 'Error al enviar a revisión', 'Cerrar');
+        }
+      });
+  }
+
+  getStatusClass(status: string): string {
+    const classes: Record<string, string> = {
+      'DRAFT': 'status-badge draft',
+      'IN_REVIEW': 'status-badge pending',
+      'PUBLISHED': 'status-badge published',
+      'REJECTED': 'status-badge rejected'
+    };
+    return classes[status] || 'status-badge';
+  }
+
+  getStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      'DRAFT': 'Borrador',
+      'IN_REVIEW': 'En Revisión',
+      'PUBLISHED': 'Publicado',
+      'REJECTED': 'Rechazado'
+    };
+    return labels[status] || status;
   }
 }

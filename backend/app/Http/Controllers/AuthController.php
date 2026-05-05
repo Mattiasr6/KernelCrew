@@ -69,7 +69,7 @@ class AuthController extends Controller
             'is_active' => true,
         ]);
 
-        $user->assignRole('student');
+        $user->update(['role_id' => 3]);
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -82,6 +82,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->getRoleName(),
+                    'credits_balance' => $user->credits_balance,
                     'created_at' => $user->created_at->toISOString(),
                 ],
                 'token' => $token,
@@ -152,6 +153,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->getRoleName(),
+                    'credits_balance' => $user->credits_balance,
                 ],
                 'token' => $token,
             ],
@@ -172,6 +174,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
+        $subscription = $user->subscriptions()->where('status', 'active')->first();
 
         return response()->json([
             'success' => true,
@@ -181,8 +184,16 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->getRoleName(),
+                    'role_id' => $user->role_id,
+                    'credits_balance' => $user->credits_balance,
                     'is_active' => $user->isActive(),
                     'avatar' => $user->avatar,
+                    'bio' => $user->bio,
+                    'phone' => $user->phone,
+                    'subscription' => $subscription ? [
+                        'id' => $subscription->id,
+                        'plan_name' => $subscription->plan->name ?? 'N/A',
+                    ] : null,
                 ],
             ],
         ], 200);

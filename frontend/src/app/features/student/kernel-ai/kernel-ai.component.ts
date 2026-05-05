@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AiService, AiMessage } from '../../../core/services/ai.service';
@@ -285,6 +286,7 @@ import { NotificationService } from '../../../core/services/notification.service
 export class KernelAIComponent {
   private aiService = inject(AiService);
   private notification = inject(NotificationService);
+  private destroyRef = inject(DestroyRef);
 
   isOpen = signal(false);
   
@@ -309,7 +311,7 @@ export class KernelAIComponent {
     this.userInput = '';
     this.isThinking.set(true);
 
-    this.aiService.chat(context).subscribe({
+    this.aiService.chat(context).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         this.messages.update(m => [...m, res.data]);
         this.isThinking.set(false);

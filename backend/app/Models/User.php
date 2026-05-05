@@ -25,6 +25,7 @@ class User extends Authenticatable
         'provider_id',
         'avatar',
         'enrollment_credits',
+        'credits_balance',
         'bio',
         'phone',
     ];
@@ -91,6 +92,13 @@ class User extends Authenticatable
         return $this->hasMany(UserSubscription::class, 'user_id');
     }
 
+    public function completedLessons(): BelongsToMany
+    {
+        return $this->belongsToMany(Lesson::class, 'lesson_user')
+            ->withPivot('completed_at')
+            ->withTimestamps();
+    }
+
     public function subscriptionPlans(): BelongsToMany
     {
         return $this->belongsToMany(SubscriptionPlan::class, 'user_subscriptions')
@@ -101,6 +109,11 @@ class User extends Authenticatable
     public function payments()
     {
         return $this->hasMany(Payment::class, 'user_id');
+    }
+
+    public function certificates(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Certificate::class);
     }
 
     public function activeSubscription()

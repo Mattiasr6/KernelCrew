@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../../core/services/user.service';
 import { User } from '../../../core/models';
@@ -148,6 +149,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 })
 export class UserManagementComponent implements OnInit {
   private userService = inject(UserService);
+  private destroyRef = inject(DestroyRef);
   
   users = signal<User[]>([]);
   isLoading = signal(true);
@@ -158,7 +160,7 @@ export class UserManagementComponent implements OnInit {
 
   loadUsers() {
     this.isLoading.set(true);
-    this.userService.getUsers().subscribe({
+    this.userService.getUsers().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         this.users.set(res.data?.users || res.data || []);
         this.isLoading.set(false);
@@ -176,7 +178,7 @@ export class UserManagementComponent implements OnInit {
   }
 
   toggleUser(user: User) {
-    this.userService.toggleStatus(user.id).subscribe({
+    this.userService.toggleStatus(user.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => this.loadUsers(),
       error: () => {}
     });

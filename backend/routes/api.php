@@ -3,13 +3,17 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminPaymentController;
+use App\Http\Controllers\Admin\AdminCourseController;
 use App\Http\Controllers\Api\V1\Auth\SocialAuthController;
 use App\Http\Controllers\Api\V1\CertificateController;
 use App\Http\Controllers\Api\V1\CourseReviewController;
 use App\Http\Controllers\Api\V1\KernelAIController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CourseAccessController;
 use App\Http\Controllers\CourseEnrollmentController;
+use App\Http\Controllers\CourseCurriculumController;
+use App\Http\Controllers\CreditPackageController;
 use App\Http\Controllers\Instructor\InstructorDashboardController;
 use App\Http\Controllers\InstructorApplicationController;
 use App\Http\Controllers\SubscriptionController;
@@ -38,24 +42,38 @@ Route::prefix('v1')->group(function () {
 
     // Rutas Públicas de Cursos
     Route::get('/courses', [CourseController::class, 'index']);
+    Route::get('/courses/categories', [CourseController::class, 'categories']);
+    Route::get('/courses/featured', [CourseController::class, 'featured']);
     Route::get('/courses/{id}', [CourseController::class, 'show']);
     Route::get('/courses/{id}/reviews', [CourseReviewController::class, 'index']);
-    Route::get('/courses/categories', [CourseController::class, 'categories']);
+    Route::get('/courses/{courseId}/curriculum', [CourseCurriculumController::class, 'index']);
+    Route::get('/lessons/{lessonId}', [CourseCurriculumController::class, 'show']);
 
+    Route::get('/certificates/{uuid}/verify', [CertificateController::class, 'verify']);
+    
     // Planes de Suscripción (Público)
     Route::get('/subscriptions/plans', [SubscriptionController::class, 'index']);
+
+    // Paquetes de Créditos (Público)
+    Route::get('/credit-packages', [CreditPackageController::class, 'index']);
 
     // Webhook de Stripe (Público)
     Route::post('/webhooks/stripe', [StripeController::class, 'handleWebhook']);
 
     // Rutas Protegidas
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('api.auth')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::put('/profile', [AuthController::class, 'updateProfile']);
         
         // Checkout de Suscripción (Stripe Real Sandbox)
         Route::post('/checkout/session', [StripeController::class, 'createSession']);
+
+        // Compra de Créditos vía Stripe
+        Route::post('/stripe/credits/checkout', [StripeController::class, 'buyCredits']);
+
+        // Inscripción con Créditos
+        Route::post('/courses/{course}/enroll-credits', [CourseEnrollmentController::class, 'enrollWithCredits'])->middleware('throttle:3,1');
 
         // Acceso a Cursos y Suscripción (Middleaware de validación)
         Route::middleware('subscription.access')->group(function () {
@@ -72,12 +90,20 @@ Route::prefix('v1')->group(function () {
             Route::post('/courses/{id}/complete', [CourseAccessController::class, 'markComplete']);
         });
         
+        // Progreso detallado y lecciones (requiere autenticación)
+        Route::post('/lessons/{id}/complete', [CourseEnrollmentController::class, 'completeLesson'])->middleware('throttle:5,1');
+        Route::get('/courses/{id}/my-progress', [CourseEnrollmentController::class, 'myProgress']);
+        Route::get('/student/my-courses', [CourseEnrollmentController::class, 'myCourses']);
+        
         // Checkout de Suscripción (Legacy / Mock)
         Route::post('/subscriptions/checkout', [SubscriptionController::class, 'checkout']);
         
         // Suscripciones del Usuario
         Route::get('/subscriptions/active', [SubscriptionController::class, 'getActive']);
         Route::get('/subscriptions/history', [SubscriptionController::class, 'getHistory']);
+
+        // Historial de Pagos del usuario autenticado (para créditos)
+        Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'myPayments']);
         Route::patch('/subscriptions/{id}/auto-renew', [SubscriptionController::class, 'updateAutoRenew']);
         
         // Certificados
@@ -91,16 +117,31 @@ Route::prefix('v1')->group(function () {
         Route::post('/instructor-applications', [InstructorApplicationController::class, 'store']);
 
         // Panel de Instructor (Solo role_id = 2)
-        Route::middleware('checkRole:2')->prefix('instructor')->group(function () {
+        Route::middleware(['api.auth', 'checkRole:2'])->prefix('instructor')->group(function () {
             Route::get('/dashboard', [InstructorDashboardController::class, 'index']);
             Route::get('/courses', [CourseController::class, 'getInstructorCourses']);
             Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
+            Route::get('/courses/{id}', [CourseController::class, 'showForEditor'])->can('update', 'course');
             Route::put('/courses/{id}', [CourseController::class, 'update'])->can('update', 'course');
             Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->can('delete', 'course');
+            Route::patch('/courses/{id}/request-review', [CourseController::class, 'requestReview'])->can('submitForReview', 'course');
+            Route::patch('/courses/{id}/basic', [CourseController::class, 'updateBasic'])->can('update', 'course');
+            Route::patch('/courses/{id}/pricing', [CourseController::class, 'updatePricing'])->can('update', 'course');
+
+            // Curriculum Builder (Secciones y Lecciones)
+            Route::get('/courses/{courseId}/curriculum', [CourseCurriculumController::class, 'index']);
+            Route::post('/courses/{courseId}/sections', [CourseCurriculumController::class, 'storeSection']);
+            Route::put('/sections/{sectionId}', [CourseCurriculumController::class, 'updateSection']);
+            Route::delete('/sections/{sectionId}', [CourseCurriculumController::class, 'destroySection']);
+            Route::post('/sections/{sectionId}/lessons', [CourseCurriculumController::class, 'storeLesson']);
+            Route::put('/lessons/{lessonId}', [CourseCurriculumController::class, 'updateLesson']);
+            Route::delete('/lessons/{lessonId}', [CourseCurriculumController::class, 'destroyLesson']);
+            Route::post('/courses/{courseId}/sections/reorder', [CourseCurriculumController::class, 'reorderSections']);
+            Route::post('/lessons/reorder', [CourseCurriculumController::class, 'reorderLessons']);
         });
 
         // Panel de Admin (Solo role_id = 1)
-        Route::middleware('checkRole:1')->prefix('admin')->group(function () {
+        Route::middleware(['api.auth', 'checkRole:1'])->prefix('admin')->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index']);
             Route::get('/stats', [AdminDashboardController::class, 'stats']);
 
@@ -120,6 +161,11 @@ Route::prefix('v1')->group(function () {
             Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
             Route::put('/courses/{id}', [CourseController::class, 'update'])->can('update', 'course');
             Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->can('delete', 'course');
+            
+            // Moderación de Cursos (Admin)
+            Route::get('/courses/pending', [AdminCourseController::class, 'pending']);
+            Route::patch('/courses/{id}/approve', [AdminCourseController::class, 'approve'])->can('approve', 'course');
+            Route::patch('/courses/{id}/reject', [AdminCourseController::class, 'reject'])->can('reject', 'course');
             
             // Transacciones y Pagos (Admin)
             Route::get('/payments', [AdminPaymentController::class, 'index']);

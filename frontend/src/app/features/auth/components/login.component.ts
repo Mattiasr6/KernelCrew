@@ -219,6 +219,7 @@ export class LoginComponent {
       next: (res) => {
         const user = res.data?.user || (res as any).user;
         const userRole = user?.role || 'student';
+        this.isLoading.set(false);
         this.notification.success(`¡Bienvenido de nuevo, ${user.name}!`);
         this.router.navigate([this.getRedirectByRole(userRole)]);
       },

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, Provider } from '@angular/core';
+import { Component, inject, OnInit, signal, Provider, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -17,6 +17,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { Course, Category } from '../../../core/models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 class SpanishPaginatorIntl extends MatPaginatorIntl {
   override itemsPerPageLabel = 'Ítems por página';
@@ -90,7 +91,7 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
         } @else {
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             @for (course of courses(); track course.id) {
-              <div class="course-card" [routerLink]="['/courses', course.id]">
+              <a class="course-card" [routerLink]="['/courses', course.id]" tabindex="0">
                 <div class="relative">
                   <img
                     [src]="course.thumbnail || 'https://placehold.co/600x400/18181b/06b6d4?text=Course'"
@@ -122,10 +123,19 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
                   
                   <div class="flex justify-between items-center pt-3 border-t border-zinc-800">
                     <span class="text-xs font-medium uppercase tracking-wider text-zinc-500">{{ course.duration_hours || course.duration }} horas</span>
-                    <span class="text-lg font-bold text-cyan-400">Bs. {{ course.price }}</span>
+                    <span class="text-lg font-bold text-amber-400">
+                      @if (course.price_in_credits && course.price_in_credits > 0) {
+                        <span class="flex items-center gap-1">
+                          <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">database</span>
+                          {{ course.price_in_credits }}
+                        </span>
+                      } @else {
+                        <span class="text-emerald-400 text-sm font-medium">GRATIS</span>
+                      }
+                    </span>
                   </div>
                 </div>
-              </div>
+              </a>
             }
           </div>
 
@@ -213,10 +223,11 @@ class SpanishPaginatorIntl extends MatPaginatorIntl {
 })
 export class CourseListComponent implements OnInit {
   private courseService = inject(CourseService);
-  public authService = inject(AuthService);
+  authService = inject(AuthService);
   private subscriptionService = inject(SubscriptionService);
   private enrollmentService = inject(EnrollmentService);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   courses = signal<Course[]>([]);
   totalItems = signal(0);
@@ -240,7 +251,7 @@ export class CourseListComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.courseService.getCategories().subscribe({
+    this.courseService.getCategories().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
           this.categories.set(Array.isArray(res.data) ? res.data : res.data.data || []);
@@ -252,7 +263,7 @@ export class CourseListComponent implements OnInit {
 
   loadUserPlan(): void {
     if (this.authService.isAuthenticated() && this.authService.isStudent()) {
-      this.subscriptionService.getActive().subscribe({
+      this.subscriptionService.getActive().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response: any) => {
           if (response.success && response.data?.subscription) {
             this.userPlanName = response.data.subscription.plan?.name || '';
@@ -265,7 +276,7 @@ export class CourseListComponent implements OnInit {
   }
 
   checkCourseAccess(courseId: number): void {
-    this.enrollmentService.checkCourseAccess(courseId).subscribe({
+    this.enrollmentService.checkCourseAccess(courseId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         if (res.success) {
           const map = this.courseAccessMap();
@@ -341,10 +352,11 @@ export class CourseListComponent implements OnInit {
       .getCourses({
         page: this.currentPage(),
         per_page: this.pageSize,
-        level: this.level || undefined,
-        category_id: this.category || undefined,
-        search: this.search || undefined,
+        ...(this.level ? { level: this.level } : {}),
+        ...(this.category ? { category_id: this.category } : {}),
+        ...(this.search ? { search: this.search } : {}),
       })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response: any) => {
           if (response.data && response.data.courses) {

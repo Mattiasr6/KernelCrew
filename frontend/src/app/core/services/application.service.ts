@@ -9,7 +9,7 @@ import { ApiResponse, InstructorApplication, ApplicationPayload } from '../model
 })
 export class ApplicationService {
   private http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/v1`;
+  private readonly apiUrl = `${environment.apiUrl}`;
 
   /**
    * Estudiante: Enviar nueva postulación
