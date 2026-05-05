@@ -29,18 +29,18 @@ import { LandingService } from './services/landing.service';
           que validan tu dominio real del kernel y el desarrollo de software.
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a mat-flat-button routerLink="/courses" class="hero-btn-primary w-full sm:w-auto sm:min-w-[200px]">
-            <span class="material-symbols-outlined mr-2">explore</span>
+          <a mat-flat-button routerLink="/courses" class="hero-btn-primary w-full sm:w-auto sm:min-w-[200px] inline-flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">explore</span>
             Explorar Cursos
           </a>
           @if (isAuthenticated()) {
-            <a mat-stroked-button routerLink="/my-courses" class="hero-btn-secondary w-full sm:w-auto sm:min-w-[200px]">
-              <span class="material-symbols-outlined mr-2">school</span>
+            <a mat-stroked-button routerLink="/my-courses" class="hero-btn-secondary w-full sm:w-auto sm:min-w-[200px] inline-flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">school</span>
               Ir a mi Dashboard
             </a>
           } @else {
-            <a mat-stroked-button routerLink="/register" class="hero-btn-secondary w-full sm:w-auto sm:min-w-[200px]">
-              <span class="material-symbols-outlined mr-2">person_add</span>
+            <a mat-stroked-button routerLink="/register" class="hero-btn-secondary w-full sm:w-auto sm:min-w-[200px] inline-flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">person_add</span>
               Unirse Ahora
             </a>
           }
@@ -226,6 +226,10 @@ import { LandingService } from './services/landing.service';
       padding: 12px 28px !important;
       font-weight: 600 !important;
       font-size: 0.95rem !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
       box-shadow: 0 0 20px rgba(6, 182, 212, 0.25) !important;
       transition: all 0.2s ease-in-out !important;
     }
@@ -240,6 +244,10 @@ import { LandingService } from './services/landing.service';
       padding: 12px 28px !important;
       font-weight: 500 !important;
       font-size: 0.95rem !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
       transition: all 0.2s ease-in-out !important;
     }
     .hero-btn-secondary:hover {

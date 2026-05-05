@@ -10,7 +10,7 @@ import { RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
     <div class="min-h-screen bg-zinc-950 flex">
       
        <!-- SideNavBar (Persistente) -->
-       <nav class="fixed left-0 top-0 h-full flex flex-col py-6 bg-zinc-900/80 backdrop-blur-xl w-64 border-r border-zinc-800 hidden md:flex pt-20">
+       <nav class="fixed left-0 top-[70px] h-[calc(100vh-70px)] flex flex-col py-6 bg-zinc-900/80 backdrop-blur-xl w-64 border-r border-zinc-800 hidden md:flex pt-6">
          <div class="flex-1 flex flex-col px-3 gap-2">
           <a 
             class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-all"
@@ -19,13 +19,6 @@ import { RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
             [routerLinkActiveOptions]="{ exact: true }">
             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
             <span class="font-semibold text-sm">Dashboard</span>
-          </a>
-          <a 
-            class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-all"
-            routerLink="/my-certificates"
-            routerLinkActive="active">
-            <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
-            <span class="font-medium text-sm">Mis Certificados</span>
           </a>
           <a 
             class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-all"
