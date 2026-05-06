@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import confetti from 'canvas-confetti';
 
 @Injectable({ providedIn: 'root' })
 export class ConfettiService {
@@ -10,7 +11,7 @@ export class ConfettiService {
   fireSuccessConfetti(): void {
     const colors = ['#8b5cf6', '#7c3aed', '#22d3ee', '#06b6d4', '#f4f4f5'];
 
-    const defaults = {
+    const defaults: confetti.Options = {
       spread: 60,
       ticks: 80,
       gravity: 0.6,
@@ -19,41 +20,31 @@ export class ConfettiService {
       colors,
     };
 
-    const shoot = () => {
-      // Desde la esquina inferior izquierda
-      Promise.all([
-        import('canvas-confetti').then((confetti) => {
-          confetti.default({
-            ...defaults,
-            particleCount: 40,
-            angle: 60,
-            origin: { x: 0, y: 0.8 },
-          });
-        }),
-        // Desde la esquina inferior derecha
-        import('canvas-confetti').then((confetti) => {
-          confetti.default({
-            ...defaults,
-            particleCount: 40,
-            angle: 120,
-            origin: { x: 1, y: 0.8 },
-          });
-        }),
-      ]);
-    };
+    // Ráfaga desde la esquina inferior izquierda
+    confetti({
+      ...defaults,
+      particleCount: 40,
+      angle: 60,
+      origin: { x: 0, y: 0.8 },
+    });
 
-    shoot();
-    // Segunda ráfaga más suave 300ms después
+    // Ráfaga desde la esquina inferior derecha
+    confetti({
+      ...defaults,
+      particleCount: 40,
+      angle: 120,
+      origin: { x: 1, y: 0.8 },
+    });
+
+    // Segunda ráfaga central 300ms después
     setTimeout(() => {
-      import('canvas-confetti').then((confetti) => {
-        confetti.default({
-          ...defaults,
-          particleCount: 25,
-          angle: 90,
-          spread: 100,
-          origin: { x: 0.5, y: 0.6 },
-          startVelocity: 20,
-        });
+      confetti({
+        ...defaults,
+        particleCount: 25,
+        angle: 90,
+        spread: 100,
+        origin: { x: 0.5, y: 0.6 },
+        startVelocity: 20,
       });
     }, 300);
   }
