@@ -259,7 +259,7 @@ export class CourseDetailComponent implements OnInit {
       .subscribe({
       next: (response) => {
         if (response.data) {
-          const course = response.data.course;
+          const course = response.data;
           this.course.set(course);
           this.titleService.setTitle(course.title + ' - KernelLearn');
           this.metaService.updateTag({ name: 'description', content: course.short_description || course.description });

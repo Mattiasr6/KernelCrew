@@ -279,8 +279,8 @@ export class InstructorCurriculumComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
-          if (res.data?.course) {
-            this.courseStatus.set(res.data.course.status);
+          if (res.data) {
+            this.courseStatus.set(res.data.status);
           }
         }
       });

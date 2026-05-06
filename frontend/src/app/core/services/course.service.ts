@@ -51,8 +51,8 @@ export class CourseService {
   /**
    * Obtener detalle de un curso
    */
-  getCourse(id: number): Observable<ApiResponse<{ course: Course }>> {
-    return this.api.get<ApiResponse<{ course: Course }>>(`courses/${id}`);
+  getCourse(id: number): Observable<ApiResponse<Course>> {
+    return this.api.get<ApiResponse<Course>>(`courses/${id}`);
   }
 
   /**
