@@ -2,6 +2,7 @@ import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CertificateService } from '../../core/services/certificate.service';
+import { ConfettiService } from '../../core/services/confetti.service';
 import { Certificate } from '../../core/models';
 import { StudentSidebarComponent } from '../../shared/components/student-sidebar/student-sidebar.component';
 
@@ -84,6 +85,7 @@ import { StudentSidebarComponent } from '../../shared/components/student-sidebar
 })
 export class StudentCertificatesComponent implements OnInit {
   private certService = inject(CertificateService);
+  private confetti = inject(ConfettiService);
   private destroyRef = inject(DestroyRef);
 
   certificates = signal<Certificate[]>([]);
@@ -116,8 +118,9 @@ export class StudentCertificatesComponent implements OnInit {
         link.href = url;
         link.download = `Certificado_${cert.course?.slug || cert.id}.pdf`;
         link.click();
-        
-        // Limpieza
+
+        this.confetti.fireSuccessConfetti();
+
         window.URL.revokeObjectURL(url);
         this.downloadingUuid.set(null);
       },

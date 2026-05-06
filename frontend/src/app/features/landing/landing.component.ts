@@ -147,15 +147,17 @@ import { LandingService } from './services/landing.service';
                 </div>
                 <div class="p-5 flex flex-col flex-1">
                   <div class="flex items-center gap-2 mb-3">
-                    <div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
-                      @if (course.instructor?.avatar_url) {
-                        <img [src]="course.instructor.avatar_url" class="w-full h-full object-cover" />
-                      } @else {
-                        <span class="text-[10px] font-bold text-cyan-400">{{ (course.instructor?.name || '?')[0] }}</span>
-                      }
-                    </div>
-                    <span class="text-xs text-zinc-500 truncate">{{ course.instructor?.name }}</span>
-                    <span class="text-zinc-700">·</span>
+                    @if (course.instructor; as instructor) {
+                      <div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                        @if (instructor.avatar_url) {
+                          <img [src]="instructor.avatar_url" class="w-full h-full object-cover" />
+                        } @else {
+                          <span class="text-[10px] font-bold text-cyan-400">{{ instructor.name[0] }}</span>
+                        }
+                      </div>
+                      <span class="text-xs text-zinc-500 truncate">{{ instructor.name }}</span>
+                      <span class="text-zinc-700">·</span>
+                    }
                     <div class="flex items-center gap-1">
                       <span class="material-symbols-outlined text-amber-400 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
                       <span class="text-xs font-bold text-zinc-300">{{ course.rating_avg | number:'1.1-1' }}</span>
