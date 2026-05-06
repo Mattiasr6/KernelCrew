@@ -34,7 +34,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   ],
   template: `
     <div class="course-detail-container animate-fade-in">
-      @if (loading) {
+      @if (loading()) {
         <div class="loading">
           <mat-spinner diameter="40"></mat-spinner>
         </div>
@@ -217,7 +217,7 @@ export class CourseDetailComponent implements OnInit {
 
   course = signal<Course | null>(null);
   enrolled = signal(false);
-  loading = true;
+  loading = signal(false);
   isEnrolling = signal(false);
   curriculumSections = signal<CourseSection[]>([]);
   collapsedCurriculum: Record<number, boolean> = {};
@@ -266,10 +266,10 @@ export class CourseDetailComponent implements OnInit {
           this.metaService.updateTag({ property: 'og:title', content: course.title + ' - KernelLearn' });
           this.metaService.updateTag({ property: 'og:description', content: course.short_description || course.description });
         }
-        this.loading = false;
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
+        this.loading.set(false);
       },
     });
   }
