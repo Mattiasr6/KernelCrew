@@ -32,7 +32,7 @@ import { NotificationService } from '../../../core/services/notification.service
               <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
             </div>
             <div>
-              <h3 class="text-zinc-50 font-bold">MattClaw</h3>
+              <h3 class="text-zinc-50 font-bold">KAI</h3>
               <span class="text-xs text-emerald-400 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
                 Online
@@ -291,7 +291,7 @@ export class KernelAIComponent {
   isOpen = signal(false);
   
   messages = signal<AiMessage[]>([
-    { role: 'assistant', content: '¡Hola! Soy MattClaw, tu asistente de IA en KernelLearn. Estoy aquí para ayudarte con tus cursos, resolver dudas técnicas y guiarte en tu aprendizaje. ¿En qué puedo ayudarte hoy?' }
+    { role: 'assistant', content: '¡Hola! Soy KAI, tu asistente de IA en KernelLearn. Estoy aquí para ayudarte con tus cursos, resolver dudas técnicas y guiarte en tu aprendizaje. ¿En qué puedo ayudarte hoy?' }
   ]);
   
   userInput = '';

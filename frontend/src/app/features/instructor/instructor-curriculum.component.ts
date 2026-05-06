@@ -241,7 +241,10 @@ export class InstructorCurriculumComponent implements OnInit {
   courseId = signal<number>(0);
   sections = signal<CourseSection[]>([]);
   courseStatus = signal<string | null>(null);
-  isReadonly = computed(() => this.courseStatus() !== 'DRAFT' && this.courseStatus() !== 'REJECTED');
+  isReadonly = computed(() => {
+    const status = this.courseStatus();
+    return status === 'IN_REVIEW' || status === 'PUBLISHED';
+  });
   isLoading = signal(true);
   collapsedSections = signal<boolean[]>([]);
 

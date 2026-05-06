@@ -43,8 +43,8 @@ return [
         'redirect' => env('GITHUB_REDIRECT'),
     ],
 
-    'openrouter' => [
-        'key' => env('OPENROUTER_API_KEY'),
+    'opencode' => [
+        'key' => env('OPENCODE_API_KEY'),
     ],
 
     'stripe' => [

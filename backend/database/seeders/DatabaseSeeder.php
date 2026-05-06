@@ -16,47 +16,38 @@ class DatabaseSeeder extends Seeder
             // 1. Roles y Permisos
             RoleAndPermissionSeeder::class,
 
-            // 2. Planes de Suscripción
-            SubscriptionPlanSeeder::class,
-
-            // 3. Usuarios (Admin, Instructores, Estudiantes)
+            // 2. Usuarios (Admin, Instructores, Estudiantes)
             UserSeeder::class,
 
-            // 4. Cursos (15 cursos profesionales)
+            // 3. Categorías
+            CategorySeeder::class,
+
+            // 4. Cursos (4 cursos con estados mixtos)
             CourseSeeder::class,
 
-            // 5. Suscripciones (activas y vencidas)
-            SubscriptionSeeder::class,
+            // 5. Curriculum (Secciones y Lecciones)
+            CurriculumSeeder::class,
 
-            // 6. Inscripciones y Progreso
+            // 6. Inscripciones y Progreso (con lesson_user)
             EnrollmentSeeder::class,
 
-            // 7. Reseñas y Ratings
-            ReviewSeeder::class,
-
-            // 8. Transacciones/Pagos
-            PaymentSeeder::class,
-
-            // 9. Paquetes de Créditos
+            // 7. Paquetes de Créditos
             CreditPackageSeeder::class,
-
-            // 10. Certificados (cursos completados)
-            CertificateSeeder::class,
         ]);
 
         $this->command->info('=========================================');
         $this->command->info('  DATABASE SEEDING COMPLETE');
         $this->command->info('=========================================');
-        
-        // Resumen de datos
+
         $this->command->info('');
-        $this->command->info('Resumen de datos generados:');
+        $this->command->info('Credenciales:');
         $this->command->info('- Admin: admin@kernellearn.com / admin123');
-        $this->command->info('- Instructores: sebastian@kernellearn.com, andrea@kernellearn.com, roberto@kernellearn.com');
-        $this->command->info('- Estudiante principal: mattias@kernellearn.com / password');
-        $this->command->info('- Cursos: 15 profesionales con niveles (beginner, intermediate, advanced)');
-        $this->command->info('- Suscripciones: Activas y vencidas para demo de bloqueo');
-        $this->command->info('- Ratings: Promedio ~4.3 en el catálogo');
-        $this->command->info('- Transacciones: Distribución en últimos 6 meses con pico reciente');
+        $this->command->info('- Instructor: andrea@kernellearn.com / instructor123');
+        $this->command->info('- Estudiante: mattias@kernellearn.com / password (150 créditos)');
+        $this->command->info('');
+        $this->command->info('Cursos:');
+        $this->command->info('- 2 PUBLICADOS: .NET 8, Linux');
+        $this->command->info('- 1 DRAFT: IA Agentes Locales');
+        $this->command->info('- 1 REJECTED: DevOps Docker K8s');
     }
 }

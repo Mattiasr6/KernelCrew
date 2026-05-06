@@ -16,7 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
         
         $middleware->alias([
             'checkRole' => \App\Http\Middleware\CheckRoleId::class,
-            'subscription.access' => \App\Http\Middleware\SubscriptionAccess::class,
             'api.auth' => \App\Http\Middleware\ApiAuthenticate::class,
         ]);
 

@@ -11,7 +11,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // === ADMIN ===
-        $admin = User::create([
+        User::create([
             'name' => 'Admin Principal',
             'email' => 'admin@kernellearn.com',
             'password' => Hash::make('admin123'),
@@ -68,6 +68,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'bio' => 'Desarrollador Fullstack en formación. Interesado en .NET y seguridad informática.',
                 'avatar' => 'https://api.dicebear.com/7.x/avataaars/svg?seed=mattias',
+                'credits_balance' => 150,
             ],
             [
                 'name' => 'Ana Gabriela López',
@@ -75,6 +76,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'bio' => 'Estudiante de ingeniería de sistemas',
                 'avatar' => 'https://api.dicebear.com/7.x/avataaars/svg?seed=ana',
+                'credits_balance' => 50,
             ],
             [
                 'name' => 'Carlos Mendoza',
@@ -151,6 +153,7 @@ class UserSeeder extends Seeder
                 'is_active' => true,
                 'bio' => $student['bio'],
                 'avatar' => $student['avatar'] ?? null,
+                'credits_balance' => $student['credits_balance'] ?? 0,
             ]);
             
             $studentUsers[] = $user;

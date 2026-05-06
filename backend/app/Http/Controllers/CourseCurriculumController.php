@@ -25,7 +25,7 @@ class CourseCurriculumController extends Controller
         $isOwner = $user && $course->instructor_id === $user->id;
         $isAdmin = $user && $user->isAdmin();
 
-        if ($course->status !== 'published') {
+        if (!$course->isPublished()) {
             if (!$isOwner && !$isAdmin) {
                 return response()->json([
                     'success' => false,
