@@ -30,17 +30,17 @@ import { LandingService } from './services/landing.service';
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a mat-flat-button routerLink="/courses" class="hero-btn-primary w-full sm:w-auto sm:min-w-[200px] inline-flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined">explore</span>
+            <span class="material-symbols-outlined" style="line-height:1;display:inline-flex;align-items:center">explore</span>
             Explorar Cursos
           </a>
           @if (isAuthenticated()) {
             <a mat-stroked-button routerLink="/my-courses" class="hero-btn-secondary w-full sm:w-auto sm:min-w-[200px] inline-flex items-center justify-center gap-2">
-              <span class="material-symbols-outlined">school</span>
+              <span class="material-symbols-outlined" style="line-height:1;display:inline-flex;align-items:center">school</span>
               Ir a mi Dashboard
             </a>
           } @else {
             <a mat-stroked-button routerLink="/register" class="hero-btn-secondary w-full sm:w-auto sm:min-w-[200px] inline-flex items-center justify-center gap-2">
-              <span class="material-symbols-outlined">person_add</span>
+              <span class="material-symbols-outlined" style="line-height:1;display:inline-flex;align-items:center">person_add</span>
               Unirse Ahora
             </a>
           }
