@@ -19,7 +19,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         <h1 class="text-3xl font-bold tracking-tight text-zinc-50 sm:text-4xl mb-2">Catálogo de Cursos</h1>
         <p class="text-zinc-400 text-sm mb-8">Explora nuestra biblioteca de cursos técnicos</p>
 
-        @if (loading) {
+        @if (loading()) {
           <div class="flex justify-center py-20">
             <mat-spinner diameter="40"></mat-spinner>
           </div>
@@ -129,7 +129,7 @@ export class CourseListComponent implements OnInit {
 
   courses = signal<Course[]>([]);
   categories = signal<Category[]>([]);
-  loading = false;
+  loading = signal(false);
 
   groupedCourses = computed(() => {
     const all = this.courses();
@@ -162,7 +162,7 @@ export class CourseListComponent implements OnInit {
   }
 
   loadCourses(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.courseService.getCourses({ per_page: 50 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -172,11 +172,11 @@ export class CourseListComponent implements OnInit {
           } else {
             this.courses.set([]);
           }
-          this.loading = false;
+          this.loading.set(false);
         },
         error: () => {
           this.courses.set([]);
-          this.loading = false;
+          this.loading.set(false);
         },
       });
   }
