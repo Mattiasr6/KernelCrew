@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './features/layout/components/navbar.component';
 import { NotificationComponent } from './core/components/notification.component';
@@ -36,8 +36,5 @@ import { CommonModule } from '@angular/common';
 export class App {
   private authService = inject(AuthService);
   
-  showKernelAI = () => {
-    const user = this.authService.user();
-    return user?.role_id === 3;
-  };
+  showKernelAI = computed(() => !!this.authService.user());
 }
