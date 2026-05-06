@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EnrollmentService, EnrolledCourse } from '../../core/services/enrollment.service';
+import { ConfettiService } from '../../core/services/confetti.service';
 
 @Component({
   selector: 'app-my-courses',
@@ -155,7 +156,7 @@ import { EnrollmentService, EnrolledCourse } from '../../core/services/enrollmen
                   <!-- Action Button -->
                   <div class="mt-auto">
                     @if (course.is_completed) {
-                      <a mat-flat-button [routerLink]="['/my-certificates']" class="cert-btn w-full">
+                      <a mat-flat-button [routerLink]="['/my-certificates']" (click)="celebrate()" class="cert-btn w-full">
                         <span class="material-symbols-outlined text-[16px] mr-1">workspace_premium</span>
                         Ver Certificado
                       </a>
@@ -368,6 +369,7 @@ import { EnrollmentService, EnrolledCourse } from '../../core/services/enrollmen
 })
 export class MyCoursesComponent implements OnInit {
   private enrollmentService = inject(EnrollmentService);
+  private confetti = inject(ConfettiService);
   private destroyRef = inject(DestroyRef);
 
   courses = signal<EnrolledCourse[]>([]);
@@ -376,6 +378,10 @@ export class MyCoursesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadMyCourses();
+  }
+
+  celebrate() {
+    this.confetti.fireSuccessConfetti();
   }
 
   loadMyCourses(): void {

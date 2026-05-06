@@ -197,9 +197,13 @@ class CourseController extends Controller
             'title' => $validated['title'],
             'slug' => $slug,
             'description' => $validated['description'],
-            'price' => $validated['price'],
+            'price' => $validated['price'] ?? 0,
+            'price_in_credits' => $validated['price_in_credits'] ?? 0,
+            'category_id' => $validated['category_id'] ?? null,
+            'level' => $validated['level'] ?? null,
+            'duration_hours' => $validated['duration_hours'] ?? null,
             'instructor_id' => $request->user()->id,
-            'status' => 'draft',
+            'status' => \App\Enums\CourseStatus::DRAFT->value,
         ]);
 
         return response()->json([

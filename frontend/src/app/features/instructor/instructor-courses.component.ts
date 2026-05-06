@@ -18,8 +18,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CourseService } from '../../core/services/course.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { Course } from '../../core/models';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -46,71 +47,81 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         </button>
       </div>
 
-      <div class="table-card glass-card">
-        @if (isLoading()) {
+      @if (isLoading()) {
+        <div class="table-card glass-card">
           <div class="loading-overlay">
             <mat-spinner diameter="50"></mat-spinner>
           </div>
-        }
-
-        <div class="overflow-x-auto">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Estado</th>
-                <th>Título</th>
-                <th>Nivel</th>
-                <th>Categoría</th>
-                <th>Precio</th>
-                <th class="text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (course of courses(); track course.id) {
-                <tr class="hover-row">
-                  <td>
-                    <span class="status-badge" [ngClass]="getStatusClass(course.status)">
-                      {{ getStatusLabel(course.status) }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="font-semibold text-slate-200">{{ course.title }}</span>
-                  </td>
-                  <td>
-                    <span class="badge" [ngClass]="'badge-' + course.level">
-                      {{ course.level | uppercase }}
-                    </span>
-                  </td>
-                  <td class="text-slate-300">{{ course.category }}</td>
-                  <td class="font-mono text-emerald-400">\${{ course.price }}</td>
-                  <td class="text-right">
-                    <div class="action-group">
-                      @if (course.status === 'DRAFT' || course.status === 'REJECTED') {
-                        <button class="icon-btn review" (click)="requestReview(course)" title="Enviar a revisión">
-                          <span class="material-symbols-outlined">how_to_vote</span>
-                        </button>
-                      }
-                      <button class="icon-btn edit" [routerLink]="['/instructor', 'courses', course.id, 'curriculum']" title="Editar contenido">
-                        <span class="material-symbols-outlined">edit</span>
-                      </button>
-                      <button class="icon-btn delete" (click)="deleteCourse(course)" title="Eliminar">
-                        <span class="material-symbols-outlined">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="6" class="empty-state">
-                    <span class="material-symbols-outlined text-5xl mb-3 block">menu_book</span>
-                    Aún no has creado ningún curso.
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
         </div>
-      </div>
+      } @else if (courses().length === 0) {
+        <!-- Empty State Premium -->
+        <div class="flex flex-col items-center justify-center py-20 px-6 bg-zinc-900/50 border-2 border-dashed border-zinc-800 rounded-2xl">
+          <div class="w-20 h-20 rounded-full bg-zinc-800/50 flex items-center justify-center">
+            <span class="material-symbols-outlined text-5xl text-zinc-500" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+          </div>
+          <h3 class="text-xl font-semibold text-zinc-100 mt-6">Aún no tienes cursos creados</h3>
+          <p class="text-sm text-zinc-400 mt-2 mb-6 max-w-md text-center leading-relaxed">
+            Empieza a compartir tu conocimiento y monetiza tu experiencia. Crear tu primer borrador toma solo unos segundos.
+          </p>
+          <button class="empty-cta-btn" (click)="openDialog()">
+            <span class="material-symbols-outlined text-[18px]">add_circle</span>
+            Crear Nuevo Curso
+          </button>
+        </div>
+      } @else {
+        <div class="table-card glass-card">
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Estado</th>
+                  <th>Título</th>
+                  <th>Nivel</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th class="text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (course of courses(); track course.id) {
+                  <tr class="hover-row">
+                    <td>
+                      <span class="status-badge" [ngClass]="getStatusClass(course.status)">
+                        {{ getStatusLabel(course.status) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="font-semibold text-slate-200">{{ course.title }}</span>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="'badge-' + course.level">
+                        {{ course.level | uppercase }}
+                      </span>
+                    </td>
+                    <td class="text-slate-300">{{ course.category }}</td>
+                    <td class="font-mono text-emerald-400">\${{ course.price }}</td>
+                    <td class="text-right">
+                      <div class="action-group">
+                        @if (course.status === 'DRAFT' || course.status === 'REJECTED') {
+                          <button class="icon-btn review" (click)="requestReview(course)" title="Enviar a revisión">
+                            <span class="material-symbols-outlined">how_to_vote</span>
+                          </button>
+                        }
+                        <button class="icon-btn edit" [routerLink]="['/instructor', 'courses', course.id, 'curriculum']" title="Editar contenido">
+                          <span class="material-symbols-outlined">edit</span>
+                        </button>
+                        <button class="icon-btn delete" (click)="deleteCourse(course)" title="Eliminar">
+                          <span class="material-symbols-outlined">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Modal de Creación/Edición -->
@@ -158,7 +169,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
               }
             </div>
 
-            <!-- Grid 2x2: Level, Category, Duration, Price -->
+            <!-- Grid 1x2: Level + Category -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="form-label">Nivel</label>
@@ -175,25 +186,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
                 <label class="form-label">Categoría</label>
                 <div class="input-wrapper">
                   <span class="material-symbols-outlined input-icon">category</span>
-                  <select class="form-input" formControlName="category">
-                    @for (cat of categories; track cat) {
-                      <option [value]="cat">{{ cat }}</option>
+                  <select class="form-input" formControlName="category_id">
+                    <option [ngValue]="null" disabled>Selecciona una categoría</option>
+                    @for (cat of categories(); track cat.id) {
+                      <option [ngValue]="cat.id">{{ cat.name }}</option>
                     }
                   </select>
-                </div>
-              </div>
-              <div>
-                <label class="form-label">Duración (Horas)</label>
-                <div class="input-wrapper">
-                  <span class="material-symbols-outlined input-icon">schedule</span>
-                  <input class="form-input" type="number" formControlName="duration_hours" min="1" placeholder="40" />
-                </div>
-              </div>
-              <div>
-                <label class="form-label">Precio ($)</label>
-                <div class="input-wrapper">
-                  <span class="material-symbols-outlined input-icon">attach_money</span>
-                  <input class="form-input" type="number" formControlName="price" min="0" placeholder="29.99" />
                 </div>
               </div>
             </div>
@@ -219,7 +217,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
                   <span>Guardando...</span>
                 } @else {
                   <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
-                  Crear Borrador
+                  Crear Borrador y Editar
                 }
               </button>
             </div>
@@ -258,6 +256,26 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     }
 
     .add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
+
+    .empty-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
+    }
+    .empty-cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+    }
 
     .table-card {
       position: relative;
@@ -526,8 +544,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class InstructorCoursesComponent implements OnInit {
   private courseService = inject(CourseService);
+  private notification = inject(NotificationService);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
   courses = signal<Course[]>([]);
@@ -538,19 +558,28 @@ export class InstructorCoursesComponent implements OnInit {
   showDialog = false;
   editingCourse: Course | null = null;
 
-  categories = ['Desarrollo Web', 'Móvil', 'Data Science', 'DevOps', 'Diseño', 'IA'];
+  categories = signal<{ id: number; name: string }[]>([]);
 
   form: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(5)]],
-    description: ['', [Validators.required]],
+    description: ['', [Validators.required, Validators.minLength(50)]],
     level: ['beginner', Validators.required],
-    category: ['', Validators.required],
-    duration_hours: [0, [Validators.required, Validators.min(1)]],
-    price: [0, [Validators.required, Validators.min(0)]],
+    category_id: [null, Validators.required],
   });
 
   ngOnInit(): void {
     this.loadMyCourses();
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.courseService.getCategories().subscribe({
+      next: (res: any) => {
+        if (res.success && res.data) {
+          this.categories.set(res.data);
+        }
+      },
+    });
   }
 
   loadMyCourses(): void {
@@ -570,7 +599,7 @@ export class InstructorCoursesComponent implements OnInit {
     if (course) {
       this.form.patchValue(course);
     } else {
-      this.form.reset({ level: 'beginner', duration_hours: 0, price: 0 });
+      this.form.reset({ level: 'beginner', category_id: null });
     }
     this.showDialog = true;
   }
@@ -593,11 +622,17 @@ export class InstructorCoursesComponent implements OnInit {
       : this.courseService.createCourse(data);
 
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.snackBar.open(`Curso ${this.editingCourse ? 'actualizado' : 'creado'} con éxito`, 'OK', { duration: 3000 });
+      next: (res: any) => {
+        const courseId = res.data?.id || res.data?.course?.id;
         this.isSaving.set(false);
         this.closeDialog();
-        this.loadMyCourses();
+        if (!this.editingCourse && courseId) {
+          this.notification.success('Borrador Creado', 'Redirigiendo al espacio de trabajo...');
+          setTimeout(() => this.router.navigate(['/instructor/courses', courseId]), 1200);
+        } else {
+          this.snackBar.open(`Curso ${this.editingCourse ? 'actualizado' : 'creado'} con éxito`, 'OK', { duration: 3000 });
+          this.loadMyCourses();
+        }
       },
       error: (err) => {
         this.isSaving.set(false);
