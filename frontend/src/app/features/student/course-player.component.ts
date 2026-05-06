@@ -6,6 +6,7 @@ import { CurriculumService } from '../../core/services/curriculum.service';
 import { EnrollmentService } from '../../core/services/enrollment.service';
 import { CertificateService } from '../../core/services/certificate.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Course, CourseSection, Lesson } from '../../core/models';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -106,6 +107,13 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
           <!-- RIGHT: Sidebar Curriculum -->
           <aside class="sidebar">
+            @if (canEdit()) {
+              <a [routerLink]="['/instructor/courses', course()!.id, 'curriculum']"
+                 class="flex items-center gap-2 px-4 py-3 mx-3 mt-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 transition-all text-sm font-semibold">
+                <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                Editar Curso
+              </a>
+            }
             <div class="sidebar-header">
               <h3 class="text-sm font-bold text-zinc-100 uppercase tracking-wider">Contenido</h3>
               <span class="text-xs text-zinc-500">{{ progressPct() }}%</span>
@@ -244,6 +252,7 @@ export class CoursePlayerComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private sanitizer = inject(DomSanitizer);
   private destroyRef = inject(DestroyRef);
+  private authService = inject(AuthService);
 
   course = signal<Course | null>(null);
   sections = signal<CourseSection[]>([]);
@@ -253,6 +262,14 @@ export class CoursePlayerComponent implements OnInit {
   loading = signal(true);
   isCompleting = signal(false);
   showCertificateModal = signal(false);
+
+  canEdit = computed(() => {
+    const c = this.course();
+    const user = this.authService.user();
+    if (!c || !user) return false;
+    const status = c.status;
+    return user.id === c.instructor_id && (status === 'DRAFT' || status === 'REJECTED');
+  });
   lastLessonId: number | null = null;
   expandedSections = signal<boolean[]>([]);
 
