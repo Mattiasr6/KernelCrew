@@ -271,7 +271,7 @@ export class CoursePlayerComponent implements OnInit {
   loadCourse(id: number) {
     this.courseService.getCourse(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
-        if (res.data) this.course.set(res.data.course);
+        if (res.data) this.course.set(res.data);
       },
       error: () => {
         this.loading.set(false);
