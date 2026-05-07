@@ -88,7 +88,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/courses/{id}/complete', [CourseAccessController::class, 'markComplete']);
         
         // Progreso detallado y lecciones (requiere autenticación)
-        Route::post('/lessons/{id}/complete', [CourseEnrollmentController::class, 'completeLesson'])->middleware('throttle:5,1');
+        Route::post('/lessons/{id}/complete', [CourseEnrollmentController::class, 'completeLesson'])->middleware('throttle:60,1');
         Route::get('/courses/{id}/my-progress', [CourseEnrollmentController::class, 'myProgress']);
         Route::get('/student/my-courses', [CourseEnrollmentController::class, 'myCourses']);
         

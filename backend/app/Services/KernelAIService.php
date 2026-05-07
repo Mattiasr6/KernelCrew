@@ -21,7 +21,8 @@ class KernelAIService
     public function chat(array $messages)
     {
         try {
-            $response = Http::withHeaders([
+            $start = microtime(true);
+            $response = Http::timeout(30)->withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
             ])->post("{$this->baseUrl}/chat/completions", [
@@ -29,12 +30,14 @@ class KernelAIService
                 'messages' => $messages,
                 'temperature' => 0.7,
             ]);
+            $elapsed = round(microtime(true) - $start, 2);
 
             if ($response->failed()) {
-                Log::error('KAI Error: ' . $response->body());
+                Log::error("KAI Error ({$elapsed}s): " . $response->status() . ' ' . $response->body());
                 return ['error' => 'Error al conectar con la Inteligencia Artificial'];
             }
 
+            Log::info("KAI OK ({$elapsed}s)");
             return $response->json();
         } catch (\Exception $e) {
             Log::error('KAI Exception: ' . $e->getMessage());

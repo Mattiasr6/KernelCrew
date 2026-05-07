@@ -12,9 +12,10 @@ export interface Toast {
 })
 export class NotificationService {
   toasts = signal<Toast[]>([]);
+  private nextId = 1;
 
   show(message: string, type: 'success' | 'error' | 'info' = 'success', subtext?: string) {
-    const id = Date.now();
+    const id = this.nextId++;
     this.toasts.update(t => [...t, { id, message, subtext, type }]);
 
     setTimeout(() => {
