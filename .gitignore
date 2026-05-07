@@ -12,5 +12,11 @@ prompt.txt
 .agents/
 skills-lock.json
 
+# Project context (not for public repo)
+GEMINI.md
+SPRINT1-COVERAGE.md
+proyecto_consigna.txt
+DESIGN.md
+
 # Backend scripts
 backend/scripts/
