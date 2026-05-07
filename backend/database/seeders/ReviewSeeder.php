@@ -13,135 +13,80 @@ class ReviewSeeder extends Seeder
     public function run(): void
     {
         $students = User::where('role_id', 3)->get();
-        $courses = Course::where('status', 'published')->get();
+        $dotNet = Course::where('title', 'like', '%.NET%')->first();
+        $linux = Course::where('title', 'like', '%Linux%')->first();
+        $publishedCourses = array_filter([$dotNet, $linux]);
 
-        if ($courses->isEmpty()) {
-            $this->command->warn('No hay cursos. Ejecuta CourseSeeder primero.');
+        if (empty($publishedCourses)) {
+            $this->command->warn('No hay cursos publicados. Ejecuta CourseSeeder primero.');
             return;
         }
 
         $comments = [
             5 => [
-                "Excelente curso. El instructor explica muy bien los conceptos complejos. La sección de arquitectura limpia cambió completamente mi forma de programar.",
-                "Sin duda el mejor curso de .NET que he tomado. Muy prácticos los ejemplos y el proyecto final es realista.",
-                " contenido muy actualizado. Aprendí cosas que no encontré en otros recursos.",
-                "El profesor domina el tema. Resolvió todas mis dudas rápidamente en el foro.",
-                "Curso obligatoria para cualquier desarrollador .NET. Calidad de producción excelente.",
+                "Excelente curso. La forma en que explica Clean Architecture cambió completamente mi manera de estructurar proyectos.",
+                "El mejor contenido técnico que he tomado. El instructor domina el tema y los ejemplos son muy prácticos.",
+                "Increíble la profundidad del contenido. Salí armando sistemas enterprise desde cero.",
+                "Aprendí más en este curso que en 2 años de universidad. Altamente recomendado.",
+                "La sección de CQRS y MediatR es oro puro. Valió cada crédito invertido.",
+                "Curso obligatorio para cualquier desarrollador .NET que quiera crecer profesionalmente.",
+                "Muy completo y bien estructurado. Los ejercicios prácticos son el diferenciador.",
             ],
             4 => [
-                "Muy buen contenido, bien estructurado. Solo le faltaría más ejercicios prácticos.",
-                "El curso está muy completo. Aprendí mucho aunque me gustaría más contenido sobre testing.",
-                "Buena explicación teórica pero deberían agregar más laboratorios.",
-                "Excelente para nivel intermedio. Mejoró mis habilidades.",
-                "Bien organizado, cada módulo building sobre el anterior. Recommended.",
+                "Muy buen contenido, bien explicado. Solo le faltaría más laboratorios prácticos en la parte de testing.",
+                "Excelente para nivel intermedio-avanzado. Mejoró significativamente mis habilidades de arquitectura.",
+                "Buena profundidad técnica. El proyecto final fue muy útil para aplicar lo aprendido.",
+                "Bien organizado, cada módulo construye sobre el anterior. El ritmo es adecuado.",
+                "Gran curso. Me gustaría ver más ejemplos de integración con bases de datos NoSQL.",
             ],
             3 => [
-                "Contenido correcto pero la edición del video podría mejorar.",
-                "Buen curso en general. Algunas secciones se sentían muy cortas.",
-                "Okay para principiante. Necesita más ejemplos prácticos.",
-                "El ritmo es un poco lento en algunas partes, pero el contenido es válido.",
-                "Decente, no está mal pero esperaba más después de las reseñas positivas.",
-            ],
-            2 => [
-                "El contenido está desactualizado en algunas partes.",
-                "Esperaba más profundidad en los temas avanzados.",
-                "El audio de algunas clases no es muy claro.",
-            ],
-            1 => [
-                "No recommend este curso. Muy básico para el precio.",
-                "El instructor no responde las preguntas del foro.",
-            ],
-        ];
-
-        // Reseñas específicas para cursos con mejor rating
-        $featuredReviews = [
-            'Mastering .NET 8' => [
-                ['rating' => 5, 'comment' => 'El mejor investimento que hice. De null a architect en 45 horas.'],
-                ['rating' => 5, 'comment' => 'El instructor es un crack. Explica hasta el más mínimo detalle.'],
-                ['rating' => 5, 'comment' => 'Contenido enterprise-class. langsung applied di proyek real.'],
-                ['rating' => 4, 'comment' => 'Excelente pero podría tener más labs prácticos.'],
-                ['rating' => 5, 'comment' => 'Desde que tome este curso mi employer meconsidero para lead position'],
-            ],
-            'Hacking Ético' => [
-                ['rating' => 5, 'comment' => 'Muy completo. Las técnicas de hardening son exactly what I needed.'],
-                ['rating' => 5, 'comment' => 'Excelente para certificación CEH. Práctica real, no solo teoría.'],
-                ['rating' => 4, 'comment' => 'Buen contenido, algunas tools podrían actualizarse.'],
-                ['rating' => 5, 'comment' => 'Me preparó perfectamente para mi primer pentest profesional.'],
-            ],
-            'Docker y Kubernetes' => [
-                ['rating' => 5, 'comment' => 'Ahora despliego con confianza. Del localhost a production en minutos.'],
-                ['rating' => 4, 'comment' => 'Muy completo pero K8s podría ser más profundo.'],
-                ['rating' => 5, 'comment' => 'El mejor recurso en español para DevOps.'],
-            ],
-            'Agentes de IA con Ollama' => [
-                ['rating' => 4, 'comment' => 'Excelente introducción a IA local. Todo funcionando en mi laptop.'],
-                ['rating' => 5, 'comment' => 'Finalmente entiendo cómo funcionan los agentes. Muy práctico.'],
-                ['rating' => 4, 'comment' => 'Buen contenido, algo básico para mi nivel pero valioso.'],
-            ],
-            '.NET MAUI' => [
-                ['rating' => 5, 'comment' => 'Publicaron mi primera app en stores después de este curso.'],
-                ['rating' => 4, 'comment' => 'Bien estructurado, solo alcune partes desactualizadas.'],
-            ],
-            'PostgreSQL' => [
-                ['rating' => 5, 'comment' => 'Las window functions changed my life. Excelente contenido.'],
-                ['rating' => 5, 'comment' => 'Ahora mis queries son 10x más rápidas.'],
+                "Contenido correcto pero la calidad del audio podría mejorar en algunas lecciones.",
+                "Buen curso en general. Algunas secciones de Linux se sintieron muy densas y rápidas.",
+                "Okay para principiantes. Necesita más ejemplos visuales de la configuración de servidores.",
             ],
         ];
 
         $reviewCount = 0;
         $totalRating = 0;
 
-        // Reseñas destacadas
-        foreach ($featuredReviews as $titlePart => $reviews) {
-            $course = $courses->filter(fn($c) => stripos($c->title, $titlePart) !== false)->first();
-            if (!$course) continue;
+        $courseReviews = [
+            '.NET' => [
+                ['rating' => 5, 'comment_key' => 0, 'days' => 60],
+                ['rating' => 5, 'comment_key' => 1, 'days' => 45],
+                ['rating' => 5, 'comment_key' => 2, 'days' => 30],
+                ['rating' => 5, 'comment_key' => 4, 'days' => 15],
+                ['rating' => 4, 'comment_key' => 0, 'days' => 90],
+                ['rating' => 4, 'comment_key' => 1, 'days' => 70],
+                ['rating' => 4, 'comment_key' => 3, 'days' => 10],
+                ['rating' => 3, 'comment_key' => 0, 'days' => 120],
+            ],
+            'Linux' => [
+                ['rating' => 5, 'comment_key' => 0, 'days' => 55],
+                ['rating' => 5, 'comment_key' => 5, 'days' => 40],
+                ['rating' => 5, 'comment_key' => 6, 'days' => 25],
+                ['rating' => 4, 'comment_key' => 3, 'days' => 85],
+                ['rating' => 4, 'comment_key' => 4, 'days' => 50],
+                ['rating' => 4, 'comment_key' => 2, 'days' => 20],
+                ['rating' => 3, 'comment_key' => 1, 'days' => 100],
+            ],
+        ];
 
-            foreach ($reviews as $reviewData) {
+        foreach ($publishedCourses as $course) {
+            $key = stripos($course->title, '.NET') !== false ? '.NET' : 'Linux';
+            $plan = $courseReviews[$key] ?? [];
+
+            foreach ($plan as $reviewData) {
                 $student = $students->random();
-                
-                // Verificar si ya hay review
+
                 $exists = CourseReview::where('user_id', $student->id)
                     ->where('course_id', $course->id)
                     ->exists();
                 if ($exists) continue;
 
-                $createdAt = Carbon::now()
-                    ->subDays(rand(1, 120))
-                    ->subHours(rand(0, 23));
+                $rating = $reviewData['rating'];
+                $comment = $comments[$rating][$reviewData['comment_key'] % count($comments[$rating])];
 
-                CourseReview::create([
-                    'user_id' => $student->id,
-                    'course_id' => $course->id,
-                    'rating' => $reviewData['rating'],
-                    'comment' => $reviewData['comment'],
-                    'created_at' => $createdAt,
-                    'updated_at' => $createdAt,
-                ]);
-
-                $reviewCount++;
-                $totalRating += $reviewData['rating'];
-            }
-        }
-
-        // Reseñas aleatorias adicionales
-        foreach ($courses as $course) {
-            $existingReviews = CourseReview::where('course_id', $course->id)->count();
-            $targetReviews = rand(3, 8);
-            
-            for ($i = $existingReviews; $i < $targetReviews; $i++) {
-                $student = $students->random();
-                
-                $exists = CourseReview::where('user_id', $student->id)
-                    ->where('course_id', $course->id)
-                    ->exists();
-                if ($exists) continue;
-
-                $rating = $this->weightedRandomRating();
-                $comment = $comments[$rating][array_rand($comments[$rating])];
-                
-                $createdAt = Carbon::now()
-                    ->subDays(rand(1, 150))
-                    ->subHours(rand(0, 23));
+                $createdAt = Carbon::now()->subDays($reviewData['days']);
 
                 CourseReview::create([
                     'user_id' => $student->id,
@@ -157,26 +102,8 @@ class ReviewSeeder extends Seeder
             }
         }
 
-        $avgRating = $reviewCount > 0 ? round($totalRating / $reviewCount, 2) : 0;
+        $avgRating = $reviewCount > 0 ? round($totalRating / $reviewCount, 1) : 0;
 
-        $this->command->info("Reseñas creadas:");
-        $this->command->info("- Total reseñas: {$reviewCount}");
-        $this->command->info("- Rating promedio: {$avgRating}");
-    }
-
-    private function weightedRandomRating(): int
-    {
-        $weights = [5 => 40, 4 => 35, 3 => 15, 2 => 7, 1 => 3];
-        $rand = rand(1, 100);
-        $cumulative = 0;
-        
-        foreach ($weights as $rating => $weight) {
-            $cumulative += $weight;
-            if ($rand <= $cumulative) {
-                return $rating;
-            }
-        }
-        
-        return 4;
+        $this->command->info("Reseñas: {$reviewCount} totales, rating promedio {$avgRating}★");
     }
 }

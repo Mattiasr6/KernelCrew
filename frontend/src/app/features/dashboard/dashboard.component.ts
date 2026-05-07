@@ -124,17 +124,18 @@ import { AuthService } from '../../core/services/auth.service';
   styles: [
     `
       .dashboard-container {
-        background: var(--bg-primary);
+        background: #09090b;
         min-height: 100vh;
         padding: 32px;
         max-width: 1200px;
         margin: 0 auto;
       }
+      @media (max-width: 640px) { .dashboard-container { padding: 20px 16px; } }
       .dashboard-header {
         margin-bottom: 32px;
       }
       .dashboard-header h1 {
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        background: linear-gradient(135deg, #06b6d4, #8b5cf6);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -142,14 +143,14 @@ import { AuthService } from '../../core/services/auth.service';
         margin-bottom: 8px;
       }
       .role {
-        color: var(--text-secondary);
+        color: #a1a1aa;
       }
       .cards-grid {
         display: grid;
         gap: 24px;
         grid-template-columns: repeat(1, 1fr);
       }
-      @media (min-width: 769px) and (max-width: 1024px) {
+      @media (min-width: 641px) {
         .cards-grid {
           grid-template-columns: repeat(2, 1fr);
         }
@@ -160,21 +161,20 @@ import { AuthService } from '../../core/services/auth.service';
         }
       }
       .glass-card {
-        background: var(--glass-bg) !important;
-        border: 1px solid var(--glass-border) !important;
+        background: #18181b !important;
+        border: 1px solid #27272a !important;
         border-radius: 16px !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-        backdrop-filter: blur(10px);
+        box-shadow: none !important;
+        transition: transform 0.3s ease, border-color 0.3s ease;
         cursor: pointer;
       }
       .glass-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 32px rgba(108, 99, 255, 0.2);
-        border-color: var(--accent-primary) !important;
+        border-color: #06b6d4 !important;
+        box-shadow: 0 0 20px rgba(6, 182, 212, 0.15) !important;
       }
       .icon-avatar {
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+        background: linear-gradient(135deg, #06b6d4, #8b5cf6) !important;
         color: white !important;
         display: flex;
         align-items: center;
@@ -184,7 +184,7 @@ import { AuthService } from '../../core/services/auth.service';
         height: 40px;
       }
       mat-card-content p {
-        color: var(--text-secondary) !important;
+        color: #a1a1aa !important;
       }
     `,
   ],

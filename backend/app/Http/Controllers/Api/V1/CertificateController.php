@@ -24,7 +24,7 @@ class CertificateController extends Controller
      */
     public function index()
     {
-        $certificates = auth()->user()->certificates()->with('course')->latest()->get();
+        $certificates = request()->user()->certificates()->with('course')->latest()->get();
 
         return response()->json([
             'success' => true,
@@ -63,9 +63,9 @@ class CertificateController extends Controller
     public function download(string $uuid)
     {
         $certificate = Certificate::where('certificate_code', $uuid)->firstOrFail();
+        $user = request()->user();
 
-        // Validar que el usuario sea el dueño o sea Admin (role_id = 1)
-        if (auth()->id() !== $certificate->user_id && auth()->user()->role_id !== UserRole::Admin->value) {
+        if ($user->id !== $certificate->user_id && (int) $user->role_id !== UserRole::Admin->value) {
             return response()->json(['message' => 'Acceso no autorizado a este certificado.'], 403);
         }
 

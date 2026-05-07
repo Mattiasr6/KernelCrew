@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CurriculumService } from '../../core/services/curriculum.service';
 import { CourseService } from '../../core/services/course.service';
+import { CourseEditorService } from './course-editor/services/course-editor.service';
 import { CourseSection, Lesson } from '../../core/models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LessonEditorComponent } from './lesson-editor.component';
@@ -98,6 +99,12 @@ import { LessonEditorComponent } from './lesson-editor.component';
                 </div>
                 <div class="flex items-center gap-2" (click)="$event.stopPropagation()">
                   @if (!isReadonly()) {
+                    <button class="icon-btn-ghost" (click)="moveSectionUp($index)" [disabled]="$index === 0" title="Subir sección">
+                      <span class="material-symbols-outlined text-[18px]">arrow_upward</span>
+                    </button>
+                    <button class="icon-btn-ghost" (click)="moveSectionDown($index)" [disabled]="$last" title="Bajar sección">
+                      <span class="material-symbols-outlined text-[18px]">arrow_downward</span>
+                    </button>
                     <button class="icon-btn-ghost" (click)="editSection(section)" title="Editar sección">
                       <span class="material-symbols-outlined text-[18px]">edit</span>
                     </button>
@@ -230,12 +237,14 @@ import { LessonEditorComponent } from './lesson-editor.component';
       @apply flex items-center justify-center w-8 h-8 rounded-lg bg-transparent border-none text-zinc-400 cursor-pointer transition-colors;
     }
     .icon-btn-ghost:hover { background: rgba(255,255,255,0.05); @apply text-zinc-50; }
+    .icon-btn-ghost:disabled { opacity: 0.3; cursor: not-allowed; }
   `]
 })
 export class InstructorCurriculumComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private curriculumService = inject(CurriculumService);
   private courseService = inject(CourseService);
+  private editorService = inject(CourseEditorService);
   private destroyRef = inject(DestroyRef);
 
   courseId = signal<number>(0);
@@ -275,13 +284,16 @@ export class InstructorCurriculumComponent implements OnInit {
   }
 
   loadCourseStatus() {
-    this.courseService.getCourse(this.courseId())
+    const editorCourse = this.editorService.currentCourse();
+    if (editorCourse) {
+      this.courseStatus.set(editorCourse.status);
+      return;
+    }
+    this.editorService.fetchCourse(this.courseId())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
-          if (res.data?.course) {
-            this.courseStatus.set(res.data.course.status);
-          }
+          if (res.data?.status) this.courseStatus.set(res.data.status);
         }
       });
   }
@@ -356,14 +368,15 @@ export class InstructorCurriculumComponent implements OnInit {
     this.newLessonSectionId.set(null);
   }
 
-  onLessonSave(data: { lesson: Lesson | null; title: string; video_url: string; duration_minutes: number; is_free: boolean }) {
+  onLessonSave(data: { lesson: Lesson | null; title: string; content: string; video_url: string | null; duration_minutes: number; is_free: boolean }) {
     const editing = this.editingLesson();
     const sectionId = this.newLessonSectionId();
 
     if (editing) {
       this.curriculumService.updateLesson(editing.id, {
         title: data.title,
-        video_url: data.video_url || undefined,
+        content: data.content,
+        video_url: (data.video_url ?? null) as any,
         duration_minutes: data.duration_minutes,
         is_free: data.is_free,
       })
@@ -375,7 +388,8 @@ export class InstructorCurriculumComponent implements OnInit {
     } else if (sectionId) {
       this.curriculumService.createLesson(sectionId, {
         title: data.title,
-        video_url: data.video_url || undefined,
+        content: data.content,
+        video_url: (data.video_url ?? null) as any,
         duration_minutes: data.duration_minutes,
         is_free: data.is_free,
       })
@@ -390,6 +404,59 @@ export class InstructorCurriculumComponent implements OnInit {
   onLessonEditorClose() {
     this.editingLesson.set(null);
     this.newLessonSectionId.set(null);
+  }
+
+  moveSectionUp(index: number) {
+    if (index <= 0) return;
+    const list = [...this.sections()];
+    [list[index], list[index - 1]] = [list[index - 1], list[index]];
+    this.sections.set(list);
+    this.curriculumService.reorderSections(this.courseId(), list.map((s, i) => ({ id: s.id, order: i })))
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+  }
+
+  moveSectionDown(index: number) {
+    const list = this.sections();
+    if (index >= list.length - 1) return;
+    const swapped = [...list];
+    [swapped[index], swapped[index + 1]] = [swapped[index + 1], swapped[index]];
+    this.sections.set(swapped);
+    this.curriculumService.reorderSections(this.courseId(), swapped.map((s, i) => ({ id: s.id, order: i })))
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+  }
+
+  canLessonMoveUp(section: CourseSection, lesson: Lesson): boolean {
+    return (section.lessons?.indexOf(lesson) ?? 0) > 0;
+  }
+
+  canLessonMoveDown(section: CourseSection, lesson: Lesson): boolean {
+    if (!section.lessons) return false;
+    const idx = section.lessons.indexOf(lesson);
+    return idx >= 0 && idx < section.lessons.length - 1;
+  }
+
+  moveLessonUp(section: CourseSection, lesson: Lesson) {
+    if (!section.lessons) return;
+    const idx = section.lessons.indexOf(lesson);
+    if (idx <= 0) return;
+    const lessons = [...section.lessons];
+    [lessons[idx], lessons[idx - 1]] = [lessons[idx - 1], lessons[idx]];
+    section.lessons = lessons;
+    this.sections.set([...this.sections()]);
+    this.curriculumService.reorderLessons(lessons.map((l, i) => ({ id: l.id, order: i })))
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+  }
+
+  moveLessonDown(section: CourseSection, lesson: Lesson) {
+    if (!section.lessons) return;
+    const idx = section.lessons.indexOf(lesson);
+    if (idx < 0 || idx >= section.lessons.length - 1) return;
+    const lessons = [...section.lessons];
+    [lessons[idx], lessons[idx + 1]] = [lessons[idx + 1], lessons[idx]];
+    section.lessons = lessons;
+    this.sections.set([...this.sections()]);
+    this.curriculumService.reorderLessons(lessons.map((l, i) => ({ id: l.id, order: i })))
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   confirmDeleteSection(section: CourseSection) {

@@ -55,6 +55,7 @@ class UserSeeder extends Seeder
                 'is_active' => true,
                 'bio' => $inst['bio'],
                 'avatar' => $inst['avatar'],
+                'enrollment_credits' => 5,
             ]);
             
             $instructorUsers[] = $user;

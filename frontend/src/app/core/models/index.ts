@@ -106,11 +106,16 @@ export interface Course {
   instructor_name?: string;
   subscription_required?: string | boolean;
   thumbnail?: string;
+  video_url?: string;
   can_enroll?: boolean;
   syllabus?: string;
   requirements?: string;
   average_rating?: string | number;
   reviews_count?: number;
+  sections_count?: number;
+  students_count?: number;
+  lessons_count?: number;
+  rejection_reason?: string;
   sections?: CourseSection[];
 }
 
@@ -217,6 +222,7 @@ export interface InstructorApplication {
   user_id: number;
   experience_summary: string;
   portfolio_url?: string;
+  resume_path?: string;
   status: 'pending' | 'approved' | 'rejected';
   reviewed_by?: number;
   user?: {
@@ -232,6 +238,7 @@ export interface InstructorApplication {
 export interface ApplicationPayload {
   experience_summary: string;
   portfolio_url?: string;
+  resume?: File;
 }
 
 export interface UsersResponse {

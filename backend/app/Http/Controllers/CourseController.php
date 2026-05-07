@@ -197,9 +197,13 @@ class CourseController extends Controller
             'title' => $validated['title'],
             'slug' => $slug,
             'description' => $validated['description'],
-            'price' => $validated['price'],
+            'price' => $validated['price'] ?? 0,
+            'price_in_credits' => $validated['price_in_credits'] ?? 0,
+            'category_id' => $validated['category_id'] ?? null,
+            'level' => $validated['level'] ?? null,
+            'duration_hours' => $validated['duration_hours'] ?? null,
             'instructor_id' => $request->user()->id,
-            'status' => 'draft',
+            'status' => \App\Enums\CourseStatus::DRAFT->value,
         ]);
 
         return response()->json([
@@ -402,6 +406,8 @@ class CourseController extends Controller
             ], 404);
         }
 
+        $this->authorize('restore', $course);
+
         $course->restore();
 
         return response()->json([
@@ -482,7 +488,13 @@ class CourseController extends Controller
             ], 404);
         }
 
-        $this->authorize('update', $course);
+        $user = request()->user();
+        if (!$user || (!$user->isAdmin() && (int) $course->instructor_id !== (int) $user->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para ver este curso.',
+            ], 403);
+        }
 
         $lessonsCount = \App\Models\Lesson::whereHas('section', function ($q) use ($course) {
             $q->where('course_id', $course->id);

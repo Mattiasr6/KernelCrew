@@ -162,7 +162,10 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->user()?->currentAccessToken();
+        if ($token) {
+            $token->delete();
+        }
 
         return response()->json([
             'success' => true,
@@ -206,9 +209,9 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'bio' => 'sometimes|string|max:500',
-            'phone' => 'sometimes|string|max:20',
-            'avatar' => 'sometimes|string|url|max:500',
+            'bio' => 'nullable|string|max:500',
+            'phone' => 'nullable|string|max:20',
+            'avatar' => 'nullable|string|url|max:500',
         ]);
 
         $user->update($validated);

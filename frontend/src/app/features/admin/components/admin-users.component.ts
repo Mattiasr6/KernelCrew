@@ -201,20 +201,27 @@ import { User } from '../../../core/models';
         padding: 20px;
         max-width: 1200px;
         margin: 0 auto;
+        background: #09090b;
+        min-height: 100vh;
       }
+      @media (max-width: 640px) { .admin-container { padding: 16px; } }
       .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
         h1 {
           margin: 0;
+          color: #fafafa;
         }
       }
       .search-field {
         width: 300px;
         margin-right: 16px;
       }
+      @media (max-width: 640px) { .search-field { width: 100%; margin-right: 0; } }
       .role-filter {
         width: 200px;
       }
@@ -226,18 +233,25 @@ import { User } from '../../../core/models';
       .users-table {
         width: 100%;
         margin-bottom: 16px;
+        background: #18181b;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #27272a;
       }
       mat-chip.role-admin {
-        background-color: #9c27b0 !important;
-        color: white !important;
+        background: rgba(139, 92, 246, 0.15) !important;
+        color: #8b5cf6 !important;
+        border: 1px solid rgba(139, 92, 246, 0.2);
       }
       mat-chip.role-instructor {
-        background-color: #2196f3 !important;
-        color: white !important;
+        background: rgba(6, 182, 212, 0.15) !important;
+        color: #06b6d4 !important;
+        border: 1px solid rgba(6, 182, 212, 0.2);
       }
       mat-chip.role-student {
-        background-color: #4caf50 !important;
-        color: white !important;
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #10b981 !important;
+        border: 1px solid rgba(16, 185, 129, 0.2);
       }
       .dialog-overlay {
         position: fixed;
@@ -245,16 +259,20 @@ import { User } from '../../../core/models';
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 1000;
+        padding: 16px;
       }
       .dialog-content {
-        background: white;
+        background: #18181b;
+        color: #fafafa;
         padding: 24px;
-        border-radius: 8px;
+        border-radius: 16px;
+        border: 1px solid #27272a;
         width: 400px;
         max-width: 90%;
       }

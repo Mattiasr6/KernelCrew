@@ -238,14 +238,20 @@ import { Course } from '../../../core/models';
         padding: 20px;
         max-width: 1400px;
         margin: 0 auto;
+        background: #09090b;
+        min-height: 100vh;
       }
+      @media (max-width: 640px) { .admin-container { padding: 16px; } }
       .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
         h1 {
           margin: 0;
+          color: #fafafa;
         }
       }
       .filters {
@@ -257,6 +263,7 @@ import { Course } from '../../../core/models';
       .search-field {
         width: 300px;
       }
+      @media (max-width: 640px) { .search-field { width: 100%; } }
       .loading {
         display: flex;
         justify-content: center;
@@ -265,18 +272,25 @@ import { Course } from '../../../core/models';
       .courses-table {
         width: 100%;
         margin-bottom: 16px;
+        background: #18181b;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #27272a;
       }
       mat-chip.level-beginner {
-        background-color: #4caf50 !important;
-        color: white !important;
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #10b981 !important;
+        border: 1px solid rgba(16, 185, 129, 0.2);
       }
       mat-chip.level-intermediate {
-        background-color: #ff9800 !important;
-        color: white !important;
+        background: rgba(6, 182, 212, 0.15) !important;
+        color: #06b6d4 !important;
+        border: 1px solid rgba(6, 182, 212, 0.2);
       }
       mat-chip.level-advanced {
-        background-color: #f44336 !important;
-        color: white !important;
+        background: rgba(139, 92, 246, 0.15) !important;
+        color: #8b5cf6 !important;
+        border: 1px solid rgba(139, 92, 246, 0.2);
       }
       .dialog-overlay {
         position: fixed;
@@ -284,16 +298,20 @@ import { Course } from '../../../core/models';
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 1000;
+        padding: 16px;
       }
       .dialog-content {
-        background: white;
+        background: #18181b;
+        color: #fafafa;
         padding: 24px;
-        border-radius: 8px;
+        border-radius: 16px;
+        border: 1px solid #27272a;
         width: 600px;
         max-width: 95%;
         max-height: 90vh;

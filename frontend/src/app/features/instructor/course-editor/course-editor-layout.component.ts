@@ -64,6 +64,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
           </div>
         }
 
+        <!-- Breadcrumbs -->
+        <div class="flex items-center gap-1.5 px-4 py-2 border-b border-zinc-800 text-xs">
+          <a routerLink="/instructor" class="text-zinc-500 hover:text-zinc-300 transition-colors">Dashboard</a>
+          <span class="text-zinc-700">/</span>
+          <a routerLink="/instructor/courses" class="text-zinc-500 hover:text-zinc-300 transition-colors">Gestor de Cursos</a>
+          <span class="text-zinc-700">/</span>
+          <span class="text-zinc-400 truncate">{{ course()?.title }}</span>
+        </div>
+
         <!-- Router Outlet -->
         <div class="flex-1 overflow-y-auto p-4 md:p-6">
           <router-outlet></router-outlet>

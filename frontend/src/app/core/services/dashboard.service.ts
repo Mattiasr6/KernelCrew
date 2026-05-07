@@ -17,4 +17,11 @@ export class DashboardService {
   getInstructorStats(): Observable<ApiResponse<DashboardData>> {
     return this.http.get<ApiResponse<DashboardData>>(`${this.apiUrl}/dashboard`);
   }
+
+  /**
+   * Obtener estudiantes inscritos en los cursos del instructor con progreso
+   */
+  getStudents(): Observable<ApiResponse<Array<{ student_name: string; student_email: string; course_title: string; course_id: number; progress: number; enrollment_date: string; completed_at: string | null }>>> {
+    return this.http.get<any>(`${this.apiUrl}/students`);
+  }
 }

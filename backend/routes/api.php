@@ -116,14 +116,15 @@ Route::prefix('v1')->group(function () {
         // Panel de Instructor (Solo role_id = 2)
         Route::middleware(['api.auth', 'checkRole:2'])->prefix('instructor')->group(function () {
             Route::get('/dashboard', [InstructorDashboardController::class, 'index']);
+            Route::get('/students', [InstructorDashboardController::class, 'students']);
             Route::get('/courses', [CourseController::class, 'getInstructorCourses']);
-            Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
-            Route::get('/courses/{id}', [CourseController::class, 'showForEditor'])->can('update', 'course');
-            Route::put('/courses/{id}', [CourseController::class, 'update'])->can('update', 'course');
-            Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->can('delete', 'course');
-            Route::patch('/courses/{id}/request-review', [CourseController::class, 'requestReview'])->can('submitForReview', 'course');
-            Route::patch('/courses/{id}/basic', [CourseController::class, 'updateBasic'])->can('update', 'course');
-            Route::patch('/courses/{id}/pricing', [CourseController::class, 'updatePricing'])->can('update', 'course');
+            Route::post('/courses', [CourseController::class, 'store']);
+            Route::get('/courses/{id}', [CourseController::class, 'showForEditor']);
+            Route::put('/courses/{id}', [CourseController::class, 'update']);
+            Route::delete('/courses/{id}', [CourseController::class, 'destroy']);
+            Route::patch('/courses/{id}/request-review', [CourseController::class, 'requestReview']);
+            Route::patch('/courses/{id}/basic', [CourseController::class, 'updateBasic']);
+            Route::patch('/courses/{id}/pricing', [CourseController::class, 'updatePricing']);
 
             // Curriculum Builder (Secciones y Lecciones)
             Route::get('/courses/{courseId}/curriculum', [CourseCurriculumController::class, 'index']);
@@ -146,23 +147,26 @@ Route::prefix('v1')->group(function () {
             Route::get('/instructor-applications', [InstructorApplicationController::class, 'index']);
             Route::patch('/instructor-applications/{id}/approve', [InstructorApplicationController::class, 'approve']);
             Route::patch('/instructor-applications/{id}/reject', [InstructorApplicationController::class, 'reject']);
+            Route::get('/instructor-applications/{id}/resume', [InstructorApplicationController::class, 'downloadResume']);
 
             Route::get('/users', [AdminUserController::class, 'index']);
             Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
             Route::patch('/users/{id}/restore', [AdminUserController::class, 'restore']);
             Route::patch('/users/{id}/toggle-status', [AdminUserController::class, 'toggleStatus']);
 
-            Route::patch('/courses/{id}/restore', [CourseController::class, 'restore'])->can('restore', 'course');
-
+            Route::patch('/courses/{id}/restore', [CourseController::class, 'restore']);
+            
             // Admin también puede hacer CRUD de cualquier curso
-            Route::post('/courses', [CourseController::class, 'store'])->can('create', App\Models\Course::class);
-            Route::put('/courses/{id}', [CourseController::class, 'update'])->can('update', 'course');
-            Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->can('delete', 'course');
+            Route::get('/courses', [AdminCourseController::class, 'index']);
+            Route::get('/courses/{id}/preview', [AdminCourseController::class, 'show']);
+            Route::post('/courses', [CourseController::class, 'store']);
+            Route::put('/courses/{id}', [CourseController::class, 'update']);
+            Route::delete('/courses/{id}', [CourseController::class, 'destroy']);
             
             // Moderación de Cursos (Admin)
             Route::get('/courses/pending', [AdminCourseController::class, 'pending']);
-            Route::patch('/courses/{id}/approve', [AdminCourseController::class, 'approve'])->can('approve', 'course');
-            Route::patch('/courses/{id}/reject', [AdminCourseController::class, 'reject'])->can('reject', 'course');
+            Route::patch('/courses/{id}/approve', [AdminCourseController::class, 'approve']);
+            Route::patch('/courses/{id}/reject', [AdminCourseController::class, 'reject']);
             
             // Transacciones y Pagos (Admin)
             Route::get('/payments', [AdminPaymentController::class, 'index']);

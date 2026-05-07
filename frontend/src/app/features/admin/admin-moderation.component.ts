@@ -95,9 +95,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
                       <div class="flex items-center justify-between mt-2">
                         <span class="text-[10px] text-zinc-600">{{ rejectReason().length }}/500</span>
                         <div class="flex gap-2">
-                          <button class="cancel-reject-btn" (click)="cancelReject()">
-                            Cancelar
-                          </button>
+                          <button class="cancel-reject-btn" (click)="cancelReject()">Cancelar</button>
                           <button mat-flat-button class="confirm-reject-btn"
                             (click)="confirmReject(course)"
                             [disabled]="!rejectReason().trim() || actioningId() === course.id">
@@ -227,7 +225,7 @@ export class AdminModerationComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
-          this.courses.set(Array.isArray(res.data) ? res.data : []);
+          this.courses.set(res.data || []);
           this.isLoading.set(false);
         },
         error: () => this.isLoading.set(false),
@@ -235,21 +233,18 @@ export class AdminModerationComponent implements OnInit {
   }
 
   approve(course: Course) {
-    if (this.actioningId()) return;
     this.actioningId.set(course.id);
-
     this.adminService.approveCourse(course.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
-          this.actioningId.set(null);
-          this.snackBar.open(res.message ?? 'Curso aprobado', 'Cerrar', { duration: 3000 });
-          this.removeFromList(course.id);
+        next: () => {
+          this.snackBar.open('Curso aprobado', 'Cerrar', { duration: 3000 });
+          this.loadPending();
         },
-        error: (err) => {
+        error: () => {
+          this.snackBar.open('Error al aprobar', 'Cerrar', { duration: 3000 });
           this.actioningId.set(null);
-          this.snackBar.open(err?.error?.message || 'Error al aprobar', 'Cerrar', { duration: 4000 });
-        },
+        }
       });
   }
 
@@ -264,28 +259,19 @@ export class AdminModerationComponent implements OnInit {
   }
 
   confirmReject(course: Course) {
-    const reason = this.rejectReason().trim();
-    if (!reason || this.actioningId()) return;
-
+    if (!this.rejectReason().trim()) return;
     this.actioningId.set(course.id);
-    this.adminService.rejectCourse(course.id, reason)
+    this.adminService.rejectCourse(course.id, this.rejectReason())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
-          this.actioningId.set(null);
-          this.rejectingId.set(null);
-          this.rejectReason.set('');
-          this.snackBar.open(res.message ?? 'Curso rechazado', 'Cerrar', { duration: 3000 });
-          this.removeFromList(course.id);
+        next: () => {
+          this.snackBar.open('Curso rechazado', 'Cerrar', { duration: 3000 });
+          this.loadPending();
         },
-        error: (err) => {
+        error: () => {
+          this.snackBar.open('Error al rechazar', 'Cerrar', { duration: 3000 });
           this.actioningId.set(null);
-          this.snackBar.open(err?.error?.message || 'Error al rechazar', 'Cerrar', { duration: 4000 });
-        },
+        }
       });
-  }
-
-  private removeFromList(courseId: number) {
-    this.courses.update((list) => list.filter((c) => c.id !== courseId));
   }
 }

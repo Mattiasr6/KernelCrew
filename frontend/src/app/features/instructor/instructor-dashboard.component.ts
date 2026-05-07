@@ -168,7 +168,84 @@ import { RouterLink } from '@angular/router';
                </div>
              </div>
            </div>
-         </div>
+
+          <!-- Tabla de Progreso de Estudiantes -->
+          <div class="lg:col-span-12 bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h3 class="text-lg font-bold text-zinc-100">Estudiantes Inscritos</h3>
+                <p class="text-xs text-zinc-500 mt-0.5">Progreso de cada estudiante en tus cursos</p>
+              </div>
+              <span class="text-xs font-semibold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full">{{ students().length }} inscritos</span>
+            </div>
+
+            @if (studentsLoading()) {
+              <div class="flex justify-center py-12">
+                <div class="w-8 h-8 border-2 border-zinc-700 border-t-cyan-500 rounded-full animate-spin"></div>
+              </div>
+            } @else if (students().length === 0) {
+              <div class="flex flex-col items-center justify-center py-12 text-zinc-600">
+                <span class="material-symbols-outlined text-4xl mb-3">group_off</span>
+                <p class="text-sm">Aún no hay estudiantes inscritos en tus cursos</p>
+              </div>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="border-b border-zinc-800">
+                      <th class="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 py-3 px-4">Estudiante</th>
+                      <th class="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 py-3 px-4">Curso</th>
+                      <th class="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 py-3 px-4">Progreso</th>
+                      <th class="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 py-3 px-4">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-zinc-800">
+                    @for (s of students(); track s.student_email + s.course_id) {
+                      <tr class="hover:bg-zinc-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="flex flex-col">
+                            <span class="text-sm font-medium text-zinc-200">{{ s.student_name }}</span>
+                            <span class="text-xs text-zinc-500">{{ s.student_email }}</span>
+                          </div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="text-sm text-zinc-300 line-clamp-1">{{ s.course_title }}</span>
+                        </td>
+                        <td class="py-3 px-4 min-w-[180px]">
+                          <div class="flex items-center gap-3">
+                            <div class="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                              <div
+                                class="h-full rounded-full transition-all duration-500"
+                                [class.bg-cyan-500]="s.progress < 100"
+                                [class.bg-emerald-500]="s.progress >= 100"
+                                [style.width.%]="s.progress"
+                              ></div>
+                            </div>
+                            <span class="text-xs font-bold text-zinc-400 w-10 text-right">{{ s.progress }}%</span>
+                          </div>
+                        </td>
+                        <td class="py-3 px-4">
+                          @if (s.progress >= 100) {
+                            <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                              <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                              Completado
+                            </span>
+                          } @else {
+                            <span class="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full">
+                              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block"></span>
+                              En Progreso
+                            </span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
      `,
   styles: [`
     :host { display: block; position: relative; }
@@ -216,7 +293,9 @@ export class InstructorDashboardComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   dashboardData = signal<DashboardData | null>(null);
+  students = signal<any[]>([]);
   isLoading = signal(true);
+  studentsLoading = signal(true);
 
   progressPercentage = computed(() => {
     const data = this.dashboardData();
@@ -226,18 +305,29 @@ export class InstructorDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadStats();
+    this.loadStudents();
   }
 
   loadStats() {
   this.isLoading.set(true);
   this.dashboardService.getInstructorStats().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
     next: (res) => {
-      // Usamos '?? null' para que nunca sea undefined
       this.dashboardData.set(res.data ?? null);
       this.isLoading.set(false);
     },
     error: () => this.isLoading.set(false)
   });
+  }
+
+  loadStudents() {
+    this.studentsLoading.set(true);
+    this.dashboardService.getStudents().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res: any) => {
+        if (res.success && res.data) this.students.set(res.data);
+        this.studentsLoading.set(false);
+      },
+      error: () => this.studentsLoading.set(false),
+    });
   }
 
   getActivityConfig(type: string) {

@@ -69,7 +69,7 @@ class CourseCurriculumController extends Controller
         $user = request()->user();
 
         // Público: lecciones gratuitas siempre accesibles
-        if ($lesson->is_free && $course->status === 'published') {
+        if ($lesson->is_free && $course->isPublished()) {
             return response()->json(['success' => true, 'data' => $lesson]);
         }
 
@@ -157,6 +157,10 @@ class CourseCurriculumController extends Controller
         $section = CourseSection::findOrFail($sectionId);
         $this->authorizeAccess($section->course);
 
+        $request->merge([
+            'video_url' => empty($request->input('video_url')) ? null : $request->input('video_url'),
+        ]);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'nullable|string',
@@ -179,6 +183,10 @@ class CourseCurriculumController extends Controller
     {
         $lesson = Lesson::findOrFail($lessonId);
         $this->authorizeAccess($lesson->section->course);
+
+        $request->merge([
+            'video_url' => empty($request->input('video_url')) ? null : $request->input('video_url'),
+        ]);
 
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
