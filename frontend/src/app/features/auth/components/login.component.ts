@@ -180,11 +180,10 @@ export class LoginComponent {
       case 'admin':
         return '/admin';
       case 'instructor':
-        return '/instructor';
       case 'docente':
         return '/instructor';
       default:
-        return '/dashboard';
+        return '/my-courses';
     }
   }
 }
