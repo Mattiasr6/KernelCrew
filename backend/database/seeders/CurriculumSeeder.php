@@ -183,27 +183,103 @@ class CurriculumSeeder extends Seeder
                     break;
                 }
             }
-            if (!$matchedKey) continue;
 
-            foreach ($curriculum[$matchedKey] as $sectionData) {
+            if ($matchedKey) {
+                foreach ($curriculum[$matchedKey] as $sectionData) {
+                    $section = CourseSection::create([
+                        'course_id' => $course->id,
+                        'title' => $sectionData['title'],
+                        'order' => $sectionData['order'],
+                    ]);
+                    $totalSections++;
+
+                    foreach ($sectionData['lessons'] as $index => $lessonData) {
+                        Lesson::create([
+                            'course_section_id' => $section->id,
+                            'title' => $lessonData['title'],
+                            'content' => $lessonData['content'] ?? null,
+                            'duration_minutes' => $lessonData['duration'],
+                            'order' => $index + 1,
+                            'is_free' => $lessonData['is_free'],
+                        ]);
+                        $totalLessons++;
+                    }
+                }
+            } else {
+                // Generar currículo genérico para cursos sin contenido específico
                 $section = CourseSection::create([
                     'course_id' => $course->id,
-                    'title' => $sectionData['title'],
-                    'order' => $sectionData['order'],
+                    'title' => 'Introducción',
+                    'order' => 1,
                 ]);
                 $totalSections++;
 
-                foreach ($sectionData['lessons'] as $index => $lessonData) {
-                    Lesson::create([
-                        'course_section_id' => $section->id,
-                        'title' => $lessonData['title'],
-                        'content' => $lessonData['content'] ?? null,
-                        'duration_minutes' => $lessonData['duration'],
-                        'order' => $index + 1,
-                        'is_free' => $lessonData['is_free'],
-                    ]);
-                    $totalLessons++;
-                }
+                Lesson::create([
+                    'course_section_id' => $section->id,
+                    'title' => "Bienvenida al curso: {$course->title}",
+                    'content' => "<h3>¡Bienvenido!</h3><p>En este curso exploraremos los conceptos fundamentales y avanzados de <strong>{$course->title}</strong>.</p><p>A lo largo de las lecciones, construirás proyectos prácticos que reforzarán tu aprendizaje.</p>",
+                    'duration_minutes' => 15,
+                    'order' => 1,
+                    'is_free' => true,
+                ]);
+                $totalLessons++;
+
+                Lesson::create([
+                    'course_section_id' => $section->id,
+                    'title' => 'Configuración del entorno',
+                    'content' => '<h3>Preparando tu estación de trabajo</h3><p>Asegúrate de tener las herramientas necesarias instaladas antes de comenzar.</p>',
+                    'duration_minutes' => 20,
+                    'order' => 2,
+                    'is_free' => false,
+                ]);
+                $totalLessons++;
+
+                Lesson::create([
+                    'course_section_id' => $section->id,
+                    'title' => 'Primeros pasos y objetivos del curso',
+                    'content' => '<h3>¿Qué aprenderás?</h3><p>Revisaremos la estructura del curso, los proyectos que construirás y los conocimientos previos recomendados.</p>',
+                    'duration_minutes' => 10,
+                    'order' => 3,
+                    'is_free' => false,
+                ]);
+                $totalLessons++;
+
+                $section2 = CourseSection::create([
+                    'course_id' => $course->id,
+                    'title' => 'Contenido Principal',
+                    'order' => 2,
+                ]);
+                $totalSections++;
+
+                Lesson::create([
+                    'course_section_id' => $section2->id,
+                    'title' => 'Conceptos fundamentales',
+                    'content' => '<h3>Los pilares fundamentales</h3><p>En esta lección cubriremos los conceptos base que necesitas dominar para avanzar en el curso.</p>',
+                    'duration_minutes' => 30,
+                    'order' => 1,
+                    'is_free' => false,
+                ]);
+                $totalLessons++;
+
+                Lesson::create([
+                    'course_section_id' => $section2->id,
+                    'title' => 'Ejercicio práctico guiado',
+                    'content' => '<h3>Manos a la obra</h3><p>Sigue los pasos del ejercicio práctico para aplicar lo aprendido en la lección anterior.</p>',
+                    'duration_minutes' => 45,
+                    'order' => 2,
+                    'is_free' => false,
+                ]);
+                $totalLessons++;
+
+                Lesson::create([
+                    'course_section_id' => $section2->id,
+                    'title' => 'Resumen y siguientes pasos',
+                    'content' => '<h3>¿Y ahora qué?</h3><p>Revisemos lo aprendido y veamos qué viene en las siguientes secciones del curso.</p>',
+                    'duration_minutes' => 10,
+                    'order' => 3,
+                    'is_free' => false,
+                ]);
+                $totalLessons++;
             }
         }
 

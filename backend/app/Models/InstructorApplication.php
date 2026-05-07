@@ -14,6 +14,7 @@ class InstructorApplication extends Model
         'user_id',
         'experience_summary',
         'portfolio_url',
+        'resume_path',
         'status',
         'reviewed_by',
     ];

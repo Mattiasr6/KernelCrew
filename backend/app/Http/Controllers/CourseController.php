@@ -488,7 +488,13 @@ class CourseController extends Controller
             ], 404);
         }
 
-        $this->authorize('update', $course);
+        $user = request()->user();
+        if (!$user || (!$user->isAdmin() && (int) $course->instructor_id !== (int) $user->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para ver este curso.',
+            ], 403);
+        }
 
         $lessonsCount = \App\Models\Lesson::whereHas('section', function ($q) use ($course) {
             $q->where('course_id', $course->id);

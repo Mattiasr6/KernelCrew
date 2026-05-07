@@ -147,6 +147,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/instructor-applications', [InstructorApplicationController::class, 'index']);
             Route::patch('/instructor-applications/{id}/approve', [InstructorApplicationController::class, 'approve']);
             Route::patch('/instructor-applications/{id}/reject', [InstructorApplicationController::class, 'reject']);
+            Route::get('/instructor-applications/{id}/resume', [InstructorApplicationController::class, 'downloadResume']);
 
             Route::get('/users', [AdminUserController::class, 'index']);
             Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
@@ -156,6 +157,8 @@ Route::prefix('v1')->group(function () {
             Route::patch('/courses/{id}/restore', [CourseController::class, 'restore']);
             
             // Admin también puede hacer CRUD de cualquier curso
+            Route::get('/courses', [AdminCourseController::class, 'index']);
+            Route::get('/courses/{id}/preview', [AdminCourseController::class, 'show']);
             Route::post('/courses', [CourseController::class, 'store']);
             Route::put('/courses/{id}', [CourseController::class, 'update']);
             Route::delete('/courses/{id}', [CourseController::class, 'destroy']);

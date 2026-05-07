@@ -58,7 +58,7 @@ class AdminUserController extends Controller
         $search = $request->query('search');
         $perPage = $request->query('per_page', 15);
 
-        $query = User::withTrashed();
+        $query = User::withTrashed()->with('rol');
 
         if ($search) {
             $query->search($search);
@@ -200,7 +200,7 @@ class AdminUserController extends Controller
      * )
      */
     #[OA\Patch(path: '/api/v1/admin/users/{id}/toggle-status', tags: ['Administración - Usuarios'], summary: 'Cambiar estado de usuario')]
-    public function toggleStatus(Request $request, int $id): JsonResponse
+    public function toggleStatus(int $id): JsonResponse
     {
         $user = User::withTrashed()->find($id);
 
@@ -212,15 +212,15 @@ class AdminUserController extends Controller
             ], 404);
         }
 
-        $request->validate(['is_active' => 'required|boolean']);
-
-        $user->is_active = $request->boolean('is_active');
+        $user->is_active = !$user->is_active;
         $user->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Estado actualizado exitosamente',
-            'data' => null,
+            'message' => $user->is_active ? 'Usuario activado' : 'Usuario desactivado',
+            'data' => [
+                'is_active' => $user->is_active,
+            ],
         ], 200);
     }
 }

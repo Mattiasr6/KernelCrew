@@ -28,6 +28,14 @@ class CourseEnrollmentController extends Controller
         $user = $request->user();
         $course = Course::findOrFail($id);
 
+        // 0. No permitir que el instructor se inscriba en su propio curso
+        if ((int) $course->instructor_id === (int) $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No puedes inscribirte en tu propio curso.',
+            ], 403);
+        }
+
         // 1. Validar si el usuario tiene una suscripción activa
         $activeSubscription = $user->subscriptions()->where('status', 'active')->first();
         if (!$activeSubscription) {
@@ -81,8 +89,16 @@ class CourseEnrollmentController extends Controller
     {
         $user = $request->user();
 
+        // No permitir que el instructor se inscriba en su propio curso
+        if ((int) $course->instructor_id === (int) $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No puedes inscribirte en tu propio curso.',
+            ], 403);
+        }
+
         // Validar que el curso esté publicado
-        if ($course->status !== CourseStatus::PUBLISHED->value) {
+        if ($course->status !== CourseStatus::PUBLISHED) {
             return response()->json([
                 'success' => false,
                 'message' => 'Este curso no está disponible.',

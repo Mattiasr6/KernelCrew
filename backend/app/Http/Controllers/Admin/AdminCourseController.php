@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\CourseStatus;
@@ -11,6 +13,48 @@ use Illuminate\Http\Request;
 
 class AdminCourseController extends Controller
 {
+    public function index(): JsonResponse
+    {
+        $courses = Course::with(['instructor', 'category'])
+            ->withCount(['sections', 'students'])
+            ->latest()
+            ->paginate(20);
+
+        return response()->json([
+            'success' => true,
+            'data' => $courses,
+        ]);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        $course = Course::with(['instructor', 'category'])
+            ->withCount(['sections', 'students'])
+            ->find($id);
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Curso no encontrado.',
+            ], 404);
+        }
+
+        $lessonsCount = \App\Models\Lesson::whereHas('section', fn($q) => $q->where('course_id', $course->id))->count();
+
+        $sections = $course->sections()->with('lessons')->orderBy('order')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                ...$course->toArray(),
+                'sections_count' => $course->sections_count,
+                'lessons_count' => $lessonsCount,
+                'students_count' => $course->students_count,
+                'curriculum' => $sections,
+            ],
+        ]);
+    }
+
     public function pending(): JsonResponse
     {
         $courses = Course::with(['instructor', 'category'])

@@ -1,219 +1,187 @@
-# KernelLearn — Plataforma de Aprendizaje Técnico con Economía de Créditos
-
-**KernelLearn** es un Sistema de Gestión de Aprendizaje (LMS) de código abierto diseñado para la enseñanza de tecnologías de desarrollo de software, administración de sistemas e inteligencia artificial. Ofrece un modelo de monetización basado en créditos, reproductor de cursos interactivo, generación de certificados verificables y un entorno completo para la gestión de contenido educativo.
-
----
-
-## Características
-
-### Nucleares
-- **Economía de Créditos**: Los estudiantes adquieren paquetes de créditos para inscribirse en cursos de forma permanente, sin suscripciones mensuales ni renovaciones automáticas.
-- **Reproductor de Cursos**: Interfaz dividida 70/30 con reproductor de video embebido, panel de lecciones lateral, barra de progreso horizontal y botón de completado por lección.
-- **Certificados Verificables**: Generación automática de certificados en PDF al completar el 100% del curso, con código UUID único verificable públicamente.
-- **Curriculum Builder**: Constructor de secciones y lecciones con reordenamiento drag-free mediante controles explícitos, soporte para URLs de video y contenido en texto.
-
-### Para Instructores
-- **Panel de Control**: Métricas de cursos, estudiantes activos, calificaciones y barra de gamificación que incentiva la creación de contenido.
-- **Editor Multi-pestaña**: Información básica, precios en créditos, currículo y configuración con bloqueo automático según el estado del curso (DRAFT / IN_REVIEW / PUBLISHED / REJECTED).
-- **Flujo de Moderación**: Los cursos pasan por un proceso de revisión por parte del administrador antes de ser publicados, con retroalimentación mediante motivo de rechazo.
-
-### Para Estudiantes
-- **Biblioteca Personal**: Vista tipo grid con tarjetas de cursos inscritos, barra de progreso dinámica y acceso directo al reproductor o certificado.
-- **Tienda de Créditos**: Paquetes de créditos con precios escalonados y pasarela de pago integrada con Stripe (Sandbox).
-- **Asistente KAI**: Chatbot con modelo `deepseek-v4-flash` ejecutándose sobre OpenCode Go, accesible desde cualquier pantalla para resolver dudas técnicas.
-
-### Administración
-- **Moderación de Cursos**: Panel de revisión con acciones de aprobar/rechazar, motivo de rechazo editable y actualización de la lista sin recarga completa.
-- **Gestión de Usuarios**: CRUD completo con activación/desactivación y restauración de cuentas eliminadas.
+<div align="center">
+  <br/>
+  <p>
+    <img src="https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white" alt="Angular 21" />
+    <img src="https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white" alt="Laravel 13" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/GSAP-3.12-88CE02?logo=greensock&logoColor=white" alt="GSAP" />
+    <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
+    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome" />
+  </p>
+  <br/>
+  <h1 align="center" style="font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;">
+    ⚡ KernelLearn
+  </h1>
+  <p align="center" style="font-size: 1.2rem; color: #a1a1aa;">
+    Plataforma educativa técnica con economía de créditos — <strong>Cyber-SaaS</strong> LMS
+  </p>
+  <br/>
+  <p align="center">
+    <img src="https://via.placeholder.com/800x450/09090b/06b6d4?text=KernelLearn+Preview" alt="KernelLearn" style="border-radius: 16px; border: 1px solid #27272a;" />
+  </p>
+  <br/>
+</div>
 
 ---
 
-## Stack Tecnológico
+## ✨ Overview
+
+**KernelLearn** es un LMS (Learning Management System) de código abierto diseñado para la enseñanza de tecnologías de desarrollo de software, administración de sistemas e inteligencia artificial. Su modelo de monetización basado en **créditos** elimina las suscripciones recurrentes: los estudiantes compran créditos una vez y acceden a los cursos de forma permanente.
+
+> 🎨 **Design System** — Toda la interfaz sigue el sistema de diseño "Cyber-SaaS" definido en [`DESIGN.md`](./DESIGN.md): paleta zinc/cyan/violet, enfoque dark-mode, animaciones GSAP y partículas canvas.
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# Backend
+cd backend && cp .env.example .env && composer install && php artisan key:generate
+php artisan migrate --seed && php artisan serve
+
+# Frontend (otra terminal)
+cd frontend && npm install && ng serve
+```
+
+→ Abre `http://localhost:4200` — credenciales de prueba al ejecutar seeders.
+
+---
+
+## 🎯 Características
+
+### Sistema de Créditos
+Los estudiantes adquieren paquetes de créditos a través de Stripe y los usan para inscribirse en cursos. Sin suscripciones, sin renovaciones. Cada curso tiene un costo fijo en créditos descontado al momento de la inscripción.
+
+### Reproductor de Cursos
+Interfaz dividida con reproductor de video, panel de lecciones lateral, barra de progreso animada y botón de completado. Al terminar el 100%, se genera automáticamente un **certificado PDF verificable** con código UUID único.
+
+### Constructor de Currículo (Curriculum Builder)
+Editor multi-pestaña para instructores: información básica, pricing en créditos, secciones/lecciones arrastrables (sin drag, con controles explícitos), y soporte para URLs de video + contenido textual.
+
+### Asistente KAI
+Chatbot de IA integrado (`deepseek-v4-flash`) con interfaz flotante accesible desde cualquier pantalla. Incluye animaciones GSAP, avatar cerebral animado, burbujas de chat con glassmorphism y sugerencias contextuales.
+
+### Administración y Moderación
+Panel de revisión de cursos con flujo DRAFT → IN_REVIEW → PUBLISHED / REJECTED. Gestión completa de usuarios con activación/desactivación. Dashboard con métricas en tiempo real, gráficos Chart.js y tabla de transacciones.
+
+---
+
+## 🎨 Design System
+
+| Token | Color | Uso |
+|-------|-------|-----|
+| `bg-zinc-950` | `#09090b` | Fondos principales (el "vacío") |
+| `bg-zinc-900` | `#18181b` | Tarjetas, superficies |
+| `bg-zinc-800` | `#27272a` | Hover, modales elevados |
+| `text-cyan-500` | `#06b6d4` | Acento primario, botones, links |
+| `text-violet-500` | `#8b5cf6` | Acento secundario, IA, premium |
+| `text-emerald-500` | `#10b981` | Éxito, completado |
+| `text-rose-500` | `#f43f5e` | Error, bloqueado |
+
+Tipografía: **Inter** para UI + **JetBrains Mono** para código. Animaciones con **GSAP** (ScrollTrigger, stagger, quickTo), partículas con **Canvas 2D**, y transiciones de ruta con **Angular Animations**.
+
+---
+
+## 🏗️ Stack
 
 | Capa | Tecnología | Versión |
 |------|-----------|---------|
-| Frontend | Angular | 21 |
-| | TypeScript | 5.9 |
+| **Frontend** | Angular + TypeScript | 21 / 5.9 |
 | | Tailwind CSS | 3.4 |
 | | Angular Material | 21 |
-| Backend | Laravel | 13 |
+| | GSAP (animaciones) | 3.12 |
+| **Backend** | Laravel | 13 |
 | | PHP | 8.3 |
-| | PostgreSQL | — |
-| Seguridad | Laravel Sanctum | 4 |
-| | Socialite (OAuth) | 5 |
-| Pagos | Stripe SDK | 20 |
-| Documentación | l5-swagger (OpenAPI) | — |
-| PDF | barryvdh/laravel-dompdf | 3 |
-| Testing | PHPUnit | 12 |
-| Code Style | Laravel Pint | 1 |
+| | PostgreSQL | 15+ |
+| **Auth** | Laravel Sanctum + Socialite | — |
+| **Pagos** | Stripe SDK | 20 |
+| **IA** | OpenRouter (deepseek-v4-flash) | — |
 
 ---
 
-## Arquitectura
-
-### Backend — Service Pattern + Enums
-
-El backend de Laravel organiza la lógica de dominio en servicios inyectables mediante el contenedor IoC, separando las responsabilidades de los controladores:
-
-```
-Controller → Service → Model
-```
-
-Las validaciones se centralizan en `FormRequest` classes para mantener los controladores ligeros y evitar reglas duplicadas. Los estados del dominio se modelan mediante Enums nativos de PHP 8.3 (`CourseStatus`, `UserRole`), garantizando type safety en todas las comparaciones.
-
-El middleware personalizado (`ApiAuthenticate`, `CheckRoleId`) permite un control de acceso granular a nivel de ruta sin acoplar lógica de autorización a los controladores.
-
-### Frontend — Signals + Lazy Loading
-
-Todas las rutas utilizan `loadComponent` para lazy loading nativo de Angular. El estado reactivo se maneja mediante Signals (`signal()`, `computed()`), eliminando la necesidad de librerías externas de estado. Los componentes utilizan `takeUntilDestroyed` para la gestión automática de suscripciones RxJS.
-
-El diseño sigue una arquitectura **Mobile-First** con Tailwind CSS, utilizando breakpoints `sm:`, `md:`, `lg:` para adaptar la interfaz desde teléfonos hasta pantallas de escritorio. El layout del instructor aísla el sidebar del navbar global mediante posicionamiento `fixed` con `top-[70px]`, evitando superposiciones.
-
-### Base de Datos
-
-36 migraciones que construyen progresivamente el esquema: tablas de usuarios, roles RBAC, cursos con soft-deletes y soporte de estados, secciones y lecciones, tabla pivote `lesson_user` para progreso, certificados con UUID único, paquetes de créditos y tabla de pagos.
-
-Los seeders implementan datos hiperrealistas con 4 cursos en estados mixtos (PUBLISHED, DRAFT, REJECTED), secciones y lecciones asociadas, y el EnrollmentSeeder registra lecciones completadas en la tabla pivote para simular progreso real de estudiantes.
-
----
-
-## Instalación
-
-### Requisitos del Sistema
-
-- PHP 8.3+
-- Composer 2
-- Node.js 20+
-- PostgreSQL 15+
-- Stripe Account (Sandbox) para pagos
-- OpenRouter API Key para el asistente KAI
-
-### Backend
-
-```bash
-git clone <repo-url> kernel-learn
-cd kernel-learn/backend
-
-cp .env.example .env
-# Configurar conexión a base de datos en .env
-
-composer install
-
-php artisan key:generate
-php artisan migrate --seed
-
-php artisan storage:link
-
-php artisan serve
-```
-
-### Frontend
-
-```bash
-cd frontend
-
-npm install
-
-ng serve
-```
-
-La aplicación estará disponible en `http://localhost:4200`. Las credenciales de prueba se muestran al ejecutar los seeders:
-
-| Rol | Email | Contraseña |
-|-----|-------|------------|
-| Administrador | admin@kernellearn.com | admin123 |
-| Instructor | andrea@kernellearn.com | instructor123 |
-| Estudiante | mattias@kernellearn.com | password |
-
----
-
-## Estructura del Proyecto
+## 📁 Estructura
 
 ```
 backend/
 ├── app/
-│   ├── Enums/                 # Enums PHP 8.3 (CourseStatus, UserRole)
-│   ├── Http/
-│   │   ├── Controllers/       # Controladores agrupados por dominio
-│   │   │   ├── Admin/         # Moderación y gestión administrativa
-│   │   │   ├── Api/V1/        # Endpoints públicos y protegidos
-│   │   │   └── Instructor/    # Dashboard y métricas del creador
-│   │   ├── Middleware/        # ApiAuthenticate, CheckRoleId
-│   │   └── Requests/          # FormRequest de validación
-│   ├── Models/                # Eloquent ORM
-│   ├── Observers/             # CourseObserver (reembolso al eliminar)
-│   └── Services/              # Lógica de dominio (KernelAI, Certificate, PlanLevel)
-├── bootstrap/app.php          # Middleware aliases
-├── config/services.php        # OpenRouter, Stripe config
+│   ├── Enums/           CourseStatus, UserRole
+│   ├── Http/Controllers/  Admin, Api/V1, Instructor
+│   ├── Http/Middleware/    ApiAuthenticate, CheckRoleId
+│   ├── Models/           Eloquent ORM
+│   └── Services/         KernelAI, Certificate, PlanLevel
 ├── database/
-│   ├── migrations/            # 36 migraciones
-│   └── seeders/               # Seeders realistas con datos coherentes
-├── routes/api.php             # Definición de rutas REST
-└── storage/app/public/        # Assets públicos
+│   ├── migrations/       36 migraciones progresivas
+│   └── seeders/          Datos hiperrealistas
+└── routes/api.php
 
 frontend/
 ├── src/app/
-│   ├── core/
-│   │   ├── guards/            # auth, admin, instructor guards
-│   │   ├── interceptors/      # auth, error interceptors
-│   │   ├── models/            # Interfaces TypeScript
-│   │   └── services/          # ApiService, AuthService, etc.
-│   ├── features/
-│   │   ├── admin/             # Moderación, usuarios, transacciones
-│   │   ├── auth/              # Login, registro, OAuth callback
-│   │   ├── courses/           # Catálogo, detalle, reseñas
-│   │   ├── instructor/        # Dashboard, editor multi-pestaña, curriculum
-│   │   ├── landing/           # Landing page con hero y featured courses
-│   │   ├── layout/            # Navbar global
-│   │   ├── payment/           # Confirmación de pago
-│   │   ├── profile/           # Perfil de usuario
-│   │   └── student/           # Mis cursos, reproductor, certificados, créditos
-│   ├── app.ts                 # Componente raíz
-│   └── app.routes.ts          # Configuración de rutas lazy-loaded
+│   ├── core/             guards, interceptors, models, services
+│   ├── features/         admin, auth, courses, instructor, landing,
+│   │                     layout, payment, profile, student
+│   ├── layouts/          admin-layout (sidebar responsive)
+│   ├── shared/           student-sidebar, pipes
+│   ├── app.ts            raíz con route transitions
+│   └── app.routes.ts     lazy-loading nativo
 ```
 
 ---
 
-## API REST (Principales Endpoints)
+## 🧩 Componentes Destacados
 
-### Públicos
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/api/v1/courses` | Catálogo paginado con filtros |
-| GET | `/api/v1/courses/featured` | Cursos destacados para landing |
-| GET | `/api/v1/courses/{id}` | Detalle del curso |
-| GET | `/api/v1/courses/{courseId}/curriculum` | Temario público |
-| GET | `/api/v1/certificates/{uuid}/verify` | Verificación pública de certificado |
-
-### Autenticados
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/v1/auth/login` | Inicio de sesión |
-| POST | `/api/v1/auth/register` | Registro |
-| GET | `/api/v1/auth/me` | Perfil del usuario autenticado |
-| POST | `/api/v1/courses/{course}/enroll-credits` | Inscripción con créditos |
-| POST | `/api/v1/lessons/{id}/complete` | Marcar lección completada |
-| GET | `/api/v1/student/my-courses` | Cursos inscritos con progreso |
-| POST | `/api/v1/ai/chat` | Chat con asistente KAI |
-
-### Instructor
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/api/v1/instructor/courses` | Lista de cursos del instructor |
-| PATCH | `/api/v1/instructor/courses/{id}/basic` | Actualizar información básica |
-| PATCH | `/api/v1/instructor/courses/{id}/pricing` | Actualizar precio en créditos |
-| POST | `/api/v1/instructor/courses/{courseId}/sections` | Crear sección |
-| POST | `/api/v1/instructor/sections/{sectionId}/lessons` | Crear lección |
-
-### Administrador
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/api/v1/admin/courses/pending` | Cursos pendientes de revisión |
-| PATCH | `/api/v1/admin/courses/{id}/approve` | Aprobar curso |
-| PATCH | `/api/v1/admin/courses/{id}/reject` | Rechazar curso (con motivo) |
+| Componente | Descripción |
+|-----------|-------------|
+| `course-player` | Reproductor con sidebar glassmorphism, progress ring SVG, checkmarks animados, modal de certificado con confetti |
+| `landing` | Hero con partículas canvas + violeta, GSAP stagger reveal, ScrollTrigger, 3D tilt en cards |
+| `kernel-ai` | FAB con anillo pulsante, chat glassmorphism, avatar orb animado, sugerencias contextuales |
+| `admin-layout` | Sidebar responsive con drawer mobile, Material Symbols, overlay backdrop |
+| `error-pages` | 403/404/500 con glows ambientales, números flotantes, navegación con Location.back() |
+| `navbar` | Avatar alineado, menú dropdown estilizado, credit balance badge |
 
 ---
 
-## Licencia
+## 🔌 API REST (Principales Endpoints)
 
-KernelLearn se distribuye bajo licencia MIT. El nombre y logotipo de KernelLearn son marcas registradas del equipo de desarrollo.
+### Públicos
+| Método | Ruta |
+|--------|------|
+| `GET` | `/api/v1/courses` |
+| `GET` | `/api/v1/courses/featured` |
+| `GET` | `/api/v1/courses/{id}` |
+| `GET` | `/api/v1/courses/{courseId}/curriculum` |
+| `GET` | `/api/v1/certificates/{uuid}/verify` |
+
+### Autenticados
+| Método | Ruta |
+|--------|------|
+| `POST` | `/api/v1/auth/login` |
+| `POST` | `/api/v1/auth/register` |
+| `GET` | `/api/v1/auth/me` |
+| `POST` | `/api/v1/courses/{course}/enroll-credits` |
+| `POST` | `/api/v1/lessons/{id}/complete` |
+| `GET` | `/api/v1/student/my-courses` |
+| `POST` | `/api/v1/ai/chat` |
+
+### Admin
+| Método | Ruta |
+|--------|------|
+| `GET` | `/api/v1/admin/courses/pending` |
+| `PATCH` | `/api/v1/admin/courses/{id}/approve` |
+| `PATCH` | `/api/v1/admin/courses/{id}/reject` |
+
+---
+
+## 🤝 Contribuir
+
+1. Fork el repositorio
+2. Crea tu rama: `git checkout -b feat/mi-mejora`
+3. Haz tus cambios (frontend o backend)
+4. Asegúrate de que pase el build: `cd frontend && npx ng build`
+5. Commit y push: `git commit -m "feat: descripción" && git push origin feat/mi-mejora`
+6. Abre un Pull Request
+
+---
+
+## 📄 Licencia
+
+**MIT** — El nombre y logotipo de KernelLearn son marcas registradas del equipo de desarrollo.

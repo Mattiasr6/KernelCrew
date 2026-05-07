@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Models\InstructorApplication;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 
 class InstructorApplicationController extends Controller
@@ -33,6 +35,7 @@ class InstructorApplicationController extends Controller
         $validated = $request->validate([
             'experience_summary' => 'required|string|min:50',
             'portfolio_url' => 'nullable|url',
+            'resume' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
         $user = $request->user();
@@ -45,12 +48,18 @@ class InstructorApplicationController extends Controller
             return response()->json(['success' => false, 'message' => 'Ya tienes una postulación en curso'], 422);
         }
 
-        $application = InstructorApplication::create([
+        $data = [
             'user_id' => $user->id,
             'experience_summary' => $validated['experience_summary'],
-            'portfolio_url' => $validated['portfolio_url'],
+            'portfolio_url' => $validated['portfolio_url'] ?? null,
             'status' => 'pending',
-        ]);
+        ];
+
+        if ($request->hasFile('resume')) {
+            $data['resume_path'] = $request->file('resume')->store('resumes', 'public');
+        }
+
+        $application = InstructorApplication::create($data);
 
         return response()->json([
             'success' => true,
@@ -125,5 +134,19 @@ class InstructorApplicationController extends Controller
             'message' => 'Postulación rechazada',
             'data' => $application
         ]);
+    }
+
+    public function downloadResume(int $id): \Symfony\Component\HttpFoundation\StreamedResponse|JsonResponse
+    {
+        $application = InstructorApplication::findOrFail($id);
+
+        if (!$application->resume_path || !Storage::disk('public')->exists($application->resume_path)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Curriculum no encontrado',
+            ], 404);
+        }
+
+        return Storage::disk('public')->download($application->resume_path, 'curriculum_vitae.pdf');
     }
 }
