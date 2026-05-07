@@ -189,6 +189,17 @@ import { AuthService } from '../../../core/services/auth.service';
     .nav-link:hover { color: #fafafa; background: rgba(255, 255, 255, 0.05); }
     .nav-link.active { color: #06b6d4; background: rgba(6, 182, 212, 0.1); }
     
+    .profile-btn {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 36px !important;
+      height: 36px !important;
+      padding: 0 !important;
+      line-height: 1 !important;
+      align-self: center;
+    }
+
     .initials-avatar {
       width: 36px;
       height: 36px;
@@ -218,13 +229,36 @@ import { AuthService } from '../../../core/services/auth.service';
       background-color: #27272a !important;
       border: 1px solid #3f3f46 !important;
       border-radius: 8px !important;
+      padding: 6px !important;
     }
     
     ::ng-deep .dark-menu .mat-mdc-menu-item {
       color: #e4e4e7 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      min-height: 40px !important;
+      border-radius: 6px !important;
+      padding: 0 12px !important;
     }
     
-    ::ng-deep .dark-menu .mat-mdc-menu-item:hover {
+    ::ng-deep .dark-menu .mat-mdc-menu-item .material-symbols-outlined {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    
+    ::ng-deep .dark-menu .mat-mdc-menu-item .mat-mdc-menu-item-text {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+    }
+
+    ::ng-deep .dark-menu .mat-mdc-menu-item:hover:not([disabled]) {
       background-color: #3f3f46 !important;
     }
     

@@ -43,7 +43,7 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    redirectTo: 'instructor',
+    redirectTo: 'my-courses',
     pathMatch: 'full',
   },
   {
@@ -170,6 +170,25 @@ export const routes: Routes = [
       },
       {
         path: 'courses',
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/admin/admin-courses-list.component').then(
+                (m) => m.AdminCoursesListComponent,
+              ),
+          },
+          {
+            path: ':courseId/preview',
+            loadComponent: () =>
+              import('./features/admin/admin-course-preview.component').then(
+                (m) => m.AdminCoursePreviewComponent,
+              ),
+          },
+        ],
+      },
+      {
+        path: 'moderation',
         loadComponent: () =>
           import('./features/admin/admin-moderation.component').then(
             (m) => m.AdminModerationComponent,
@@ -199,13 +218,6 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/instructor/instructor-courses.component').then(
                 (m) => m.InstructorCoursesComponent,
-              ),
-        },
-        {
-            path: 'courses/:id/curriculum',
-            loadComponent: () =>
-              import('./features/instructor/instructor-curriculum.component').then(
-                (m) => m.InstructorCurriculumComponent,
               ),
         },
         {
@@ -254,7 +266,21 @@ export const routes: Routes = [
   },
 
   {
+    path: '403',
+    title: 'Acceso Denegado - KernelLearn',
+    loadComponent: () =>
+      import('./features/errors/error-403.component').then((m) => m.Error403Component),
+  },
+  {
+    path: '500',
+    title: 'Error del Servidor - KernelLearn',
+    loadComponent: () =>
+      import('./features/errors/error-500.component').then((m) => m.Error500Component),
+  },
+  {
     path: '**',
-    redirectTo: '',
+    title: 'Página No Encontrada - KernelLearn',
+    loadComponent: () =>
+      import('./features/errors/error-404.component').then((m) => m.Error404Component),
   },
 ];

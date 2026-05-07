@@ -13,6 +13,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class AdminLayoutComponent {
   private authService = inject(AuthService);
   isCollapsed = signal(false);
+  mobileMenuOpen = false;
   currentUser = this.authService.user;
 
   toggleSidebar() {
