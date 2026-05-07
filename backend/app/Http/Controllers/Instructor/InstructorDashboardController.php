@@ -110,4 +110,35 @@ class InstructorDashboardController extends Controller
             ]
         ], 200);
     }
+
+    /**
+     * Obtener estudiantes inscritos en los cursos del instructor con su progreso.
+     */
+    public function students(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $enrollments = \App\Models\CourseEnrollment::whereIn(
+                'course_id',
+                $user->courses()->pluck('id')
+            )
+            ->with(['user', 'course'])
+            ->latest('enrollment_date')
+            ->get();
+
+        $data = $enrollments->map(fn($e) => [
+            'student_name' => $e->user->name,
+            'student_email' => $e->user->email,
+            'course_title' => $e->course->title,
+            'course_id' => $e->course_id,
+            'progress' => (float) $e->progress,
+            'enrollment_date' => $e->enrollment_date?->toISOString(),
+            'completed_at' => $e->completed_at?->toISOString(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $data->values(),
+        ]);
+    }
 }

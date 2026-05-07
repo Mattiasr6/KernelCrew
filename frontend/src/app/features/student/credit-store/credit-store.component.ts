@@ -98,7 +98,7 @@ interface Transaction {
                   <tbody class="divide-y divide-zinc-800">
                     @for (tx of transactions(); track tx.id) {
                       <tr class="hover:bg-zinc-900/50 transition-colors">
-                        <td class="px-5 py-4 text-zinc-300">{{ tx.date }}</td>
+                        <td class="px-5 py-4 text-zinc-300">{{ tx.date | date:'dd MMM yyyy' }}</td>
                         <td class="px-5 py-4 text-zinc-100 font-medium">{{ tx.package_name }}</td>
                         <td class="px-5 py-4 text-amber-400 font-bold">{{ tx.credits_amount }}</td>
                         <td class="px-5 py-4 text-zinc-300">&#36;{{ tx.amount }}</td>

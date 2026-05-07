@@ -13,26 +13,26 @@ class DatabaseSeeder extends Seeder
         $this->command->info('=========================================');
 
         $this->call([
-            // 1. Roles y Permisos
+            // 1. Fundación
             RoleAndPermissionSeeder::class,
-
-            // 2. Usuarios (Admin, Instructores, Estudiantes)
             UserSeeder::class,
-
-            // 3. Categorías
             CategorySeeder::class,
 
-            // 4. Cursos (4 cursos con estados mixtos)
+            // 2. Contenido
             CourseSeeder::class,
-
-            // 5. Curriculum (Secciones y Lecciones)
             CurriculumSeeder::class,
 
-            // 6. Inscripciones y Progreso (con lesson_user)
-            EnrollmentSeeder::class,
-
-            // 7. Paquetes de Créditos
+            // 3. Economía de Créditos
             CreditPackageSeeder::class,
+            PaymentSeeder::class,
+
+            // 4. Comunidad y Actividad
+            EnrollmentSeeder::class,
+            ReviewSeeder::class,
+            ActivitySeeder::class,
+
+            // 5. Certificados (dependen de enrollements 100%)
+            CertificateSeeder::class,
         ]);
 
         $this->command->info('=========================================');
@@ -43,11 +43,14 @@ class DatabaseSeeder extends Seeder
         $this->command->info('Credenciales:');
         $this->command->info('- Admin: admin@kernellearn.com / admin123');
         $this->command->info('- Instructor: andrea@kernellearn.com / instructor123');
-        $this->command->info('- Estudiante: mattias@kernellearn.com / password (150 créditos)');
+        $this->command->info('- Estudiante: mattias@kernellearn.com / password');
         $this->command->info('');
-        $this->command->info('Cursos:');
-        $this->command->info('- 2 PUBLICADOS: .NET 8, Linux');
-        $this->command->info('- 1 DRAFT: IA Agentes Locales');
-        $this->command->info('- 1 REJECTED: DevOps Docker K8s');
+        $this->command->info('Estadísticas de la comunidad:');
+        $this->command->info('- 11 estudiantes activos');
+        $this->command->info('- 2 cursos publicados con 19 lecciones');
+        $this->command->info('- 18 inscripciones con progreso real');
+        $this->command->info('- 15 reseñas (avg 4.3★)');
+        $this->command->info('- 7 compras de créditos (\$86 USD)');
+        $this->command->info('- Certificados emitidos para cursos completados');
     }
 }
