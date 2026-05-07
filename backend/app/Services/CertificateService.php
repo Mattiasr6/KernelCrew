@@ -21,6 +21,8 @@ class CertificateService
         $data = [
             'user_name' => $user->name,
             'course_title' => $course->title,
+            'course_duration' => $course->duration_hours ?? '—',
+            'instructor_name' => $course->instructor?->name ?? 'KernelLearn',
             'issued_at' => $certificate->issued_at->format('d/m/Y'),
             'certificate_code' => $certificate->certificate_code,
         ];

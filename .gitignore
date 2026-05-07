@@ -7,3 +7,10 @@ vendor/
 .DS_Store
 
 prompt.txt
+
+# AI agent context files
+.agents/
+skills-lock.json
+
+# Backend scripts
+backend/scripts/

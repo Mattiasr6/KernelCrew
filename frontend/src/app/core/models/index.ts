@@ -4,6 +4,7 @@ export interface ApiResponse<T> {
   message?: string;
   data?: T;
   errors?: Record<string, string[]>;
+  meta?: any;
 }
 
 // User models
@@ -21,8 +22,13 @@ export interface User {
   rol?: Rol;
   role_id?: number;
   is_active?: boolean;
+  avatar?: string;
+  bio?: string;
+  phone?: string;
   created_at: string;
   updated_at?: string;
+  subscription?: UserSubscription;
+  credits_balance?: number;
 }
 
 export interface Instructor {
@@ -82,8 +88,11 @@ export interface Course {
   slug?: string;
   description: string;
   price: number;
+  price_in_bob?: number;
+  price_display?: string;
+  price_in_credits?: number;
   instructor_id: number;
-  status: 'draft' | 'published';
+  status: 'DRAFT' | 'IN_REVIEW' | 'PUBLISHED' | 'REJECTED';
   instructor?: Instructor;
   created_at: string;
   updated_at?: string;
@@ -97,9 +106,41 @@ export interface Course {
   instructor_name?: string;
   subscription_required?: string | boolean;
   thumbnail?: string;
+  video_url?: string;
   can_enroll?: boolean;
   syllabus?: string;
   requirements?: string;
+  average_rating?: string | number;
+  reviews_count?: number;
+  sections_count?: number;
+  students_count?: number;
+  lessons_count?: number;
+  rejection_reason?: string;
+  sections?: CourseSection[];
+}
+
+export interface CourseSection {
+  id: number;
+  course_id: number;
+  title: string;
+  order: number;
+  status: string;
+  lessons?: Lesson[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Lesson {
+  id: number;
+  course_section_id: number;
+  title: string;
+  content?: string;
+  video_url?: string;
+  duration_minutes: number;
+  order: number;
+  is_free: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CoursesMeta {
@@ -181,6 +222,7 @@ export interface InstructorApplication {
   user_id: number;
   experience_summary: string;
   portfolio_url?: string;
+  resume_path?: string;
   status: 'pending' | 'approved' | 'rejected';
   reviewed_by?: number;
   user?: {
@@ -196,6 +238,7 @@ export interface InstructorApplication {
 export interface ApplicationPayload {
   experience_summary: string;
   portfolio_url?: string;
+  resume?: File;
 }
 
 export interface UsersResponse {
@@ -265,7 +308,15 @@ export interface DashboardData {
   stats: {
     courses_count: number;
     active_students: number;
+    average_rating?: number;
+    total_earnings?: number;
   };
+  courses_distribution?: Array<{
+    course_id: number;
+    course_title: string;
+    students_count: number;
+    completed_count: number;
+  }>;
   recent_activity: Activity[];
 }
 
@@ -299,17 +350,43 @@ export interface SubscriptionPlan {
   price: number;
   duration_days: number;
   max_courses: number | null;
+  is_active?: boolean;
   created_at: string;
   updated_at: string;
+  is_current?: boolean;
 }
 
 export interface UserSubscription {
   id: number;
   user_id: number;
   plan_id: number;
-  plan_name: string;
+  plan?: SubscriptionPlan;
+  plan_name?: string;
   status: 'active' | 'expired' | 'cancelled';
   start_date: string;
   end_date: string;
   auto_renew: boolean;
+  payments?: Payment[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Payment {
+  id: number;
+  user_id: number;
+  user_subscription_id: number;
+  amount: number;
+  payment_date: string;
+  transaction_id: string;
+  payment_method: string;
+  status: 'completed' | 'pending' | 'failed';
+  payment_gateway_response?: any;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  slug?: string;
 }

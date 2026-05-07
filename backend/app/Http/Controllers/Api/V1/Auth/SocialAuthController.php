@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Exception;
@@ -32,7 +33,7 @@ class SocialAuthController extends Controller
                     'provider' => $provider,
                     'provider_id' => $socialUser->getId(),
                     'avatar' => $socialUser->getAvatar(),
-                    'role_id' => 3, // Student por defecto (Regla de Negocio)
+                    'role_id' => UserRole::Student->value,
                     'password' => null, // OAuth user
                 ]);
             } else {

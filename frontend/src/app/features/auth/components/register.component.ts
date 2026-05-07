@@ -2,162 +2,124 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterLink,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatProgressSpinnerModule,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
-    <div class="register-container">
-      <div class="brand-logo">
-        Kernel<span class="logo-accent">Learn</span>
-      </div>
-      <mat-card class="register-card">
-        <mat-card-header>
-          <mat-card-title>Crear Cuenta</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="form" (ngSubmit)="onSubmit()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Nombre completo</mat-label>
-              <input matInput formControlName="name" placeholder="Juan Pérez" />
+    <div class="min-h-screen bg-zinc-950 flex items-center justify-center px-4 relative overflow-hidden">
+
+      <!-- Ambient glows -->
+      <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-violet-900/15 rounded-full blur-[120px] pointer-events-none"></div>
+      <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-cyan-900/10 rounded-full blur-[100px] pointer-events-none"></div>
+      <div class="absolute top-0 right-0 w-[250px] h-[250px] bg-violet-800/10 rounded-full blur-[80px] pointer-events-none"></div>
+
+      <div class="w-full max-w-md space-y-6 relative z-10">
+        <!-- Logo -->
+        <div class="text-center">
+          <h1 class="text-3xl font-extrabold tracking-tighter">
+            <span class="text-zinc-50">Kernel</span><span class="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">Learn</span>
+          </h1>
+          <p class="text-sm text-zinc-500 mt-2">Crea tu cuenta</p>
+        </div>
+
+        <!-- Card -->
+        <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-800 rounded-2xl p-8 shadow-2xl shadow-black/50">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+            <!-- Name -->
+            <div>
+              <label class="block text-sm font-medium text-zinc-400 mb-1.5">Nombre completo</label>
+              <input
+                type="text"
+                formControlName="name"
+                placeholder="Juan Pérez"
+                class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 placeholder-zinc-500 outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all"
+              />
               @if (form.get('name')?.invalid && form.get('name')?.touched) {
-                <mat-error>{{ getErrorMessage('name') }}</mat-error>
+                <p class="text-xs text-rose-400 mt-1.5">{{ getErrorMessage('name') }}</p>
               }
-            </mat-form-field>
+            </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email</mat-label>
-              <input matInput type="email" formControlName="email" placeholder="tu@email.com" />
+            <!-- Email -->
+            <div>
+              <label class="block text-sm font-medium text-zinc-400 mb-1.5">Email</label>
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="tu@email.com"
+                class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 placeholder-zinc-500 outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all"
+              />
               @if (form.get('email')?.invalid && form.get('email')?.touched) {
-                <mat-error>{{ getErrorMessage('email') }}</mat-error>
+                <p class="text-xs text-rose-400 mt-1.5">{{ getErrorMessage('email') }}</p>
               }
-            </mat-form-field>
+            </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Contraseña</mat-label>
-              <input matInput type="password" formControlName="password" />
+            <!-- Password -->
+            <div>
+              <label class="block text-sm font-medium text-zinc-400 mb-1.5">Contraseña</label>
+              <input
+                type="password"
+                formControlName="password"
+                class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 placeholder-zinc-500 outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all"
+              />
               @if (form.get('password')?.invalid && form.get('password')?.touched) {
-                <mat-error>{{ getErrorMessage('password') }}</mat-error>
+                <p class="text-xs text-rose-400 mt-1.5">{{ getErrorMessage('password') }}</p>
               }
-            </mat-form-field>
+            </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Confirmar contraseña</mat-label>
-              <input matInput type="password" formControlName="password_confirmation" />
+            <!-- Confirm Password -->
+            <div>
+              <label class="block text-sm font-medium text-zinc-400 mb-1.5">Confirmar contraseña</label>
+              <input
+                type="password"
+                formControlName="password_confirmation"
+                class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 placeholder-zinc-500 outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all"
+              />
               @if (form.get('password_confirmation')?.invalid && form.get('password_confirmation')?.touched) {
-                <mat-error>{{ getErrorMessage('password_confirmation') }}</mat-error>
+                <p class="text-xs text-rose-400 mt-1.5">{{ getErrorMessage('password_confirmation') }}</p>
               }
               @if (form.hasError('passwordMismatch') && form.get('password_confirmation')?.touched) {
-                <mat-error>Las contraseñas no coinciden</mat-error>
+                <p class="text-xs text-rose-400 mt-1.5">Las contraseñas no coinciden</p>
               }
-            </mat-form-field>
+            </div>
 
+            <!-- Error Banner -->
             @if (errorMessage()) {
-                <div class="error-banner">
-                    <span class="material-symbols-outlined">error</span>
-                    {{ errorMessage() }}
-                </div>
+              <div class="flex items-start gap-2.5 bg-rose-500/10 border border-rose-500/20 rounded-lg px-4 py-3">
+                <span class="material-symbols-outlined text-rose-400 text-[18px] shrink-0 mt-0.5">error</span>
+                <span class="text-sm text-rose-300">{{ errorMessage() }}</span>
+              </div>
             }
 
+            <!-- Submit -->
             <button
-              mat-raised-button
-              class="submit-btn full-width"
               type="submit"
               [disabled]="isLoading() || form.invalid"
+              class="w-full bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-all shadow-[0_0_15px_rgba(139,92,246,0.25)] hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] inline-flex items-center justify-center gap-2"
             >
               @if (isLoading()) {
-                <mat-spinner diameter="20"></mat-spinner>
+                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Creando cuenta...</span>
               } @else {
+                <span class="material-symbols-outlined text-[18px]">person_add</span>
                 Crear Cuenta
               }
             </button>
           </form>
 
-          <div class="links">
-            <a routerLink="/login">¿Ya tienes cuenta? Inicia sesión</a>
+          <!-- Footer -->
+          <div class="flex justify-center mt-6 pt-4 border-t border-zinc-800">
+            <a routerLink="/login" class="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+              ¿Ya tienes cuenta? Inicia sesión
+            </a>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     </div>
   `,
-  styles: [
-    `
-      .register-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background: #0f172a;
-        padding: 20px;
-      }
-      .brand-logo {
-        font-size: 32px;
-        font-weight: bold;
-        color: white;
-        margin-bottom: 24px;
-      }
-      .logo-accent {
-        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-      .register-card {
-        max-width: 400px;
-        width: 100%;
-        padding: 24px;
-        background: rgba(30, 30, 50, 0.6) !important;
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 16px !important;
-        color: white !important;
-      }
-      mat-card-title { color: white !important; margin-bottom: 24px !important; }
-      .full-width { width: 100%; margin-bottom: 16px; }
-      
-      .submit-btn {
-        background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
-        color: white !important;
-        height: 48px;
-        border-radius: 12px !important;
-      }
-
-      .error-banner {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        color: #f87171;
-        padding: 12px;
-        border-radius: 12px;
-        margin-bottom: 16px;
-        font-size: 0.9rem;
-      }
-
-      .links {
-        text-align: center;
-        margin-top: 16px;
-        a { color: #60a5fa; text-decoration: none; font-size: 0.9rem; }
-      }
-    `,
-  ],
+  styles: [`:host { display: block; }`],
 })
 export class RegisterComponent {
   private fb = inject(FormBuilder);
@@ -194,6 +156,7 @@ export class RegisterComponent {
 
     this.authService.register(this.form.value).subscribe({
       next: () => {
+        this.isLoading.set(false);
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
@@ -205,9 +168,9 @@ export class RegisterComponent {
 
   private handleBackendErrors(err: any): void {
     const errorResponse = err.error;
-    
+
     if (err.status === 422 && errorResponse.errors) {
-      Object.keys(errorResponse.errors).forEach(key => {
+      Object.keys(errorResponse.errors).forEach((key) => {
         const control = this.form.get(key);
         if (control) {
           control.setErrors({ serverError: errorResponse.errors[key][0] });
@@ -226,7 +189,7 @@ export class RegisterComponent {
     if (control.hasError('email')) return 'Ingresa un email válido';
     if (control.hasError('minlength')) return 'Mínimo 8 caracteres';
     if (control.hasError('serverError')) return control.getError('serverError');
-    
+
     return '';
   }
 }

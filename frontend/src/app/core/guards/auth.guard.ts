@@ -25,30 +25,6 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/dashboard']);
-  return false;
-};
-
-export const adminGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-
-  if (authService.isAdmin()) {
-    return true;
-  }
-
-  router.navigate(['/dashboard']);
-  return false;
-};
-
-export const instructorGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-
-  if (authService.isInstructor()) {
-    return true;
-  }
-
-  router.navigate(['/dashboard']);
+  router.navigate(['/my-courses']);
   return false;
 };

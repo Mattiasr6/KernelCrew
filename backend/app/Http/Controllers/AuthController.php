@@ -69,7 +69,7 @@ class AuthController extends Controller
             'is_active' => true,
         ]);
 
-        $user->assignRole('student');
+        $user->update(['role_id' => 3]);
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -82,6 +82,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->getRoleName(),
+                    'credits_balance' => $user->credits_balance,
                     'created_at' => $user->created_at->toISOString(),
                 ],
                 'token' => $token,
@@ -152,6 +153,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->getRoleName(),
+                    'credits_balance' => $user->credits_balance,
                 ],
                 'token' => $token,
             ],
@@ -160,7 +162,10 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->user()?->currentAccessToken();
+        if ($token) {
+            $token->delete();
+        }
 
         return response()->json([
             'success' => true,
@@ -172,6 +177,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
+        $subscription = $user->subscriptions()->where('status', 'active')->first();
 
         return response()->json([
             'success' => true,
@@ -181,7 +187,48 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->getRoleName(),
+                    'role_id' => $user->role_id,
+                    'credits_balance' => $user->credits_balance,
                     'is_active' => $user->isActive(),
+                    'avatar' => $user->avatar,
+                    'bio' => $user->bio,
+                    'phone' => $user->phone,
+                    'subscription' => $subscription ? [
+                        'id' => $subscription->id,
+                        'plan_name' => $subscription->plan->name ?? 'N/A',
+                    ] : null,
+                ],
+            ],
+        ], 200);
+    }
+
+    #[OA\Put(path: '/api/v1/profile', tags: ['Autenticación'], summary: 'Actualizar perfil')]
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'bio' => 'nullable|string|max:500',
+            'phone' => 'nullable|string|max:20',
+            'avatar' => 'nullable|string|url|max:500',
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Perfil actualizado exitosamente',
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->getRoleName(),
+                    'is_active' => $user->isActive(),
+                    'avatar' => $user->avatar,
+                    'bio' => $user->bio,
+                    'phone' => $user->phone,
                 ],
             ],
         ], 200);

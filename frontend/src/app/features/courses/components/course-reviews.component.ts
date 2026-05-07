@@ -1,4 +1,5 @@
-import { Component, inject, input, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, input, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ReviewService, ReviewResponse } from '../../../core/services/review.service';
@@ -12,27 +13,27 @@ import { CourseReview } from '../../../core/models';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="reviews-section mt-12 space-y-8 animate-fade-in">
-      <div class="flex items-center justify-between border-b border-white/5 pb-6">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-6">
         <div>
-          <h3 class="text-2xl font-bold text-white">Reseñas de Estudiantes</h3>
-          <p class="text-slate-400 text-sm mt-1">
+          <h3 class="text-2xl font-bold text-zinc-50">Reseñas de Estudiantes</h3>
+          <p class="text-zinc-400 text-sm mt-1">
             Promedio basado en {{ reviewData()?.total_reviews || 0 }} calificaciones.
           </p>
         </div>
         <div class="flex items-center gap-3">
-          <span class="text-4xl font-black text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.3)]">
+          <span class="text-4xl font-black text-amber-400">
             {{ reviewData()?.average_rating || 0 }}
           </span>
-          <div class="flex text-yellow-400">
-             <span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">star</span>
+          <div class="flex text-amber-400">
+             <span class="material-symbols-outlined text-[32px]" [style.font-variation-settings]="'\\'FILL\\' 1'">star</span>
           </div>
         </div>
       </div>
 
-      <!-- Formulario de Reseña (Solo si el usuario está inscrito) -->
+      <!-- Formulario de Reseña -->
       @if (showForm()) {
-        <div class="glass-card p-6 border-emerald-500/20 bg-emerald-500/5">
-          <h4 class="text-white font-bold mb-4 flex items-center gap-2">
+        <div class="bg-zinc-900 border border-emerald-500/20 rounded-2xl p-6">
+          <h4 class="text-zinc-100 font-bold mb-4 flex items-center gap-2">
             <span class="material-symbols-outlined text-emerald-400">rate_review</span>
             Deja tu calificación
           </h4>
@@ -45,9 +46,10 @@ import { CourseReview } from '../../../core/models';
                   type="button" 
                   (click)="setRating(star)"
                   class="star-btn transition-transform active:scale-90"
-                  [class.active]="star <= currentRating()">
+                  [class.active]="star <= currentRating()"
+                  [attr.aria-label]="'Calificar ' + star + ' de 5 estrellas'">
                   <span class="material-symbols-outlined text-[36px]" 
-                        [style.font-variation-settings]="'\'FILL\' ' + (star <= currentRating() ? 1 : 0)">
+                        [style.font-variation-settings]="getStarFill(star)">
                     star
                   </span>
                 </button>
@@ -57,14 +59,14 @@ import { CourseReview } from '../../../core/models';
             <textarea 
               formControlName="comment"
               rows="3"
-              class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 transition-all resize-none shadow-inner"
+              class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-cyan-500/50 transition-all resize-none"
               placeholder="Escribe tu opinión sobre el curso (opcional)..."
             ></textarea>
 
             <button 
               type="submit"
               [disabled]="reviewForm.invalid || isSubmitting()"
-              class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-lg transition-all disabled:opacity-50 flex items-center gap-2"
+              class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-6 rounded-lg transition-all disabled:opacity-50 flex items-center gap-2"
             >
               @if (isSubmitting()) {
                 <span class="animate-spin text-lg">⏳</span>
@@ -78,27 +80,31 @@ import { CourseReview } from '../../../core/models';
       <!-- Listado de Reseñas -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         @for (review of reviewData()?.reviews; track review.id) {
-          <div class="glass-card p-6 hover:border-white/20 transition-all group">
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-zinc-700 transition-all group">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 border border-white/10 flex items-center justify-center text-white font-bold">
-                  {{ review.user?.name?.charAt(0) }}
-                </div>
+                @if (review.user?.avatar) {
+                  <img [src]="review.user?.avatar" class="w-10 h-10 rounded-full border border-zinc-700 object-cover" [alt]="review.user?.name">
+                } @else {
+                  <div class="review-avatar-circle">
+                    {{ getInitials(review.user?.name || '??') }}
+                  </div>
+                }
                 <div>
-                  <p class="text-white font-semibold text-sm">{{ review.user?.name }}</p>
-                  <p class="text-slate-500 text-xs">{{ review.created_at | date:'dd MMM, yyyy' }}</p>
+                  <p class="text-zinc-100 font-semibold text-sm">{{ review.user?.name }}</p>
+                  <p class="text-zinc-500 text-xs">{{ review.created_at | date:'dd MMM, yyyy' }}</p>
                 </div>
               </div>
-              <div class="flex text-yellow-400 gap-0.5 scale-75 origin-right">
+              <div class="flex text-amber-400 gap-0.5 scale-75 origin-right">
                 @for (s of [1,2,3,4,5]; track s) {
                   <span class="material-symbols-outlined text-sm" 
-                        [style.font-variation-settings]="'\'FILL\' ' + (s <= review.rating ? 1 : 0)">
+                        [style.font-variation-settings]="review.rating >= s ? '\\'FILL\\' 1' : '\\'FILL\\' 0'">
                     star
                   </span>
                 }
               </div>
             </div>
-            <p class="text-slate-300 text-sm leading-relaxed">{{ review.comment || 'Sin comentario.' }}</p>
+            <p class="text-zinc-300 text-sm leading-relaxed">{{ review.comment || 'Sin comentario.' }}</p>
           </div>
         } @empty {
           <div class="col-span-full py-10 text-center text-slate-500">
@@ -111,6 +117,20 @@ import { CourseReview } from '../../../core/models';
   styles: [`
     .star-btn { color: #475569; }
     .star-btn.active { color: #facc15; filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.4)); }
+    
+    .review-avatar-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #334155, #1e293b);
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
   `]
 })
 export class CourseReviewsComponent implements OnInit {
@@ -119,8 +139,8 @@ export class CourseReviewsComponent implements OnInit {
 
   private reviewService = inject(ReviewService);
   private notification = inject(NotificationService);
-  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
+  private destroyRef = inject(DestroyRef);
 
   reviewData = signal<ReviewResponse | null>(null);
   currentRating = signal(0);
@@ -138,9 +158,19 @@ export class CourseReviewsComponent implements OnInit {
   }
 
   loadReviews() {
-    this.reviewService.getReviews(this.courseId()).subscribe({
-      next: (res) => this.reviewData.set(res.data)
+    this.reviewService.getReviews(this.courseId()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res: any) => this.reviewData.set(res.data)
     });
+  }
+
+  getInitials(name: string): string {
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  getStarFill(star: number): string {
+    return star <= this.currentRating() ? "'FILL' 1" : "'FILL' 0";
   }
 
   setRating(rating: number) {
@@ -152,14 +182,14 @@ export class CourseReviewsComponent implements OnInit {
     if (this.reviewForm.invalid) return;
 
     this.isSubmitting.set(true);
-    this.reviewService.submitReview(this.courseId(), this.reviewForm.value).subscribe({
-      next: (res) => {
+    this.reviewService.submitReview(this.courseId(), this.reviewForm.value).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res: any) => {
         this.notification.success('¡Gracias por tu opinión!');
         this.isSubmitting.set(false);
         this.showForm.set(false);
         this.loadReviews();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isSubmitting.set(false);
         this.notification.error(err.error?.message || 'Error al enviar la reseña');
       }

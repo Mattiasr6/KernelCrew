@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -10,124 +11,147 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="bg-background text-on-background min-h-screen flex font-body-md overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
-      
-      <!-- SideNavBar (Adaptada de Stitch) -->
-      <nav class="fixed left-0 top-0 h-full flex flex-col py-6 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-lg h-screen w-64 border-r border-white/10 shadow-2xl z-40 hidden md:flex">
-        <div class="px-6 mb-10 flex items-center gap-4">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-            <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+    <!-- Ambient Background Glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto space-y-8 animate-fade-in relative z-10">
+
+          <!-- CTA: Crear Nuevo Curso -->
+          <div class="bg-cyan-500/5 border border-cyan-500/20 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-cyan-400" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+              </div>
+              <div>
+                <h3 class="text-base sm:text-lg font-bold text-zinc-100">Comienza algo nuevo</h3>
+                <p class="text-xs sm:text-sm text-zinc-500 mt-0.5">Crea un curso y compártelo con la comunidad</p>
+              </div>
+            </div>
+            <a routerLink="/instructor/courses" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] w-full sm:w-auto justify-center">
+              <span class="material-symbols-outlined text-[16px]">add</span>
+              Crear Nuevo Curso
+            </a>
           </div>
-          <div>
-            <h1 class="text-lg font-black text-slate-100 tracking-tight">EduPortal</h1>
-            <p class="font-inter text-slate-300 text-xs opacity-80">Faculty Portal</p>
+
+          <!-- Métricas del Instructor -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="metric-card">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-cyan-400">school</span>
+                </div>
+                <div>
+                  <p class="text-2xl font-bold text-zinc-50">{{ dashboardData()?.stats?.courses_count || 0 }}</p>
+                  <p class="text-xs text-zinc-500 uppercase tracking-wider">Cursos</p>
+                </div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-emerald-400">people</span>
+                </div>
+                <div>
+                  <p class="text-2xl font-bold text-zinc-50">{{ dashboardData()?.stats?.active_students || 0 }}</p>
+                  <p class="text-xs text-zinc-500 uppercase tracking-wider">Estudiantes</p>
+                </div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-amber-400">star</span>
+                </div>
+                <div>
+                  <p class="text-2xl font-bold text-zinc-50">{{ dashboardData()?.stats?.average_rating || 0 }}</p>
+                  <p class="text-xs text-zinc-500 uppercase tracking-wider">Calificación</p>
+                </div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-emerald-400">check_circle</span>
+                </div>
+                <div>
+                  <p class="text-2xl font-bold text-zinc-50">{{ dashboardData()?.stats?.courses_count || 0 }}</p>
+                  <p class="text-xs text-zinc-500 uppercase tracking-wider">Publicados</p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div class="flex-1 flex flex-col px-3 gap-2">
-          <a class="flex items-center gap-3 px-4 py-3 bg-white/10 text-blue-400 border-l-4 border-blue-500 rounded-r-lg font-inter" routerLink="/instructor">
-            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
-            <span class="font-semibold text-sm">Dashboard</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all font-inter" routerLink="/my-certificates">
-            <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
-            <span class="font-medium text-sm">Mis Certificados</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all font-inter" routerLink="/instructor/courses">
-            <span class="material-symbols-outlined text-[20px]">menu_book</span>
-            <span class="font-medium text-sm">Mis Cursos</span>
-          </a>
-        </div>
 
-        <div class="px-6 mt-auto">
-          <button class="w-full py-2.5 rounded-lg border border-white/10 text-slate-300 font-inter text-sm hover:bg-white/5 transition-all flex items-center justify-center gap-2 shadow-sm">
-            <span class="material-symbols-outlined text-[18px]">data_usage</span>
-            View Status
-          </button>
-        </div>
-      </nav>
-
-      <!-- Main Canvas -->
-      <main class="flex-1 md:ml-64 relative p-6 min-h-screen overflow-y-auto">
-        <!-- Ambient Background Glow -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
-
-        <div class="max-w-[1280px] mx-auto space-y-8 animate-fade-in relative z-10">
-          
-          <!-- Header -->
-          <header class="mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-white mb-2 font-h2">Resumen de Créditos</h1>
-            <p class="text-slate-400 font-body-md">Gestiona tus créditos de inscripción y metas de publicación.</p>
-          </header>
-
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             <!-- Main Focus Card: Créditos de Inscripción -->
             <div class="lg:col-span-7">
-              <div class="glass-card rounded-2xl p-8 relative overflow-hidden h-full flex flex-col justify-between border border-white/10 bg-slate-900/40 backdrop-blur-xl">
-                <!-- Decorative background glow -->
+              <div class="credit-card">
                 <div class="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
                 
                 <div class="relative z-10">
-                  <div class="flex items-center gap-3 mb-8">
-                    <div class="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                  <div class="flex items-center gap-3 mb-5">
+                    <div class="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                       <span class="material-symbols-outlined text-emerald-400" style="font-variation-settings: 'FILL' 1;">stars</span>
                     </div>
-                    <h2 class="text-2xl font-bold text-white font-h3">Créditos de Inscripción</h2>
+                    <h2 class="text-2xl font-bold text-zinc-50">Créditos de Inscripción</h2>
                   </div>
 
-                  <div class="mb-10">
+                  <div class="mb-6">
                     <div class="flex items-baseline gap-3">
-                      <span class="text-7xl font-black text-emerald-400 leading-none drop-shadow-[0_0_15px_rgba(16,185,129,0.4)] font-h1">
+                      <span class="text-7xl font-black text-emerald-400 leading-none drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]">
                         {{ dashboardData()?.credits_available ?? 0 }}
                       </span>
-                      <span class="text-lg text-slate-400 font-medium">Créditos Disponibles</span>
+                      <span class="text-lg text-zinc-400 font-medium">Créditos Disponibles</span>
                     </div>
                   </div>
 
-                  <div class="mt-auto pt-8 border-t border-white/5">
+                  <div class="mt-auto pt-5 border-t border-zinc-800">
                     <div class="flex justify-between items-center mb-3">
-                      <span class="text-sm font-semibold text-slate-300">Progreso para tu próximo crédito</span>
+                      <span class="text-sm font-semibold text-zinc-300">Progreso para tu próximo crédito</span>
                       <span class="text-sm font-bold text-emerald-400">
                         {{ dashboardData()?.gamification?.progress_current ?? 0 }}/{{ dashboardData()?.gamification?.progress_target ?? 3 }} Cursos
                       </span>
                     </div>
                     
-                    <div class="h-4 w-full bg-slate-800/50 rounded-full overflow-hidden border border-white/5 p-[2px]">
+                    <div class="h-4 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700 p-[2px]">
                       <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full relative transition-all duration-1000 ease-out"
                            [style.width.%]="progressPercentage()">
-                        <div class="absolute top-0 left-0 right-0 h-[1px] bg-white/30"></div>
+                        <div class="absolute top-0 left-0 right-0 h-[1px] bg-white/20"></div>
                       </div>
                     </div>
                     
-                    <p class="text-xs text-slate-400 mt-4 flex items-center gap-2">
+                    <p class="text-xs text-zinc-500 mt-4 flex items-center gap-2">
                       <span class="material-symbols-outlined text-xs">info</span>
                       Publica {{ 3 - (dashboardData()?.gamification?.progress_current ?? 0) }} cursos más para obtener 1 crédito adicional.
                     </p>
+
+                    <a routerLink="/credits" class="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 transition-colors mt-5">
+                      <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                      Gastar créditos en otros cursos
+                    </a>
                   </div>
                 </div>
               </div>
-            </div>
 
             <!-- Supporting Card: Actividad Reciente -->
             <div class="lg:col-span-5">
-              <div class="glass-card rounded-2xl p-6 h-full border border-white/10 bg-slate-900/40 backdrop-blur-xl">
+              <div class="activity-card">
                 <div class="flex items-center justify-between mb-8">
-                  <h3 class="text-xl font-bold text-white font-h3">Actividad Reciente</h3>
-                  <button class="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors">Ver todo</button>
+                  <h3 class="text-xl font-bold text-zinc-50">Actividad Reciente</h3>
+                  <button class="text-cyan-400 hover:text-cyan-300 text-sm font-semibold transition-colors">Ver todo</button>
                 </div>
 
                 <ul class="space-y-4">
                   @for (activity of dashboardData()?.recent_activity; track activity.id) {
-                    <li class="flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-all border border-transparent hover:border-white/5 group">
-                      <div class="w-11 h-11 rounded-full flex items-center justify-center border transition-transform group-hover:scale-110"
+                    <li class="flex items-center gap-4 p-4 rounded-xl hover:bg-zinc-800/50 transition-all border border-transparent hover:border-zinc-700 group">
+                      <div class="w-11 h-11 rounded-full flex items-center justify-center border transition-transform group-hover:scale-110 border-zinc-700"
                            [ngClass]="getActivityConfig(activity.type).containerClass">
                         <span class="material-symbols-outlined text-lg">{{ getActivityConfig(activity.type).icon }}</span>
                       </div>
                       
                       <div class="flex-1">
-                        <p class="text-sm font-medium text-slate-200">{{ activity.description }}</p>
-                        <p class="text-xs text-slate-500 mt-1 uppercase tracking-wider">{{ activity.created_at | date:'shortTime' }} • {{ activity.created_at | date:'dd MMM' }}</p>
+                        <p class="text-sm font-medium text-zinc-200">{{ activity.description }}</p>
+                        <p class="text-xs text-zinc-500 mt-1 uppercase tracking-wider">{{ activity.created_at | date:'shortTime' }} • {{ activity.created_at | date:'dd MMM' }}</p>
                       </div>
 
                       <span class="text-xs font-bold px-2 py-1 rounded-md" [ngClass]="getActivityConfig(activity.type).textClass">
@@ -135,32 +159,143 @@ import { RouterLink } from '@angular/router';
                       </span>
                     </li>
                   } @empty {
-                    <div class="flex flex-col items-center justify-center py-12 text-slate-500 opacity-50">
+                    <div class="flex flex-col items-center justify-center py-12 text-zinc-600">
                       <span class="material-symbols-outlined text-5xl mb-4">history_toggle_off</span>
                       <p class="text-sm">Aún no tienes actividad registrada.</p>
                     </div>
-                  }
-                </ul>
+                   }
+                 </ul>
+               </div>
+             </div>
+           </div>
+
+          <!-- Tabla de Progreso de Estudiantes -->
+          <div class="lg:col-span-12 bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h3 class="text-lg font-bold text-zinc-100">Estudiantes Inscritos</h3>
+                <p class="text-xs text-zinc-500 mt-0.5">Progreso de cada estudiante en tus cursos</p>
               </div>
+              <span class="text-xs font-semibold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full">{{ students().length }} inscritos</span>
             </div>
 
+            @if (studentsLoading()) {
+              <div class="flex justify-center py-12">
+                <div class="w-8 h-8 border-2 border-zinc-700 border-t-cyan-500 rounded-full animate-spin"></div>
+              </div>
+            } @else if (students().length === 0) {
+              <div class="flex flex-col items-center justify-center py-12 text-zinc-600">
+                <span class="material-symbols-outlined text-4xl mb-3">group_off</span>
+                <p class="text-sm">Aún no hay estudiantes inscritos en tus cursos</p>
+              </div>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="border-b border-zinc-800">
+                      <th class="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 py-3 px-4">Estudiante</th>
+                      <th class="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 py-3 px-4">Curso</th>
+                      <th class="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 py-3 px-4">Progreso</th>
+                      <th class="text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 py-3 px-4">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-zinc-800">
+                    @for (s of students(); track s.student_email + s.course_id) {
+                      <tr class="hover:bg-zinc-800/30 transition-colors">
+                        <td class="py-3 px-4">
+                          <div class="flex flex-col">
+                            <span class="text-sm font-medium text-zinc-200">{{ s.student_name }}</span>
+                            <span class="text-xs text-zinc-500">{{ s.student_email }}</span>
+                          </div>
+                        </td>
+                        <td class="py-3 px-4">
+                          <span class="text-sm text-zinc-300 line-clamp-1">{{ s.course_title }}</span>
+                        </td>
+                        <td class="py-3 px-4 min-w-[180px]">
+                          <div class="flex items-center gap-3">
+                            <div class="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                              <div
+                                class="h-full rounded-full transition-all duration-500"
+                                [class.bg-cyan-500]="s.progress < 100"
+                                [class.bg-emerald-500]="s.progress >= 100"
+                                [style.width.%]="s.progress"
+                              ></div>
+                            </div>
+                            <span class="text-xs font-bold text-zinc-400 w-10 text-right">{{ s.progress }}%</span>
+                          </div>
+                        </td>
+                        <td class="py-3 px-4">
+                          @if (s.progress >= 100) {
+                            <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                              <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                              Completado
+                            </span>
+                          } @else {
+                            <span class="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full">
+                              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block"></span>
+                              En Progreso
+                            </span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
           </div>
         </div>
-      </main>
-    </div>
-  `,
+      </div>
+     `,
   styles: [`
-    :host { display: block; }
+    :host { display: block; position: relative; }
     .animate-fade-in { animation: fadeIn 0.8s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .metric-card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: all 0.2s ease-in-out;
+    }
+    .metric-card:hover { border-color: #3f3f46; }
+    
+    .credit-card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 24px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .activity-card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 24px;
+      padding: 1.5rem;
+      height: 100%;
+    }
+    
+    ::ng-deep .bg-cyan-500\\/10 { background-color: rgba(6, 182, 212, 0.1); }
+    ::ng-deep .bg-emerald-500\\/10 { background-color: rgba(16, 185, 129, 0.1); }
+    ::ng-deep .bg-amber-500\\/10 { background-color: rgba(245, 158, 11, 0.1); }
+    ::ng-deep .bg-violet-500\\/10 { background-color: rgba(139, 92, 246, 0.1); }
   `]
 })
 export class InstructorDashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);
   private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
   dashboardData = signal<DashboardData | null>(null);
+  students = signal<any[]>([]);
   isLoading = signal(true);
+  studentsLoading = signal(true);
 
   progressPercentage = computed(() => {
     const data = this.dashboardData();
@@ -170,13 +305,13 @@ export class InstructorDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadStats();
+    this.loadStudents();
   }
 
   loadStats() {
   this.isLoading.set(true);
-  this.dashboardService.getInstructorStats().subscribe({
+  this.dashboardService.getInstructorStats().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
     next: (res) => {
-      // Usamos '?? null' para que nunca sea undefined
       this.dashboardData.set(res.data ?? null);
       this.isLoading.set(false);
     },
@@ -184,12 +319,23 @@ export class InstructorDashboardComponent implements OnInit {
   });
   }
 
+  loadStudents() {
+    this.studentsLoading.set(true);
+    this.dashboardService.getStudents().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res: any) => {
+        if (res.success && res.data) this.students.set(res.data);
+        this.studentsLoading.set(false);
+      },
+      error: () => this.studentsLoading.set(false),
+    });
+  }
+
   getActivityConfig(type: string) {
     const configs: Record<string, any> = {
       'course_published': {
         icon: 'publish',
-        containerClass: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
-        textClass: 'text-blue-400 bg-blue-500/5',
+        containerClass: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400',
+        textClass: 'text-cyan-400 bg-cyan-500/5',
         badge: '+1 Progreso'
       },
       'credit_earned': {
@@ -200,16 +346,16 @@ export class InstructorDashboardComponent implements OnInit {
       },
       'application_approved': {
         icon: 'verified_user',
-        containerClass: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
-        textClass: 'text-purple-400 bg-purple-500/5',
+        containerClass: 'bg-violet-500/10 border-violet-500/20 text-violet-400',
+        textClass: 'text-violet-400 bg-violet-500/5',
         badge: 'FACULTY'
       }
     };
 
     return configs[type] || {
       icon: 'notifications',
-      containerClass: 'bg-slate-500/10 border-slate-500/20 text-slate-400',
-      textClass: 'text-slate-400 bg-slate-500/5',
+      containerClass: 'bg-zinc-500/10 border-zinc-700 text-zinc-400',
+      textClass: 'text-zinc-400 bg-zinc-500/5',
       badge: 'INFO'
     };
   }

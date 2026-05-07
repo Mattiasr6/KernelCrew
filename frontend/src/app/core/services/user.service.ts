@@ -43,4 +43,11 @@ export class UserService {
   toggleStatus(id: number): Observable<ApiResponse<null>> {
     return this.api.patch<ApiResponse<null>>(`admin/users/${id}/toggle-status`);
   }
+
+  /**
+   * Actualizar perfil del usuario actual
+   */
+  updateProfile(data: { name?: string; bio?: string; phone?: string; avatar?: string }): Observable<ApiResponse<any>> {
+    return this.api.put<ApiResponse<any>>('profile', data);
+  }
 }

@@ -1,83 +1,92 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { AuthService } from '../../../core/services/auth.service';
+import { Router, RouterLink } from '@angular/router';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterLink,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatProgressSpinnerModule,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
-    <div class="auth-container animate-fade-in">
-      <div class="brand-logo">Kernel<span class="logo-accent">Learn</span></div>
-      <mat-card class="auth-card glass-card">
-        <mat-card-header>
-          <mat-card-title>Recuperar Contraseña</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <p class="text-slate-400 text-sm mb-6">
+    <div class="min-h-screen bg-zinc-950 flex items-center justify-center px-4 relative overflow-hidden">
+
+      <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-violet-900/15 rounded-full blur-[120px] pointer-events-none"></div>
+      <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-cyan-900/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div class="w-full max-w-md space-y-6 relative z-10">
+        <!-- Logo -->
+        <div class="text-center">
+          <h1 class="text-3xl font-extrabold tracking-tighter">
+            <span class="text-zinc-50">Kernel</span><span class="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">Learn</span>
+          </h1>
+          <p class="text-sm text-zinc-500 mt-2">Recuperar contraseña</p>
+        </div>
+
+        <!-- Card -->
+        <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-800 rounded-2xl p-8 shadow-2xl shadow-black/50">
+          <p class="text-sm text-zinc-400 mb-6 leading-relaxed">
             Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
           </p>
 
-          <form [formGroup]="form" (ngSubmit)="onSubmit()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email</mat-label>
-              <input matInput type="email" formControlName="email" placeholder="tu@email.com" />
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-zinc-400 mb-1.5">Email</label>
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="tu@email.com"
+                class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg px-4 py-2.5 text-zinc-100 placeholder-zinc-500 outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all"
+              />
               @if (form.get('email')?.invalid && form.get('email')?.touched) {
-                <mat-error>Ingresa un email válido</mat-error>
+                <p class="text-xs text-rose-400 mt-1.5">Ingresa un email válido</p>
               }
-            </mat-form-field>
+            </div>
+
+            @if (sent()) {
+              <div class="flex items-start gap-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-3">
+                <span class="material-symbols-outlined text-emerald-400 text-[18px] shrink-0 mt-0.5">check_circle</span>
+                <div>
+                  <span class="text-sm text-emerald-300">Enlace enviado</span>
+                  <p class="text-xs text-zinc-500 mt-0.5">Redirigiendo al formulario de recuperación...</p>
+                </div>
+              </div>
+            } @else if (errorMessage()) {
+              <div class="flex items-start gap-2.5 bg-rose-500/10 border border-rose-500/20 rounded-lg px-4 py-3">
+                <span class="material-symbols-outlined text-rose-400 text-[18px] shrink-0 mt-0.5">error</span>
+                <span class="text-sm text-rose-300">{{ errorMessage() }}</span>
+              </div>
+            }
 
             <button
-              mat-raised-button
-              class="submit-btn full-width"
               type="submit"
-              [disabled]="isLoading() || form.invalid"
+              [disabled]="isLoading() || form.invalid || sent()"
+              class="w-full bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-all shadow-[0_0_15px_rgba(139,92,246,0.25)] hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] inline-flex items-center justify-center gap-2"
             >
               @if (isLoading()) {
-                <mat-spinner diameter="20"></mat-spinner>
+                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Enviando...</span>
               } @else {
+                <span class="material-symbols-outlined text-[18px]">send</span>
                 Enviar Enlace
               }
             </button>
           </form>
 
-          <div class="links mt-6 text-center">
-            <a routerLink="/login" class="text-blue-400 text-sm hover:underline">Volver al inicio de sesión</a>
+          <div class="flex justify-center mt-6 pt-4 border-t border-zinc-800">
+            <a routerLink="/login" class="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">Volver al inicio de sesión</a>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     </div>
   `,
-  styles: [`
-    .auth-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background: #0f172a; padding: 20px; }
-    .brand-logo { font-size: 32px; font-weight: bold; color: white; margin-bottom: 24px; }
-    .logo-accent { background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .auth-card { max-width: 400px; width: 100%; padding: 24px; color: white !important; border-radius: 16px !important; }
-    .full-width { width: 100%; margin-bottom: 16px; }
-    .submit-btn { background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important; color: white !important; height: 48px; border-radius: 12px !important; }
-  `]
+  styles: [`:host { display: block; }`],
 })
 export class ForgotPasswordComponent {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
+  private router = inject(Router);
   private notification = inject(NotificationService);
 
   form: FormGroup = this.fb.group({
@@ -85,20 +94,33 @@ export class ForgotPasswordComponent {
   });
 
   isLoading = signal(false);
+  sent = signal(false);
+  errorMessage = signal<string | null>(null);
 
   onSubmit(): void {
     if (this.form.invalid) return;
     this.isLoading.set(true);
+    this.errorMessage.set(null);
 
     this.api.post<any>('auth/forgot-password', this.form.value).subscribe({
       next: (res) => {
         this.isLoading.set(false);
-        this.notification.success(res.message);
+        const token = res.data?.token;
+        const email = this.form.get('email')?.value;
+        if (token && email) {
+          this.notification.success('Token generado. Redirigiendo...', 'Enlace de recuperación listo');
+          this.sent.set(true);
+          setTimeout(() => {
+            this.router.navigate(['/auth/reset-password', token], { queryParams: { email } });
+          }, 1000);
+        } else {
+          this.notification.success(res.message);
+        }
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.notification.error(err.error?.message || 'No pudimos procesar tu solicitud');
-      }
+        this.errorMessage.set(err.error?.message || 'No pudimos procesar tu solicitud');
+      },
     });
   }
 }

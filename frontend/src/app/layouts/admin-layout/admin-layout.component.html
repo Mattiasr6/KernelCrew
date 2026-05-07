@@ -1,40 +1,53 @@
 <div class="admin-container">
-  <!-- Sidebar con Glassmorphism -->
-  <aside [class.collapsed]="isCollapsed()">
+  @if (isCollapsed()) {}
+  @if (mobileMenuOpen) {
+    <div class="mobile-overlay" (click)="mobileMenuOpen = false"></div>
+  }
+  <aside [class.collapsed]="isCollapsed()" [class.mobile-open]="mobileMenuOpen">
     <div class="sidebar-header">
-      <span class="logo" *ngIf="!isCollapsed()">CodeCore Admin</span>
+      <span class="logo">
+        @if (!isCollapsed()) { KernelLearn Admin }
+      </span>
       <button (click)="toggleSidebar()" class="toggle-btn" [title]="isCollapsed() ? 'Expandir' : 'Colapsar'">
-        {{ isCollapsed() ? '→' : '←' }}
+        <span class="material-symbols-outlined" style="font-size:18px;">{{ isCollapsed() ? 'chevron_right' : 'chevron_left' }}</span>
       </button>
     </div>
 
     <nav class="sidebar-nav">
       <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" [class.centered]="isCollapsed()">
-        <i class="icon">📊</i>
-        <span *ngIf="!isCollapsed()">Dashboard</span>
+        <span class="material-symbols-outlined icon">dashboard</span>
+        @if (!isCollapsed()) { <span>Dashboard</span> }
       </a>
       <a routerLink="/admin/users" routerLinkActive="active" [class.centered]="isCollapsed()">
-        <i class="icon">👥</i>
-        <span *ngIf="!isCollapsed()">Usuarios</span>
+        <span class="material-symbols-outlined icon">people</span>
+        @if (!isCollapsed()) { <span>Usuarios</span> }
       </a>
       <a routerLink="/admin/applications" routerLinkActive="active" [class.centered]="isCollapsed()">
-        <i class="icon">📝</i>
-        <span *ngIf="!isCollapsed()">Postulaciones</span>
+        <span class="material-symbols-outlined icon">description</span>
+        @if (!isCollapsed()) { <span>Postulaciones</span> }
+      </a>
+      <a routerLink="/admin/courses" routerLinkActive="active" [class.centered]="isCollapsed()">
+        <span class="material-symbols-outlined icon">school</span>
+        @if (!isCollapsed()) { <span>Moderación</span> }
       </a>
     </nav>
 
     <div class="sidebar-footer">
-        <button (click)="logout()" class="logout-btn" [class.centered]="isCollapsed()">
-            <i class="icon">🚪</i>
-            <span *ngIf="!isCollapsed()">Cerrar Sesión</span>
-        </button>
+      <button (click)="logout()" class="logout-btn" [class.centered]="isCollapsed()">
+        <span class="material-symbols-outlined icon">logout</span>
+        @if (!isCollapsed()) { <span>Cerrar Sesión</span> }
+      </button>
     </div>
   </aside>
 
-  <!-- Contenido Principal -->
   <main>
     <header class="top-bar">
-      <div class="breadcrumb">Panel de Administración / {{ currentUser()?.name }}</div>
+      <div class="flex items-center">
+        <button class="mobile-menu-btn" (click)="mobileMenuOpen = !mobileMenuOpen">
+          <span class="material-symbols-outlined" style="font-size:20px;">{{ mobileMenuOpen ? 'close' : 'menu' }}</span>
+        </button>
+        <div class="breadcrumb">Panel de Administración / {{ currentUser()?.name }}</div>
+      </div>
       <div class="user-info">
         <span class="role-badge">Admin</span>
       </div>
