@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CurriculumService } from '../../core/services/curriculum.service';
 import { CourseService } from '../../core/services/course.service';
+import { CourseEditorService } from './course-editor/services/course-editor.service';
 import { CourseSection, Lesson } from '../../core/models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LessonEditorComponent } from './lesson-editor.component';
@@ -132,12 +133,6 @@ import { LessonEditorComponent } from './lesson-editor.component';
                         </div>
                         <div class="flex items-center gap-1">
                           @if (!isReadonly()) {
-                            <button class="icon-btn-ghost text-xs" (click)="moveLessonUp(section, lesson)" [disabled]="!canLessonMoveUp(section, lesson)" title="Subir lección">
-                              <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
-                            </button>
-                            <button class="icon-btn-ghost text-xs" (click)="moveLessonDown(section, lesson)" [disabled]="!canLessonMoveDown(section, lesson)" title="Bajar lección">
-                              <span class="material-symbols-outlined text-[14px]">arrow_downward</span>
-                            </button>
                             <button class="icon-btn-ghost text-xs" (click)="editLesson(lesson)" title="Editar lección">
                               <span class="material-symbols-outlined text-[16px]">edit</span>
                             </button>
@@ -249,6 +244,7 @@ export class InstructorCurriculumComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private curriculumService = inject(CurriculumService);
   private courseService = inject(CourseService);
+  private editorService = inject(CourseEditorService);
   private destroyRef = inject(DestroyRef);
 
   courseId = signal<number>(0);
@@ -288,13 +284,16 @@ export class InstructorCurriculumComponent implements OnInit {
   }
 
   loadCourseStatus() {
-    this.courseService.getCourse(this.courseId())
+    const editorCourse = this.editorService.currentCourse();
+    if (editorCourse) {
+      this.courseStatus.set(editorCourse.status);
+      return;
+    }
+    this.editorService.fetchCourse(this.courseId())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
-          if (res.data) {
-            this.courseStatus.set(res.data.status);
-          }
+          if (res.data?.status) this.courseStatus.set(res.data.status);
         }
       });
   }

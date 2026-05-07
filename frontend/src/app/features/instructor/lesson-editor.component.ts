@@ -31,7 +31,7 @@ import { Lesson } from '../../core/models';
             <input
               [(ngModel)]="formTitle"
               placeholder="Ej: 1.1 Introducción a la Arquitectura Limpia"
-              class="w-full bg-zinc-950/50 border border-zinc-800 text-zinc-100 rounded-lg px-4 py-3 outline-none focus:border-violet-500 transition-colors placeholder-zinc-600"
+              class="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 outline-none focus:border-violet-500 transition-colors placeholder-zinc-500"
             />
             <p class="text-[11px] text-zinc-600 mt-1">Define un título descriptivo que motive al estudiante</p>
           </div>
@@ -54,7 +54,7 @@ import { Lesson } from '../../core/models';
             <input
               [(ngModel)]="formVideoUrl"
               placeholder="https://www.youtube.com/watch?v=..."
-              class="w-full bg-zinc-950/50 border border-zinc-800 text-zinc-100 rounded-lg px-4 py-2.5 outline-none focus:border-violet-500 transition-colors placeholder-zinc-600"
+              class="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-2.5 outline-none focus:border-violet-500 transition-colors placeholder-zinc-500"
             />
           </div>
 
@@ -66,7 +66,7 @@ import { Lesson } from '../../core/models';
                 type="number"
                 min="0"
                 [(ngModel)]="formDuration"
-                class="w-full bg-zinc-950/50 border border-zinc-800 text-zinc-100 rounded-lg px-4 py-2.5 outline-none focus:border-violet-500 transition-colors"
+                class="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-2.5 outline-none focus:border-violet-500 transition-colors"
               />
             </div>
             <div class="flex items-end pb-2.5">
@@ -147,7 +147,7 @@ import { Lesson } from '../../core/models';
       border: 1px solid #27272a;
     }
     ::ng-deep .quill-dark .ql-container {
-      background: #09090b;
+      background: #18181b;
       border: 1px solid #27272a;
       border-top: none;
       border-radius: 0 0 10px 10px;

@@ -38,17 +38,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     <div class="instructor-courses-container animate-fade-in">
       <div class="header-section">
         <div>
-          <h1 class="text-3xl font-bold text-white">Gestión de Cursos</h1>
-          <p class="text-slate-400 mt-1">Crea y administra tus contenidos educativos.</p>
-        </div>
-        <button class="add-btn" (click)="openDialog()">
-          <span class="material-symbols-outlined">add_circle</span>
-          Nuevo Curso
-        </button>
+      <h1 class="text-3xl font-bold text-zinc-50">Gestión de Cursos</h1>
+      <p class="text-zinc-400 mt-1">Crea y administra tus contenidos educativos.</p>
+    </div>
+    <button class="add-btn" (click)="openDialog()">
+      <span class="material-symbols-outlined">add_circle</span>
+      Nuevo Curso
+    </button>
       </div>
 
       @if (isLoading()) {
-        <div class="table-card glass-card">
+        <div class="table-card">
           <div class="loading-overlay">
             <mat-spinner diameter="50"></mat-spinner>
           </div>
@@ -69,7 +69,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
           </button>
         </div>
       } @else {
-        <div class="table-card glass-card">
+        <div class="table-card">
           <div class="overflow-x-auto">
             <table class="data-table">
               <thead>
@@ -85,22 +85,22 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
               <tbody>
                 @for (course of courses(); track course.id) {
                   <tr class="hover-row">
-                    <td>
+                    <td data-label="Estado">
                       <span class="status-badge" [ngClass]="getStatusClass(course.status)">
                         {{ getStatusLabel(course.status) }}
                       </span>
                     </td>
-                    <td>
-                      <span class="font-semibold text-slate-200">{{ course.title }}</span>
+                    <td data-label="Título">
+                      <span class="font-semibold text-zinc-200">{{ course.title }}</span>
                     </td>
-                    <td>
+                    <td data-label="Nivel">
                       <span class="badge" [ngClass]="'badge-' + course.level">
                         {{ course.level | uppercase }}
                       </span>
                     </td>
-                    <td class="text-slate-300">{{ course.category }}</td>
-                    <td class="font-mono text-emerald-400">\${{ course.price }}</td>
-                    <td class="text-right">
+                    <td class="text-zinc-300" data-label="Categoría">{{ course.category }}</td>
+                    <td class="font-mono text-emerald-400" data-label="Precio">\${{ course.price }}</td>
+                    <td class="text-right" data-label="Acciones">
                       <div class="action-group">
                         @if (course.status === 'DRAFT' || course.status === 'REJECTED') {
                           <button class="icon-btn review" (click)="requestReview(course)" title="Enviar a revisión">
@@ -152,9 +152,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
                 <span class="material-symbols-outlined input-icon">badge</span>
                 <input class="form-input" formControlName="title" placeholder="Ej: Arquitectura Limpia con .NET 8" />
               </div>
-              @if (form.get('title')?.invalid && form.get('title')?.touched) {
-                <p class="form-error">{{ getErrorMessage('title') }}</p>
-              }
+              <div class="flex justify-between items-center mt-1.5">
+                @if (form.get('title')?.invalid && (form.get('title')?.dirty || form.get('title')?.touched)) {
+                  <p class="form-error">{{ getErrorMessage('title') }}</p>
+                } @else {
+                  <span class="text-[11px] text-zinc-600">Elige un título descriptivo</span>
+                }
+                <span class="text-[11px] text-zinc-600">{{ form.get('title')?.value?.length || 0 }} caracteres</span>
+              </div>
             </div>
 
             <!-- Description -->
@@ -164,9 +169,18 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
                 <span class="material-symbols-outlined input-icon">description</span>
                 <textarea class="form-input min-h-[90px] resize-y" formControlName="description" rows="3" placeholder="Describe qué aprenderán los estudiantes..."></textarea>
               </div>
-              @if (form.get('description')?.invalid && form.get('description')?.touched) {
-                <p class="form-error">{{ getErrorMessage('description') }}</p>
-              }
+              <div class="flex justify-between items-center mt-1.5">
+                @if (form.get('description')?.invalid && (form.get('description')?.dirty || form.get('description')?.touched)) {
+                  <p class="form-error">{{ getErrorMessage('description') }}</p>
+                } @else {
+                  <span class="text-[11px] text-zinc-600">Mínimo 50 caracteres para describir tu curso</span>
+                }
+                <span class="text-[11px]"
+                  [class.text-zinc-600]="(form.get('description')?.value?.length || 0) < 50"
+                  [class.text-emerald-400]="(form.get('description')?.value?.length || 0) >= 50">
+                  {{ form.get('description')?.value?.length || 0 }}/50
+                </span>
+              </div>
             </div>
 
             <!-- Grid 1x2: Level + Category -->
@@ -193,6 +207,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
                     }
                   </select>
                 </div>
+                @if (categories().length === 0) {
+                  <p class="text-[11px] text-amber-400 mt-1.5">Cargando categorías...</p>
+                } @else if (form.get('category_id')?.invalid && form.get('category_id')?.touched) {
+                  <p class="form-error">Selecciona una categoría</p>
+                }
               </div>
             </div>
 
@@ -240,52 +259,51 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
       margin-bottom: 32px;
     }
 
-    .add-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
-      padding: 10px 24px;
-      border-radius: 12px;
-      font-weight: 600;
-      border: none;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-      cursor: pointer;
-    }
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+  cursor: pointer;
+}
 
-    .add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
+.add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4); }
 
-    .empty-cta-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-      color: white;
-      padding: 12px 28px;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
-    }
-    .empty-cta-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
-    }
+.empty-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: white;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+}
+.empty-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.4);
+}
 
-    .table-card {
-      position: relative;
-      min-height: 400px;
-      border-radius: 20px;
-      overflow: hidden;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+.table-card {
+  position: relative;
+  min-height: 400px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #18181b;
+  border: 1px solid #27272a;
+}
 
     .data-table {
       width: 100%;
@@ -293,87 +311,87 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
       text-align: left;
     }
 
-    .data-table th {
-      padding: 16px 24px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: #94a3b8;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
+.data-table th {
+  padding: 16px 24px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #a1a1aa;
+  border-bottom: 1px solid #27272a;
+}
 
-    .data-table td {
-      padding: 16px 24px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      vertical-align: middle;
-    }
+.data-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #27272a;
+  vertical-align: middle;
+}
 
-    .hover-row:hover { background: rgba(255, 255, 255, 0.02); }
+.hover-row:hover { background: rgba(255, 255, 255, 0.02); }
 
-    .status-badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      background: rgba(148, 163, 184, 0.1);
-      color: #94a3b8;
-      border: 1px solid rgba(148, 163, 184, 0.2);
-    }
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(161, 161, 170, 0.1);
+  color: #a1a1aa;
+  border: 1px solid rgba(161, 161, 170, 0.2);
+}
 
-    .status-badge.draft {
-      background: rgba(39, 39, 42, 0.1);
-      color: #a1a1aa;
-      border: 1px solid rgba(63, 63, 70, 0.2);
-    }
+.status-badge.draft {
+  background: rgba(161, 161, 170, 0.1);
+  color: #a1a1aa;
+  border: 1px solid rgba(161, 161, 170, 0.2);
+}
 
-    .status-badge.pending {
-      background: rgba(245, 158, 11, 0.1);
-      color: #f59e0b;
-      border: 1px solid rgba(245, 158, 11, 0.2);
-    }
+.status-badge.pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
 
-    .status-badge.approved {
-      background: rgba(6, 182, 212, 0.1);
-      color: #06b6d4;
-      border: 1px solid rgba(6, 182, 212, 0.2);
-    }
+.status-badge.approved {
+  background: rgba(6, 182, 212, 0.1);
+  color: #06b6d4;
+  border: 1px solid rgba(6, 182, 212, 0.2);
+}
 
-    .status-badge.published {
-      background: rgba(16, 185, 129, 0.1);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.2);
-    }
+.status-badge.published {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
 
-    .status-badge.rejected {
-      background: rgba(244, 63, 94, 0.1);
-      color: #f43f5e;
-      border: 1px solid rgba(244, 63, 94, 0.2);
-    }
+.status-badge.rejected {
+  background: rgba(244, 63, 94, 0.1);
+  color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
 
-    .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; }
-    .badge-beginner { background: #064e3b; color: #6ee7b7; }
-    .badge-intermediate { background: #78350f; color: #fcd34d; }
-    .badge-advanced { background: #7f1d1d; color: #fca5a5; }
+.badge { padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; }
+.badge-beginner { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.badge-intermediate { background: rgba(6, 182, 212, 0.15); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.2); }
+.badge-advanced { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.2); }
 
     .action-group { display: flex; justify-content: flex-end; gap: 8px; }
     
-    .icon-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #27272a;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-    .icon-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
-    .icon-btn.delete:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: #f8717144; }
-    .icon-btn.review:hover { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: #f59e0b44; }
+.icon-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fafafa; }
+.icon-btn.delete:hover { background: rgba(244, 63, 94, 0.1); color: #f43f5e; border-color: rgba(244, 63, 94, 0.2); }
+.icon-btn.review:hover { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
 
     .dialog-overlay {
       position: fixed;
@@ -387,17 +405,18 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
       padding: 16px;
     }
 
-    .dialog-content {
-      width: 560px;
-      max-width: 100%;
-      background: rgba(24, 24, 27, 0.95);
-      backdrop-filter: blur(16px);
-      border: 1px solid #27272a;
-      border-radius: 20px;
-      padding: 28px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
-      animation: dialogIn 0.2s ease-out;
-    }
+.dialog-content {
+  width: 560px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  animation: dialogIn 0.2s ease-out;
+}
 
     @keyframes dialogIn {
       from { opacity: 0; transform: scale(0.96) translateY(10px); }
@@ -496,27 +515,27 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     }
     .cancel-btn:hover { color: #fafafa; background: rgba(255, 255, 255, 0.04); }
 
-    .submit-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px 24px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #8b5cf6, #6366f1);
-      color: #fff;
-      font-size: 0.88rem;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: inherit;
-      box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
-    }
-    .submit-btn:hover:not(:disabled) {
-      box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
-      transform: translateY(-1px);
-    }
+.submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+}
+.submit-btn:hover:not(:disabled) {
+  box-shadow: 0 0 25px rgba(6, 182, 212, 0.4);
+  transform: translateY(-1px);
+}
     .submit-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -539,6 +558,46 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
       text-align: center;
       padding: 80px !important;
       color: #64748b;
+    }
+
+    @media (max-width: 767px) {
+      .data-table, .data-table thead, .data-table tbody,
+      .data-table th, .data-table td, .data-table tr { display: block; }
+      .data-table thead { display: none; }
+      .data-table tr {
+        padding: 16px;
+        margin-bottom: 12px;
+        border: 1px solid #27272a;
+        border-radius: 12px;
+      }
+      .data-table td {
+        padding: 6px 0 !important;
+        border: none !important;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .data-table td::before {
+        content: attr(data-label);
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #71717a;
+        min-width: 80px;
+        flex-shrink: 0;
+      }
+      td[data-label="Acciones"] {
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+        padding-top: 8px !important;
+        border-top: 1px solid #27272a !important;
+      }
+      td[data-label="Título"] {
+        font-weight: 600;
+        font-size: 1rem;
+      }
     }
   `]
 })
@@ -573,13 +632,18 @@ export class InstructorCoursesComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.courseService.getCategories().subscribe({
-      next: (res: any) => {
-        if (res.success && res.data) {
-          this.categories.set(res.data);
+    this.courseService.getCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          if (res.success && res.data) {
+            this.categories.set(Array.isArray(res.data) ? res.data : []);
+          }
+        },
+        error: () => {
+          this.categories.set([]);
         }
-      },
-    });
+      });
   }
 
   loadMyCourses(): void {
@@ -656,6 +720,7 @@ export class InstructorCoursesComponent implements OnInit {
     const control = this.form.get(controlName);
     if (!control) return '';
     if (control.hasError('required')) return 'Este campo es obligatorio';
+    if (control.hasError('minlength')) return `Mínimo ${control.errors?.['minlength']?.requiredLength} caracteres`;
     if (control.hasError('serverError')) return control.getError('serverError');
     return '';
   }

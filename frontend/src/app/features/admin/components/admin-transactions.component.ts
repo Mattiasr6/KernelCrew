@@ -29,43 +29,43 @@ import { NotificationService } from '../../../core/services/notification.service
   template: `
     <div class="transactions-container animate-fade-in">
       <div class="header-section mb-8">
-        <h1 class="text-3xl font-bold text-white">Transacciones de Pago</h1>
-        <p class="text-slate-400 mt-1">Administra los pagos e ingresos del sistema</p>
+      <h1 class="text-3xl font-bold text-zinc-50">Transacciones de Pago</h1>
+      <p class="text-zinc-400 mt-1">Administra los pagos e ingresos del sistema</p>
       </div>
 
       <!-- Estadísticas -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="stat-card glass-card p-6">
+        <div class="stat-card p-6">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-slate-400 text-sm mb-1">Ingresos Totales</p>
-              <p class="text-white text-2xl font-bold">\${{ stats().total_revenue | number: '1.2-2' }}</p>
-            </div>
-            <span class="material-symbols-outlined text-emerald-500 text-4xl">trending_up</span>
+          <p class="text-zinc-400 text-sm mb-1">Ingresos Totales</p>
+          <p class="text-zinc-50 text-2xl font-bold">\${{ stats().total_revenue | number: '1.2-2' }}</p>
+        </div>
+        <span class="material-symbols-outlined text-emerald-400 text-4xl">trending_up</span>
           </div>
         </div>
-        <div class="stat-card glass-card p-6">
+        <div class="stat-card p-6">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-slate-400 text-sm mb-1">Transacciones</p>
-              <p class="text-white text-2xl font-bold">{{ stats().total_transactions }}</p>
-            </div>
-            <span class="material-symbols-outlined text-blue-500 text-4xl">receipt</span>
-          </div>
+          <p class="text-zinc-400 text-sm mb-1">Transacciones</p>
+          <p class="text-zinc-50 text-2xl font-bold">{{ stats().total_transactions }}</p>
         </div>
-        <div class="stat-card glass-card p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-slate-400 text-sm mb-1">Pendientes</p>
-              <p class="text-white text-2xl font-bold">{{ stats().pending_payments }}</p>
-            </div>
-            <span class="material-symbols-outlined text-orange-500 text-4xl">schedule</span>
+        <span class="material-symbols-outlined text-cyan-400 text-4xl">receipt</span>
+      </div>
+    </div>
+    <div class="stat-card p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-zinc-400 text-sm mb-1">Pendientes</p>
+          <p class="text-zinc-50 text-2xl font-bold">{{ stats().pending_payments }}</p>
+        </div>
+        <span class="material-symbols-outlined text-amber-400 text-4xl">schedule</span>
           </div>
         </div>
       </div>
 
       <!-- Filtros -->
-      <div class="filters glass-card p-6 mb-8">
+      <div class="filters p-6 mb-8">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Buscar</mat-label>
@@ -104,34 +104,34 @@ import { NotificationService } from '../../../core/services/notification.service
           <mat-spinner diameter="40"></mat-spinner>
         </div>
       } @else {
-        <div class="table-card glass-card overflow-hidden">
-          <table class="w-full">
-            <thead class="bg-slate-800/50 border-b border-slate-700">
-              <tr>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Usuario</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Plan</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Monto</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Fecha</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Método</th>
-                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Estado</th>
+        <div class="table-card overflow-hidden">
+          <table class="w-full responsive-table">
+        <thead class="bg-zinc-900 border-b border-zinc-800">
+          <tr>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Usuario</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Plan</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Monto</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Fecha</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Método</th>
+            <th class="px-6 py-4 text-left text-sm font-semibold text-zinc-400">Estado</th>
               </tr>
             </thead>
             <tbody>
               @if (transactions().length === 0) {
                 <tr>
-                  <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                  <td colspan="6" class="px-6 py-8 text-center text-zinc-500">
                     No hay transacciones registradas
                   </td>
                 </tr>
               }
               @for (payment of transactions(); track payment.id) {
-                <tr class="border-b border-slate-700 hover:bg-slate-700/20 transition-colors">
-                  <td class="px-6 py-4 text-sm text-white">{{ payment.user?.email }}</td>
-                  <td class="px-6 py-4 text-sm text-slate-300">{{ payment.subscription?.plan?.name }}</td>
-                  <td class="px-6 py-4 text-sm text-emerald-400 font-bold">\${{ payment.amount | number: '1.2-2' }}</td>
-                  <td class="px-6 py-4 text-sm text-slate-300">{{ payment.payment_date | date: 'short' }}</td>
-                  <td class="px-6 py-4 text-sm text-slate-300">{{ payment.payment_method }}</td>
-                  <td class="px-6 py-4 text-sm">
+                <tr class="border-b border-zinc-800 hover:bg-zinc-800/30 transition-colors">
+                  <td class="px-6 py-4 text-sm text-zinc-100" data-label="Usuario">{{ payment.user?.email }}</td>
+                  <td class="px-6 py-4 text-sm text-zinc-300" data-label="Plan">{{ payment.subscription?.plan?.name }}</td>
+                  <td class="px-6 py-4 text-sm text-emerald-400 font-bold" data-label="Monto">\${{ payment.amount | number: '1.2-2' }}</td>
+                  <td class="px-6 py-4 text-sm text-zinc-300" data-label="Fecha">{{ payment.payment_date | date: 'short' }}</td>
+                  <td class="px-6 py-4 text-sm text-zinc-300" data-label="Método">{{ payment.payment_method }}</td>
+                  <td class="px-6 py-4 text-sm" data-label="Estado">
                     <span [class]="'status-' + payment.status" class="px-3 py-1 rounded-full text-xs font-bold">
                       {{ formatStatus(payment.status) }}
                     </span>
@@ -154,17 +154,47 @@ import { NotificationService } from '../../../core/services/notification.service
     </div>
   `,
   styles: [`
-    .transactions-container { padding: 40px 20px; min-height: 100vh; background: #0f172a; max-width: 1400px; margin: 0 auto; }
-    .stat-card { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; }
-    .filters { border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
-    .search-btn { background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important; color: white !important; }
-    .table-card { border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
-    .status-completed { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-    .status-pending { background: rgba(249, 115, 22, 0.2); color: #f97316; }
-    .status-failed { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.transactions-container { padding: 40px 20px; min-height: 100vh; background: #09090b; max-width: 1400px; margin: 0 auto; }
+@media (max-width: 640px) { .transactions-container { padding: 20px 16px; } }
+.stat-card { border: 1px solid #27272a; border-radius: 12px; background: #18181b; }
+.filters { border-radius: 12px; border: 1px solid #27272a; background: #18181b; }
+.search-btn { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; color: white !important; }
+.table-card { border-radius: 12px; background: #18181b; border: 1px solid #27272a; margin-bottom: 20px; }
+.status-completed { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.status-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.status-failed { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
     .loading-spinner { display: flex; justify-content: center; padding: 60px 20px; }
     .animate-fade-in { animation: fadeIn 0.5s ease-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    @media (max-width: 767px) {
+      .responsive-table, .responsive-table thead, .responsive-table tbody,
+      .responsive-table th, .responsive-table td, .responsive-table tr { display: block; }
+      .responsive-table thead { display: none; }
+      .responsive-table tr {
+        padding: 16px;
+        margin-bottom: 12px;
+        border: 1px solid #27272a;
+        border-radius: 12px;
+      }
+      .responsive-table td {
+        padding: 6px 0 !important;
+        border: none !important;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .responsive-table td::before {
+        content: attr(data-label);
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #71717a;
+        min-width: 70px;
+        flex-shrink: 0;
+      }
+    }
   `]
 })
 export class AdminTransactionsComponent implements OnInit {

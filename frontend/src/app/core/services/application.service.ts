@@ -12,12 +12,17 @@ export class ApplicationService {
   private readonly apiUrl = `${environment.apiUrl}`;
 
   /**
-   * Estudiante: Enviar nueva postulación
+   * Estudiante: Enviar nueva postulación (con PDF opcional)
    */
   submitApplication(payload: ApplicationPayload): Observable<ApiResponse<InstructorApplication>> {
+    const formData = new FormData();
+    formData.append('experience_summary', payload.experience_summary);
+    if (payload.portfolio_url) formData.append('portfolio_url', payload.portfolio_url);
+    if (payload.resume) formData.append('resume', payload.resume);
+
     return this.http.post<ApiResponse<InstructorApplication>>(
-      `${this.apiUrl}/instructor-applications`, 
-      payload
+      `${this.apiUrl}/instructor-applications`,
+      formData
     );
   }
 
@@ -48,5 +53,12 @@ export class ApplicationService {
       `${this.apiUrl}/admin/instructor-applications/${id}/reject`, 
       {}
     );
+  }
+
+  /**
+   * Admin: Obtener URL de descarga del curriculum
+   */
+  getResumeDownloadUrl(id: number): string {
+    return `${this.apiUrl}/admin/instructor-applications/${id}/resume`;
   }
 }
