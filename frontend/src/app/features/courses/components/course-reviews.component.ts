@@ -13,27 +13,27 @@ import { CourseReview } from '../../../core/models';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="reviews-section mt-12 space-y-8 animate-fade-in">
-      <div class="flex items-center justify-between border-b border-white/5 pb-6">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-6">
         <div>
-          <h3 class="text-2xl font-bold text-white">Reseñas de Estudiantes</h3>
-          <p class="text-slate-400 text-sm mt-1">
+          <h3 class="text-2xl font-bold text-zinc-50">Reseñas de Estudiantes</h3>
+          <p class="text-zinc-400 text-sm mt-1">
             Promedio basado en {{ reviewData()?.total_reviews || 0 }} calificaciones.
           </p>
         </div>
         <div class="flex items-center gap-3">
-          <span class="text-4xl font-black text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.3)]">
+          <span class="text-4xl font-black text-amber-400">
             {{ reviewData()?.average_rating || 0 }}
           </span>
-          <div class="flex text-yellow-400">
+          <div class="flex text-amber-400">
              <span class="material-symbols-outlined text-[32px]" [style.font-variation-settings]="'\\'FILL\\' 1'">star</span>
           </div>
         </div>
       </div>
 
-      <!-- Formulario de Reseña (Solo si el usuario está inscrito) -->
+      <!-- Formulario de Reseña -->
       @if (showForm()) {
-        <div class="glass-card p-6 border-emerald-500/20 bg-emerald-500/5">
-          <h4 class="text-white font-bold mb-4 flex items-center gap-2">
+        <div class="bg-zinc-900 border border-emerald-500/20 rounded-2xl p-6">
+          <h4 class="text-zinc-100 font-bold mb-4 flex items-center gap-2">
             <span class="material-symbols-outlined text-emerald-400">rate_review</span>
             Deja tu calificación
           </h4>
@@ -59,14 +59,14 @@ import { CourseReview } from '../../../core/models';
             <textarea 
               formControlName="comment"
               rows="3"
-              class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 transition-all resize-none shadow-inner"
+              class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-cyan-500/50 transition-all resize-none"
               placeholder="Escribe tu opinión sobre el curso (opcional)..."
             ></textarea>
 
             <button 
               type="submit"
               [disabled]="reviewForm.invalid || isSubmitting()"
-              class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-lg transition-all disabled:opacity-50 flex items-center gap-2"
+              class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-6 rounded-lg transition-all disabled:opacity-50 flex items-center gap-2"
             >
               @if (isSubmitting()) {
                 <span class="animate-spin text-lg">⏳</span>
@@ -80,23 +80,22 @@ import { CourseReview } from '../../../core/models';
       <!-- Listado de Reseñas -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         @for (review of reviewData()?.reviews; track review.id) {
-          <div class="glass-card p-6 hover:border-white/20 transition-all group">
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-zinc-700 transition-all group">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-3">
-                <!-- Avatar Inteligente en Reseña -->
                 @if (review.user?.avatar) {
-                  <img [src]="review.user?.avatar" class="w-10 h-10 rounded-full border border-white/10 object-cover" [alt]="review.user?.name">
+                  <img [src]="review.user?.avatar" class="w-10 h-10 rounded-full border border-zinc-700 object-cover" [alt]="review.user?.name">
                 } @else {
                   <div class="review-avatar-circle">
                     {{ getInitials(review.user?.name || '??') }}
                   </div>
                 }
                 <div>
-                  <p class="text-white font-semibold text-sm">{{ review.user?.name }}</p>
-                  <p class="text-slate-500 text-xs">{{ review.created_at | date:'dd MMM, yyyy' }}</p>
+                  <p class="text-zinc-100 font-semibold text-sm">{{ review.user?.name }}</p>
+                  <p class="text-zinc-500 text-xs">{{ review.created_at | date:'dd MMM, yyyy' }}</p>
                 </div>
               </div>
-              <div class="flex text-yellow-400 gap-0.5 scale-75 origin-right">
+              <div class="flex text-amber-400 gap-0.5 scale-75 origin-right">
                 @for (s of [1,2,3,4,5]; track s) {
                   <span class="material-symbols-outlined text-sm" 
                         [style.font-variation-settings]="review.rating >= s ? '\\'FILL\\' 1' : '\\'FILL\\' 0'">
@@ -105,7 +104,7 @@ import { CourseReview } from '../../../core/models';
                 }
               </div>
             </div>
-            <p class="text-slate-300 text-sm leading-relaxed">{{ review.comment || 'Sin comentario.' }}</p>
+            <p class="text-zinc-300 text-sm leading-relaxed">{{ review.comment || 'Sin comentario.' }}</p>
           </div>
         } @empty {
           <div class="col-span-full py-10 text-center text-slate-500">

@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EnrollmentService, EnrolledCourse } from '../../core/services/enrollment.service';
 import { ConfettiService } from '../../core/services/confetti.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-my-courses',
@@ -171,14 +172,47 @@ import { ConfettiService } from '../../core/services/confetti.service';
               </div>
             }
           </div>
+
+          @if (!authService.isInstructor()) {
+            <div class="mt-10 bg-gradient-to-br from-zinc-900 to-zinc-900/80 border border-violet-500/20 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-violet-400" style="font-variation-settings: 'FILL' 1;">school</span>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-zinc-100">¿Quieres compartir tu conocimiento?</h3>
+                  <p class="text-sm text-zinc-400 mt-1 max-w-lg">Conviértete en instructor en KernelLearn. Crea cursos, llega a miles de estudiantes y genera ingresos por tu experiencia.</p>
+                </div>
+              </div>
+              <a routerLink="/become-teacher" mat-flat-button class="become-btn shrink-0">
+                <span class="material-symbols-outlined text-[16px]">history_edu</span>
+                Ser Instructor
+              </a>
+            </div>
+          }
         }
       </div>
-    </div>
-  `,
+    </div>`,
   styles: [`
     :host { display: block; }
 
     /* Buttons */
+    .become-btn {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+      color: #fff !important;
+      border-radius: 10px !important;
+      font-weight: 600 !important;
+      padding: 10px 24px !important;
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.25) !important;
+      transition: all 0.2s ease !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+    .become-btn:hover {
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.4) !important;
+      transform: translateY(-1px);
+    }
     .explore-btn {
       color: #06b6d4 !important;
       border-color: rgba(6, 182, 212, 0.3) !important;
@@ -370,6 +404,7 @@ import { ConfettiService } from '../../core/services/confetti.service';
 export class MyCoursesComponent implements OnInit {
   private enrollmentService = inject(EnrollmentService);
   private confetti = inject(ConfettiService);
+  authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
   courses = signal<EnrolledCourse[]>([]);

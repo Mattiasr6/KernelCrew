@@ -25,6 +25,6 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/dashboard']);
+  router.navigate(['/my-courses']);
   return false;
 };
