@@ -19,23 +19,23 @@ gsap.registerPlugin(ScrollTrigger);
     <section class="hero" #heroSection>
       <canvas #particleCanvas class="particle-canvas"></canvas>
       <div class="hero-bg"></div>
-      <div class="max-w-7xl mx-auto px-4 md:px-6 py-16 sm:py-24 md:py-36 relative z-10 text-center">
-        <div class="hero-badge inline-flex items-center gap-2 mb-6 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full">
-          <span class="material-symbols-outlined text-cyan-400 text-sm">bolt</span>
-          <span class="text-xs font-medium text-cyan-400 uppercase tracking-wider">Plataforma basada en créditos</span>
+      <div class="max-w-7xl mx-auto px-4 md:px-6 py-20 sm:py-28 md:py-44 relative z-10 text-center">
+        <div class="hero-badge inline-flex items-center gap-2 mb-8 px-5 py-2.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full">
+          <span class="material-symbols-outlined text-cyan-400 text-base">bolt</span>
+          <span class="text-sm sm:text-base font-semibold text-cyan-400 uppercase tracking-wider">Plataforma basada en créditos</span>
         </div>
-        <h1 class="hero-heading text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter text-zinc-50 leading-[1.05] mb-6">
+        <h1 class="hero-heading text-4xl sm:text-5xl md:text-6xl lg:text-8xl xl:text-9xl font-black tracking-tighter text-zinc-50 leading-[1.05] mb-8">
           <span class="hero-line block">Domina el Código.</span>
           <span class="hero-line block bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">Acumula Créditos.</span>
           <span class="hero-line block">Certifícate.</span>
         </h1>
-        <p class="hero-desc max-w-2xl mx-auto text-base sm:text-lg text-zinc-400 leading-relaxed mb-10">
+        <p class="hero-desc max-w-3xl mx-auto text-lg sm:text-xl md:text-2xl text-zinc-400 leading-relaxed mb-12">
           Compra créditos, inscríbete en cursos técnicos y obtén certificados verificables
           que validan tu dominio real del kernel y el desarrollo de software.
         </p>
-        <div class="hero-actions flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a mat-flat-button routerLink="/courses" class="hero-btn-primary w-full sm:w-auto sm:min-w-[200px] inline-flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined" style="vertical-align:middle;line-height:1;font-size:1.2em">explore</span>
+        <div class="hero-actions flex flex-col sm:flex-row items-center justify-center gap-5">
+          <a mat-flat-button routerLink="/courses" class="hero-btn-primary w-full sm:w-auto sm:min-w-[220px] inline-flex items-center justify-center gap-3 text-base sm:text-lg py-4 px-8">
+            <span class="material-symbols-outlined" style="vertical-align:middle;line-height:1;font-size:1.3em">explore</span>
             Explorar Cursos
           </a>
           @if (isAuthenticated()) {
@@ -58,46 +58,46 @@ gsap.registerPlugin(ScrollTrigger);
     </section>
 
     <!-- VALUE PROPOSITION -->
-    <section class="py-12 md:py-24 bg-zinc-900" id="value-section">
+    <section class="py-16 md:py-32 bg-zinc-900" id="value-section">
       <div class="max-w-7xl mx-auto px-4 md:px-6">
-        <div class="text-center mb-16">
+        <div class="text-center mb-20">
           <div class="value-header">
-            <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-50 mb-4">
+            <h2 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-50 mb-6">
               ¿Por qué <span class="text-cyan-400">KernelLearn</span>?
             </h2>
-            <p class="max-w-xl mx-auto text-base text-zinc-400">
+            <p class="max-w-2xl mx-auto text-lg sm:text-xl text-zinc-400">
               Un ecosistema diferente donde cada curso completado te acerca a tu próxima certificación.
             </p>
           </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
           <!-- Card 1: Credits -->
-          <div class="value-card stagger-card">
+          <div class="value-card stagger-card p-8 lg:p-10">
             <div class="value-icon value-icon-amber">
-              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">database</span>
+              <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">database</span>
             </div>
-            <h3 class="text-lg font-semibold text-zinc-100 mb-3">Economía por Créditos</h3>
-            <p class="text-sm text-zinc-400 leading-relaxed">
+            <h3 class="text-xl lg:text-2xl font-semibold text-zinc-100 mb-4">Economía por Créditos</h3>
+            <p class="text-base lg:text-lg text-zinc-400 leading-relaxed">
               Compra paquetes de créditos una sola vez. Inscríbete en los cursos que quieras sin suscripciones mensuales. Tú decides cuándo y en qué invertir.
             </p>
           </div>
           <!-- Card 2: Certificates -->
-          <div class="value-card stagger-card">
+          <div class="value-card stagger-card p-8 lg:p-10">
             <div class="value-icon value-icon-cyan">
-              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">verified</span>
+              <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">verified</span>
             </div>
-            <h3 class="text-lg font-semibold text-zinc-100 mb-3">Certificados Verificables</h3>
-            <p class="text-sm text-zinc-400 leading-relaxed">
+            <h3 class="text-xl lg:text-2xl font-semibold text-zinc-100 mb-4">Certificados Verificables</h3>
+            <p class="text-base lg:text-lg text-zinc-400 leading-relaxed">
               Al completar un curso, generas un certificado con código único verificable públicamente. Compártelo en LinkedIn o preséntalo en entrevistas técnicas.
             </p>
           </div>
           <!-- Card 3: Self-paced -->
-          <div class="value-card stagger-card">
+          <div class="value-card stagger-card p-8 lg:p-10">
             <div class="value-icon value-icon-emerald">
-              <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">pace</span>
+              <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">pace</span>
             </div>
-            <h3 class="text-lg font-semibold text-zinc-100 mb-3">A tu Ritmo</h3>
-            <p class="text-sm text-zinc-400 leading-relaxed">
+            <h3 class="text-xl lg:text-2xl font-semibold text-zinc-100 mb-4">A tu Ritmo</h3>
+            <p class="text-base lg:text-lg text-zinc-400 leading-relaxed">
               Sin fechas límite, sin presión. Avanza lección por lección a la velocidad que necesites. La plataforma guarda tu progreso automáticamente.
             </p>
           </div>
@@ -106,18 +106,18 @@ gsap.registerPlugin(ScrollTrigger);
     </section>
 
     <!-- FEATURED COURSES -->
-    <section class="py-12 md:py-24 bg-zinc-950" id="courses-section">
+    <section class="py-16 md:py-32 bg-zinc-950" id="courses-section">
       <div class="max-w-7xl mx-auto px-4 md:px-6">
-        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-16 gap-4">
           <div class="courses-header">
-            <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-50 mb-3">
+            <h2 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-zinc-50 mb-4">
               Cursos <span class="text-cyan-400">Destacados</span>
             </h2>
-            <p class="text-base text-zinc-400">
+            <p class="text-lg sm:text-xl text-zinc-400">
               Los más populares entre nuestra comunidad de developers.
             </p>
           </div>
-          <a routerLink="/courses" class="catalog-link flex items-center gap-1 text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors shrink-0">
+          <a routerLink="/courses" class="catalog-link flex items-center gap-2 text-base sm:text-lg font-medium text-cyan-400 hover:text-cyan-300 transition-colors shrink-0">
             Ver catálogo completo
             <span class="material-symbols-outlined text-sm">arrow_forward</span>
           </a>
@@ -196,12 +196,12 @@ gsap.registerPlugin(ScrollTrigger);
     </section>
 
     <!-- FINAL CTA -->
-    <section class="py-12 md:py-24 bg-zinc-900" id="cta-section">
-      <div class="max-w-3xl mx-auto px-4 md:px-6 text-center">
-        <div class="cta-card bg-zinc-800/50 border border-zinc-700 rounded-2xl p-6 sm:p-10 md:p-14">
-          <span class="material-symbols-outlined text-5xl text-cyan-400 mb-4 block" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
-          <h2 class="text-2xl sm:text-3xl font-bold text-zinc-50 mb-4">Empieza hoy, sin costo</h2>
-          <p class="text-base text-zinc-400 mb-8 max-w-lg mx-auto">
+    <section class="py-16 md:py-32 bg-zinc-900" id="cta-section">
+      <div class="max-w-4xl mx-auto px-4 md:px-6 text-center">
+        <div class="cta-card bg-zinc-800/50 border border-zinc-700 rounded-3xl p-8 sm:p-12 lg:p-16">
+          <span class="material-symbols-outlined text-6xl text-cyan-400 mb-6 block" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-zinc-50 mb-6">Empieza hoy, sin costo</h2>
+          <p class="text-lg sm:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
             Crea tu cuenta, recibe créditos de bienvenida y comienza tu primer curso ahora mismo.
           </p>
           @if (isAuthenticated()) {
@@ -293,37 +293,37 @@ gsap.registerPlugin(ScrollTrigger);
     .hero-btn-primary {
       background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
       color: #fff !important;
-      border-radius: 10px !important;
-      padding: 12px 28px !important;
-      font-weight: 600 !important;
-      font-size: 0.95rem !important;
+      border-radius: 14px !important;
+      padding: 16px 36px !important;
+      font-weight: 700 !important;
+      font-size: 1.05rem !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 8px !important;
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25) !important;
+      gap: 10px !important;
+      box-shadow: 0 0 25px rgba(6, 182, 212, 0.25) !important;
       transition: all 0.2s ease-in-out !important;
       animation: heroGlow 3s ease-in-out infinite;
     }
     .hero-btn-primary:hover {
-      box-shadow: 0 0 30px rgba(6, 182, 212, 0.45) !important;
-      transform: translateY(-1px);
+      box-shadow: 0 0 35px rgba(6, 182, 212, 0.45) !important;
+      transform: translateY(-2px);
     }
     @keyframes heroGlow {
-      0%, 100% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.25); }
-      50% { box-shadow: 0 0 30px rgba(6, 182, 212, 0.4), 0 0 60px rgba(139, 92, 246, 0.15); }
+      0%, 100% { box-shadow: 0 0 25px rgba(6, 182, 212, 0.25); }
+      50% { box-shadow: 0 0 35px rgba(6, 182, 212, 0.4), 0 0 70px rgba(139, 92, 246, 0.15); }
     }
     .hero-btn-secondary {
       color: #a1a1aa !important;
-      border: 1px solid #3f3f46 !important;
-      border-radius: 10px !important;
-      padding: 12px 28px !important;
-      font-weight: 500 !important;
-      font-size: 0.95rem !important;
+      border: 1.5px solid #3f3f46 !important;
+      border-radius: 14px !important;
+      padding: 16px 36px !important;
+      font-weight: 600 !important;
+      font-size: 1.05rem !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 8px !important;
+      gap: 10px !important;
       transition: all 0.2s ease-in-out !important;
     }
     .hero-btn-secondary:hover {
@@ -336,27 +336,27 @@ gsap.registerPlugin(ScrollTrigger);
     .value-card {
       background: #18181b;
       border: 1px solid #27272a;
-      border-radius: 16px;
-      padding: 32px 28px;
+      border-radius: 20px;
+      padding: 40px 36px;
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .value-card:hover {
-      transform: translateY(-4px) scale(1.01);
+      transform: translateY(-6px) scale(1.02);
       border-color: #06b6d4;
-      box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.3), 0 0 25px rgba(6, 182, 212, 0.12);
+      box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.3), 0 0 30px rgba(6, 182, 212, 0.15);
     }
     .value-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
     }
     .value-card:hover .value-icon {
-      transform: scale(1.12);
+      transform: scale(1.15);
     }
     .value-icon-amber {
       background: rgba(245, 158, 11, 0.12);
@@ -381,7 +381,7 @@ gsap.registerPlugin(ScrollTrigger);
     .featured-card {
       background: #18181b;
       border: 1px solid #27272a;
-      border-radius: 14px;
+      border-radius: 18px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -393,11 +393,11 @@ gsap.registerPlugin(ScrollTrigger);
     }
     .featured-card:hover {
       border-color: #06b6d4;
-      box-shadow: 0 0 25px rgba(6, 182, 212, 0.18);
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.2);
     }
     .card-thumbnail {
       width: 100%;
-      height: 180px;
+      height: 220px;
       overflow: hidden;
     }
 
