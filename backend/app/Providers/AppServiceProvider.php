@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Course;
+use App\Observers\CourseObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 
@@ -28,5 +30,7 @@ class AppServiceProvider extends ServiceProvider
             \App\Events\CoursePublished::class,
             \App\Listeners\AwardInstructorCredits::class
         );
+
+        Course::observe(CourseObserver::class);
     }
 }

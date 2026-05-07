@@ -38,15 +38,19 @@ import { AuthService } from '../../core/services/auth.service';
           <mat-card class="glass-card">
             <mat-card-header>
               <div mat-card-avatar class="icon-avatar">
-                <mat-icon>card_membership</mat-icon>
+                <mat-icon>database</mat-icon>
               </div>
-              <mat-card-title>Suscripción</mat-card-title>
+              <mat-card-title>Tienda de Créditos</mat-card-title>
             </mat-card-header>
             <mat-card-content>
-              <p>Gestiona tu plan de suscripción</p>
+              <p>Adquiere créditos para nuevos cursos</p>
+              <div class="mt-2 flex items-center gap-2 text-amber-400 bg-amber-500/10 rounded-lg px-3 py-2">
+                <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">database</span>
+                <span class="text-sm font-bold">Saldo: {{ (authService.user()?.credits_balance ?? 0) }} créditos</span>
+              </div>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button routerLink="/plans">Ver Planes</button>
+              <button mat-button routerLink="/credits">Comprar Créditos</button>
             </mat-card-actions>
           </mat-card>
 
@@ -93,7 +97,7 @@ import { AuthService } from '../../core/services/auth.service';
               <p>Ver estadísticas y reportes</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button routerLink="/admin/reports">Ver Reportes</button>
+              <button mat-button routerLink="/admin">Ver Reportes</button>
             </mat-card-actions>
           </mat-card>
         }
@@ -110,7 +114,7 @@ import { AuthService } from '../../core/services/auth.service';
               <p>Crea un nuevo curso</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button routerLink="/courses/create">Nuevo Curso</button>
+              <button mat-button routerLink="/instructor/courses">Nuevo Curso</button>
             </mat-card-actions>
           </mat-card>
         }

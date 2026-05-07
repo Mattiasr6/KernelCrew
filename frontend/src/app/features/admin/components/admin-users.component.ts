@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -274,6 +275,7 @@ export class AdminUsersComponent implements OnInit {
   private userService = inject(UserService);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
 
   displayedColumns = ['id', 'name', 'email', 'role', 'actions'];
   dataSource = new MatTableDataSource<User>();
@@ -313,7 +315,7 @@ export class AdminUsersComponent implements OnInit {
 
     this.userService
       .getUsers(params)
-      .subscribe({
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response: any) => {
           const data = response.data?.users || response.data || [];
           this.users.set(data);
@@ -361,7 +363,7 @@ export class AdminUsersComponent implements OnInit {
     const data = this.form.value;
 
     if (this.editingUser) {
-      this.userService.updateUser(this.editingUser.id, data).subscribe({
+      this.userService.updateUser(this.editingUser.id, data).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.snackBar.open('Usuario actualizado', 'Cerrar', { duration: 3000 });
           this.closeDialog();
@@ -374,7 +376,7 @@ export class AdminUsersComponent implements OnInit {
         },
       });
     } else {
-      this.userService.createUser(data).subscribe({
+      this.userService.createUser(data).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.snackBar.open('Usuario creado', 'Cerrar', { duration: 3000 });
           this.closeDialog();
@@ -391,7 +393,7 @@ export class AdminUsersComponent implements OnInit {
 
   deleteUser(user: User): void {
     if (confirm(`¿Eliminar usuario ${user.name}?`)) {
-      this.userService.deleteUser(user.id).subscribe({
+      this.userService.deleteUser(user.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.snackBar.open('Usuario eliminado', 'Cerrar', { duration: 3000 });
           this.loadUsers();

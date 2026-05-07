@@ -1,23 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\JsonResponse;
-
-class StoreCourseRequest extends FormRequest
+class StoreCourseRequest extends BaseFormRequest
 {
     public function authorize(): bool
     {
         $user = $this->user();
-        
+
         if (!$user) {
             return false;
         }
 
-        return $user->hasRole('instructor') || $user->hasRole('admin');
+        return $user->isInstructor() || $user->isAdmin();
     }
 
     public function rules(): array
@@ -25,7 +22,11 @@ class StoreCourseRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'min:50'],
-            'price' => ['required', 'numeric', 'min:0'],
+            'price' => ['nullable', 'numeric', 'min:0'],
+            'price_in_credits' => ['nullable', 'integer', 'min:0'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'level' => ['nullable', 'string', 'in:beginner,intermediate,advanced'],
+            'duration_hours' => ['nullable', 'integer', 'min:0'],
         ];
     }
 
@@ -35,33 +36,23 @@ class StoreCourseRequest extends FormRequest
             'title.required' => 'El título es obligatorio.',
             'title.string' => 'El título debe ser texto válido.',
             'title.max' => 'El título no puede exceder 255 caracteres.',
-            
+
             'description.required' => 'La descripción es obligatoria.',
             'description.string' => 'La descripción debe ser texto válido.',
             'description.min' => 'La descripción debe tener al menos 50 caracteres.',
-            
-            'price.required' => 'El precio es obligatorio.',
+
             'price.numeric' => 'El precio debe ser un número válido.',
             'price.min' => 'El precio debe ser un valor positivo.',
+
+            'price_in_credits.integer' => 'El precio en créditos debe ser un número entero.',
+            'price_in_credits.min' => 'El precio en créditos no puede ser negativo.',
+
+            'category_id.exists' => 'La categoría seleccionada no es válida.',
+
+            'level.in' => 'El nivel debe ser: beginner, intermediate o advanced.',
+
+            'duration_hours.integer' => 'La duración debe ser un número entero.',
+            'duration_hours.min' => 'La duración no puede ser negativa.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator): void
-    {
-        $errors = $validator->errors()->toArray();
-        
-        $formattedErrors = [];
-        foreach ($errors as $field => $messages) {
-            $formattedErrors[$field] = is_array($messages) ? $messages : [$messages];
-        }
-
-        throw new HttpResponseException(
-            response()->json([
-                'success' => false,
-                'message' => 'Error de validación',
-                'data' => $formattedErrors,
-                'errors' => $formattedErrors,
-            ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY)
-        );
     }
 }

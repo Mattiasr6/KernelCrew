@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -18,7 +18,10 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CourseService } from '../../core/services/course.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { Course } from '../../core/models';
+import { RouterLink, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-instructor-courses',
@@ -27,16 +30,9 @@ import { Course } from '../../core/models';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    MatTableModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    MatChipsModule,
-    MatSlideToggleModule,
+    RouterLink,
   ],
   template: `
     <div class="instructor-courses-container animate-fade-in">
@@ -51,143 +47,177 @@ import { Course } from '../../core/models';
         </button>
       </div>
 
-      <div class="table-card glass-card">
-        @if (isLoading()) {
+      @if (isLoading()) {
+        <div class="table-card glass-card">
           <div class="loading-overlay">
             <mat-spinner diameter="50"></mat-spinner>
           </div>
-        }
-
-        <div class="overflow-x-auto">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Estado</th>
-                <th>Título</th>
-                <th>Nivel</th>
-                <th>Categoría</th>
-                <th>Precio</th>
-                <th class="text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (course of courses(); track course.id) {
-                <tr class="hover-row">
-                  <td>
-                    <span class="status-badge" [class.published]="course.status === 'published'">
-                      {{ course.status === 'published' ? 'Publicado' : 'Borrador' }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="font-semibold text-slate-200">{{ course.title }}</span>
-                  </td>
-                  <td>
-                    <span class="badge" [ngClass]="'badge-' + course.level">
-                      {{ course.level | uppercase }}
-                    </span>
-                  </td>
-                  <td class="text-slate-300">{{ course.category }}</td>
-                  <td class="font-mono text-emerald-400">\${{ course.price }}</td>
-                  <td class="text-right">
-                    <div class="action-group">
-                      <button class="icon-btn edit" (click)="openDialog(course)" title="Editar">
-                        <span class="material-symbols-outlined">edit</span>
-                      </button>
-                      <button class="icon-btn delete" (click)="deleteCourse(course)" title="Eliminar">
-                        <span class="material-symbols-outlined">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="6" class="empty-state">
-                    <span class="material-symbols-outlined text-5xl mb-3 block">menu_book</span>
-                    Aún no has creado ningún curso.
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
         </div>
-      </div>
+      } @else if (courses().length === 0) {
+        <!-- Empty State Premium -->
+        <div class="flex flex-col items-center justify-center py-20 px-6 bg-zinc-900/50 border-2 border-dashed border-zinc-800 rounded-2xl">
+          <div class="w-20 h-20 rounded-full bg-zinc-800/50 flex items-center justify-center">
+            <span class="material-symbols-outlined text-5xl text-zinc-500" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+          </div>
+          <h3 class="text-xl font-semibold text-zinc-100 mt-6">Aún no tienes cursos creados</h3>
+          <p class="text-sm text-zinc-400 mt-2 mb-6 max-w-md text-center leading-relaxed">
+            Empieza a compartir tu conocimiento y monetiza tu experiencia. Crear tu primer borrador toma solo unos segundos.
+          </p>
+          <button class="empty-cta-btn" (click)="openDialog()">
+            <span class="material-symbols-outlined text-[18px]">add_circle</span>
+            Crear Nuevo Curso
+          </button>
+        </div>
+      } @else {
+        <div class="table-card glass-card">
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Estado</th>
+                  <th>Título</th>
+                  <th>Nivel</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th class="text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (course of courses(); track course.id) {
+                  <tr class="hover-row">
+                    <td>
+                      <span class="status-badge" [ngClass]="getStatusClass(course.status)">
+                        {{ getStatusLabel(course.status) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="font-semibold text-slate-200">{{ course.title }}</span>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="'badge-' + course.level">
+                        {{ course.level | uppercase }}
+                      </span>
+                    </td>
+                    <td class="text-slate-300">{{ course.category }}</td>
+                    <td class="font-mono text-emerald-400">\${{ course.price }}</td>
+                    <td class="text-right">
+                      <div class="action-group">
+                        @if (course.status === 'DRAFT' || course.status === 'REJECTED') {
+                          <button class="icon-btn review" (click)="requestReview(course)" title="Enviar a revisión">
+                            <span class="material-symbols-outlined">how_to_vote</span>
+                          </button>
+                        }
+                        <button class="icon-btn edit" [routerLink]="['/instructor', 'courses', course.id, 'curriculum']" title="Editar contenido">
+                          <span class="material-symbols-outlined">edit</span>
+                        </button>
+                        <button class="icon-btn delete" (click)="deleteCourse(course)" title="Eliminar">
+                          <span class="material-symbols-outlined">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Modal de Creación/Edición -->
     @if (showDialog) {
       <div class="dialog-overlay" (click)="closeDialog()">
-        <div class="dialog-content glass-card" (click)="$event.stopPropagation()">
-          <h2 class="text-2xl font-bold text-white mb-6">
-            {{ editingCourse ? 'Editar' : 'Crear Nuevo' }} Curso
-          </h2>
-          
-          <form [formGroup]="form" (ngSubmit)="saveCourse()" class="space-y-4">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Título del Curso</mat-label>
-              <input matInput formControlName="title" placeholder="Ej: Master en Angular" />
+        <div class="dialog-content" (click)="$event.stopPropagation()">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-[22px]">add_circle</span>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-zinc-100">{{ editingCourse ? 'Editar' : 'Crear Nuevo' }} Curso</h2>
+                <p class="text-xs text-zinc-500 mt-0.5">Completa la información básica del curso</p>
+              </div>
+            </div>
+            <button (click)="closeDialog()" class="close-btn">
+              <span class="material-symbols-outlined text-zinc-500 hover:text-zinc-300 text-[20px]">close</span>
+            </button>
+          </div>
+
+          <form [formGroup]="form" (ngSubmit)="saveCourse()" class="space-y-5">
+            <!-- Title -->
+            <div>
+              <label class="form-label">Título del Curso</label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined input-icon">badge</span>
+                <input class="form-input" formControlName="title" placeholder="Ej: Arquitectura Limpia con .NET 8" />
+              </div>
               @if (form.get('title')?.invalid && form.get('title')?.touched) {
-                <mat-error>{{ getErrorMessage('title') }}</mat-error>
+                <p class="form-error">{{ getErrorMessage('title') }}</p>
               }
-            </mat-form-field>
+            </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Descripción</mat-label>
-              <textarea matInput formControlName="description" rows="3"></textarea>
+            <!-- Description -->
+            <div>
+              <label class="form-label">Descripción</label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined input-icon">description</span>
+                <textarea class="form-input min-h-[90px] resize-y" formControlName="description" rows="3" placeholder="Describe qué aprenderán los estudiantes..."></textarea>
+              </div>
               @if (form.get('description')?.invalid && form.get('description')?.touched) {
-                <mat-error>{{ getErrorMessage('description') }}</mat-error>
+                <p class="form-error">{{ getErrorMessage('description') }}</p>
               }
-            </mat-form-field>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Nivel</mat-label>
-                <mat-select formControlName="level">
-                  <mat-option value="beginner">Básico</mat-option>
-                  <mat-option value="intermediate">Intermedio</mat-option>
-                  <mat-option value="advanced">Avanzado</mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Categoría</mat-label>
-                <mat-select formControlName="category">
-                  @for (cat of categories; track cat) {
-                    <mat-option [value]="cat">{{ cat }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
             </div>
 
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Duración (Horas)</mat-label>
-                <input matInput type="number" formControlName="duration_hours" />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Precio ($)</mat-label>
-                <input matInput type="number" formControlName="price" />
-              </mat-form-field>
+            <!-- Grid 1x2: Level + Category -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Nivel</label>
+                <div class="input-wrapper">
+                  <span class="material-symbols-outlined input-icon">signal_cellular_alt</span>
+                  <select class="form-input" formControlName="level">
+                    <option value="beginner">Principiante</option>
+                    <option value="intermediate">Intermedio</option>
+                    <option value="advanced">Avanzado</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Categoría</label>
+                <div class="input-wrapper">
+                  <span class="material-symbols-outlined input-icon">category</span>
+                  <select class="form-input" formControlName="category_id">
+                    <option [ngValue]="null" disabled>Selecciona una categoría</option>
+                    @for (cat of categories(); track cat.id) {
+                      <option [ngValue]="cat.id">{{ cat.name }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
             </div>
 
+            <!-- Error Banner -->
             @if (errorMessage()) {
               <div class="error-banner">
-                <span class="material-symbols-outlined">error</span>
-                {{ errorMessage() }}
+                <span class="material-symbols-outlined text-[16px] text-rose-400 shrink-0">error</span>
+                <span class="text-sm text-rose-300">{{ errorMessage() }}</span>
               </div>
             }
 
-            <div class="dialog-actions">
-              <button mat-button type="button" (click)="closeDialog()" class="cancel-btn">Cancelar</button>
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-zinc-800">
+              <button type="button" (click)="closeDialog()" class="cancel-btn">Cancelar</button>
               <button
-                class="save-btn"
+                class="submit-btn"
                 type="submit"
                 [disabled]="form.invalid || isSaving()"
               >
                 @if (isSaving()) {
-                  <mat-spinner diameter="20"></mat-spinner>
+                  <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Guardando...</span>
                 } @else {
-                  {{ editingCourse ? 'Actualizar' : 'Publicar Curso' }}
+                  <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                  Crear Borrador y Editar
                 }
               </button>
             </div>
@@ -226,6 +256,26 @@ import { Course } from '../../core/models';
     }
 
     .add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
+
+    .empty-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
+    }
+    .empty-cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+    }
 
     .table-card {
       position: relative;
@@ -270,10 +320,34 @@ import { Course } from '../../core/models';
       border: 1px solid rgba(148, 163, 184, 0.2);
     }
 
+    .status-badge.draft {
+      background: rgba(39, 39, 42, 0.1);
+      color: #a1a1aa;
+      border: 1px solid rgba(63, 63, 70, 0.2);
+    }
+
+    .status-badge.pending {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .status-badge.approved {
+      background: rgba(6, 182, 212, 0.1);
+      color: #06b6d4;
+      border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
     .status-badge.published {
       background: rgba(16, 185, 129, 0.1);
-      color: #34d399;
+      color: #10b981;
       border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge.rejected {
+      background: rgba(244, 63, 94, 0.1);
+      color: #f43f5e;
+      border: 1px solid rgba(244, 63, 94, 0.2);
     }
 
     .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; }
@@ -299,51 +373,157 @@ import { Course } from '../../core/models';
 
     .icon-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
     .icon-btn.delete:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: #f8717144; }
+    .icon-btn.review:hover { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: #f59e0b44; }
 
     .dialog-overlay {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      backdrop-filter: blur(4px);
+      padding: 16px;
     }
 
     .dialog-content {
-      width: 600px;
-      max-width: 95%;
-      padding: 32px;
-      border-radius: 24px;
-      background: #0f172a;
+      width: 560px;
+      max-width: 100%;
+      background: rgba(24, 24, 27, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid #27272a;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+      animation: dialogIn 0.2s ease-out;
     }
 
-    .full-width { width: 100%; }
-    .form-row { display: flex; gap: 16px; }
-    .form-row mat-form-field { flex: 1; }
+    @keyframes dialogIn {
+      from { opacity: 0; transform: scale(0.96) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
 
-    .save-btn {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
-      padding: 12px 32px;
-      border-radius: 12px;
-      font-weight: 600;
-      border: none;
+    .close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid #3f3f46;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .close-btn:hover { background: #27272a; border-color: #52525b; }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #a1a1aa;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      font-size: 18px;
+      color: #52525b;
+      pointer-events: none;
+    }
+
+    .form-input {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid #27272a;
+      border-radius: 10px;
+      padding: 11px 14px 11px 42px;
+      color: #fafafa;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+    .form-input:focus {
+      border-color: #06b6d4;
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.08);
+    }
+    .form-input::placeholder { color: #52525b; }
+    select.form-input { cursor: pointer; }
+    select.form-input option { background: #18181b; color: #fafafa; }
+
+    .form-error {
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: #f43f5e;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .error-banner {
       display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      color: #f87171;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 0.9rem;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(244, 63, 94, 0.08);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+      border-radius: 10px;
+      padding: 12px 14px;
     }
+
+    .cancel-btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid #3f3f46;
+      color: #a1a1aa;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .cancel-btn:hover { color: #fafafa; background: rgba(255, 255, 255, 0.04); }
+
+    .submit-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 24px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+    }
+    .submit-btn:hover:not(:disabled) {
+      box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+      transform: translateY(-1px);
+    }
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .full-width { width: 100%; }
 
     .loading-overlay {
       position: absolute;
@@ -364,8 +544,11 @@ import { Course } from '../../core/models';
 })
 export class InstructorCoursesComponent implements OnInit {
   private courseService = inject(CourseService);
+  private notification = inject(NotificationService);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   courses = signal<Course[]>([]);
   isLoading = signal(true);
@@ -375,24 +558,33 @@ export class InstructorCoursesComponent implements OnInit {
   showDialog = false;
   editingCourse: Course | null = null;
 
-  categories = ['Desarrollo Web', 'Móvil', 'Data Science', 'DevOps', 'Diseño', 'IA'];
+  categories = signal<{ id: number; name: string }[]>([]);
 
   form: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(5)]],
-    description: ['', [Validators.required]],
+    description: ['', [Validators.required, Validators.minLength(50)]],
     level: ['beginner', Validators.required],
-    category: ['', Validators.required],
-    duration_hours: [0, [Validators.required, Validators.min(1)]],
-    price: [0, [Validators.required, Validators.min(0)]],
+    category_id: [null, Validators.required],
   });
 
   ngOnInit(): void {
     this.loadMyCourses();
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.courseService.getCategories().subscribe({
+      next: (res: any) => {
+        if (res.success && res.data) {
+          this.categories.set(res.data);
+        }
+      },
+    });
   }
 
   loadMyCourses(): void {
     this.isLoading.set(true);
-    this.courseService.getInstructorCourses().subscribe({
+    this.courseService.getInstructorCourses().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res: any) => {
         this.courses.set(res.data?.courses || res.data || []);
         this.isLoading.set(false);
@@ -407,7 +599,7 @@ export class InstructorCoursesComponent implements OnInit {
     if (course) {
       this.form.patchValue(course);
     } else {
-      this.form.reset({ level: 'beginner', duration_hours: 0, price: 0 });
+      this.form.reset({ level: 'beginner', category_id: null });
     }
     this.showDialog = true;
   }
@@ -429,12 +621,18 @@ export class InstructorCoursesComponent implements OnInit {
       ? this.courseService.updateCourse(this.editingCourse.id, data)
       : this.courseService.createCourse(data);
 
-    request.subscribe({
-      next: () => {
-        this.snackBar.open(`Curso ${this.editingCourse ? 'actualizado' : 'creado'} con éxito`, 'OK', { duration: 3000 });
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res: any) => {
+        const courseId = res.data?.id || res.data?.course?.id;
         this.isSaving.set(false);
         this.closeDialog();
-        this.loadMyCourses();
+        if (!this.editingCourse && courseId) {
+          this.notification.success('Borrador Creado', 'Redirigiendo al espacio de trabajo...');
+          setTimeout(() => this.router.navigate(['/instructor/courses', courseId]), 1200);
+        } else {
+          this.snackBar.open(`Curso ${this.editingCourse ? 'actualizado' : 'creado'} con éxito`, 'OK', { duration: 3000 });
+          this.loadMyCourses();
+        }
       },
       error: (err) => {
         this.isSaving.set(false);
@@ -464,12 +662,46 @@ export class InstructorCoursesComponent implements OnInit {
 
   deleteCourse(course: Course): void {
     if (confirm(`¿Estás seguro de eliminar "${course.title}"?`)) {
-      this.courseService.deleteCourse(course.id).subscribe({
+      this.courseService.deleteCourse(course.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.snackBar.open('Curso eliminado', 'OK', { duration: 3000 });
           this.loadMyCourses();
         }
       });
     }
+  }
+
+  requestReview(course: Course): void {
+    this.courseService.requestReview(course.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Curso enviado a revisión', 'OK', { duration: 3000 });
+          this.loadMyCourses();
+        },
+        error: (err) => {
+          this.snackBar.open(err.error?.message || 'Error al enviar a revisión', 'Cerrar');
+        }
+      });
+  }
+
+  getStatusClass(status: string): string {
+    const classes: Record<string, string> = {
+      'DRAFT': 'status-badge draft',
+      'IN_REVIEW': 'status-badge pending',
+      'PUBLISHED': 'status-badge published',
+      'REJECTED': 'status-badge rejected'
+    };
+    return classes[status] || 'status-badge';
+  }
+
+  getStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      'DRAFT': 'Borrador',
+      'IN_REVIEW': 'En Revisión',
+      'PUBLISHED': 'Publicado',
+      'REJECTED': 'Rechazado'
+    };
+    return labels[status] || status;
   }
 }

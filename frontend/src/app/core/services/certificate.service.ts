@@ -9,7 +9,7 @@ import { ApiResponse, Certificate } from '../models';
 })
 export class CertificateService {
   private http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/v1/certificates`;
+  private readonly apiUrl = `${environment.apiUrl}/certificates`;
 
   /**
    * Obtener todos los certificados del usuario autenticado

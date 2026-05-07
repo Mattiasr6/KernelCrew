@@ -37,6 +37,10 @@ export class CourseService {
     return this.api.delete<ApiResponse<null>>(`instructor/courses/${id}`);
   }
 
+  requestReview(id: number): Observable<ApiResponse<null>> {
+    return this.api.patch<ApiResponse<null>>(`instructor/courses/${id}/request-review`, {});
+  }
+
   /**
    * Obtener catálogo público de cursos
    */
@@ -47,8 +51,15 @@ export class CourseService {
   /**
    * Obtener detalle de un curso
    */
-  getCourse(id: number): Observable<ApiResponse<{ course: Course }>> {
-    return this.api.get<ApiResponse<{ course: Course }>>(`courses/${id}`);
+  getCourse(id: number): Observable<ApiResponse<Course>> {
+    return this.api.get<ApiResponse<Course>>(`courses/${id}`);
+  }
+
+  /**
+   * Obtener categorías disponibles
+   */
+  getCategories(): Observable<ApiResponse<any>> {
+    return this.api.get<ApiResponse<any>>('courses/categories');
   }
 
   /**

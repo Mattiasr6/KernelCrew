@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { ApiResponse } from '../models';
+import { ApiResponse, Course } from '../models';
 
 export interface AdminStats {
   total_users: number;
@@ -20,5 +20,17 @@ export class AdminService {
 
   getStats(): Observable<ApiResponse<AdminStats>> {
     return this.api.get<ApiResponse<AdminStats>>('admin/stats');
+  }
+
+  getPendingCourses(): Observable<ApiResponse<Course[]>> {
+    return this.api.get<ApiResponse<Course[]>>('admin/courses/pending');
+  }
+
+  approveCourse(id: number): Observable<ApiResponse<null>> {
+    return this.api.patch<ApiResponse<null>>(`admin/courses/${id}/approve`, {});
+  }
+
+  rejectCourse(id: number, reason: string): Observable<ApiResponse<null>> {
+    return this.api.patch<ApiResponse<null>>(`admin/courses/${id}/reject`, { reason });
   }
 }

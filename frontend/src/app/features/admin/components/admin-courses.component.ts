@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -322,6 +323,7 @@ export class AdminCoursesComponent implements OnInit {
   private courseService = inject(CourseService);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
 
   displayedColumns = ['id', 'title', 'level', 'category', 'price', 'published', 'actions'];
   dataSource = new MatTableDataSource<Course>();
@@ -368,11 +370,12 @@ export class AdminCoursesComponent implements OnInit {
         level: this.levelFilter || undefined,
         category: this.categoryFilter || undefined,
       })
-      .subscribe({
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
-          this.courses.set(response.data.courses);
-          this.dataSource.data = response.data.courses;
-          this.totalItems = response.meta.total;
+          const courses = response.data?.courses || [];
+          this.courses.set(courses);
+          this.dataSource.data = courses;
+          this.totalItems = response.meta?.total || 0;
           this.loading = false;
         },
         error: () => {
@@ -417,7 +420,7 @@ export class AdminCoursesComponent implements OnInit {
     const data = this.form.value;
 
     if (this.editingCourse) {
-      this.courseService.updateCourse(this.editingCourse.id, data).subscribe({
+      this.courseService.updateCourse(this.editingCourse.id, data).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.snackBar.open('Curso actualizado', 'Cerrar', { duration: 3000 });
           this.closeDialog();
@@ -430,7 +433,7 @@ export class AdminCoursesComponent implements OnInit {
         },
       });
     } else {
-      this.courseService.createCourse(data).subscribe({
+      this.courseService.createCourse(data).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.snackBar.open('Curso creado', 'Cerrar', { duration: 3000 });
           this.closeDialog();
@@ -446,7 +449,7 @@ export class AdminCoursesComponent implements OnInit {
   }
 
   togglePublished(course: Course): void {
-    this.courseService.updateCourse(course.id, { is_published: !course.is_published }).subscribe({
+    this.courseService.updateCourse(course.id, { is_published: !course.is_published }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.snackBar.open(
           course.is_published ? 'Curso despublicado' : 'Curso publicado',
@@ -463,7 +466,7 @@ export class AdminCoursesComponent implements OnInit {
 
   deleteCourse(course: Course): void {
     if (confirm(`¿Eliminar curso "${course.title}"?`)) {
-      this.courseService.deleteCourse(course.id).subscribe({
+      this.courseService.deleteCourse(course.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.snackBar.open('Curso eliminado', 'Cerrar', { duration: 3000 });
           this.loadCourses();

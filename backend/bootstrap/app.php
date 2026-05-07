@@ -16,8 +16,17 @@ return Application::configure(basePath: dirname(__DIR__))
         
         $middleware->alias([
             'checkRole' => \App\Http\Middleware\CheckRoleId::class,
+            'api.auth' => \App\Http\Middleware\ApiAuthenticate::class,
         ]);
+
+        $middleware->trustProxies(at: '*');
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado'
+            ], 401);
+        });
     })->create();

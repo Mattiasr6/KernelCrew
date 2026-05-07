@@ -1,9 +1,9 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { ApiService } from './api.service';
 import { User, LoginRequest, RegisterRequest, AuthResponse } from '../models';
-import { tap } from 'rxjs';
+import { tap, catchError, finalize } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -16,15 +16,38 @@ export class AuthService {
   public userSignal = signal<User | null>(null);
   private tokenSignal = signal<string | null>(null);
 
+  // Modo de vista: permite a instructores/admin alternar entre faceta creadora y estudiante
+  public viewModeSignal = signal<'student' | 'instructor'>('student');
+
   // Computeds basados en el nombre del rol (RBAC Custom)
   user = computed(() => this.userSignal());
-  isAuthenticated = computed(() => !!this.tokenSignal());
+  isAuthenticated = computed(() => !!this.tokenSignal() && !!this.userSignal());
   isAdmin = computed(() => this.userSignal()?.role === 'admin');
   isInstructor = computed(() => this.userSignal()?.role === 'instructor' || this.userSignal()?.role === 'docente');
   isStudent = computed(() => this.userSignal()?.role === 'student');
+  viewMode = computed(() => this.viewModeSignal());
+  isViewingAsStudent = computed(() => this.viewModeSignal() === 'student');
+  isViewingAsInstructor = computed(() => this.viewModeSignal() === 'instructor');
 
   constructor() {
     this.loadFromStorage();
+    this.loadViewMode();
+  }
+
+  private loadViewMode(): void {
+    const saved = localStorage.getItem('viewMode');
+    if (saved === 'instructor' || saved === 'student') {
+      this.viewModeSignal.set(saved);
+    }
+  }
+
+  toggleViewMode(): void {
+    const user = this.userSignal();
+    if (!user || (user.role_id !== 1 && user.role_id !== 2)) return;
+
+    const next = this.viewModeSignal() === 'student' ? 'instructor' : 'student';
+    this.viewModeSignal.set(next);
+    localStorage.setItem('viewMode', next);
   }
 
   private loadFromStorage(): void {
@@ -63,10 +86,10 @@ export class AuthService {
   }
 
   logout(): void {
-    this.api.post('auth/logout', {}).subscribe({
-      complete: () => this.clearSession(),
-      error: () => this.clearSession(),
-    });
+    this.api.post('auth/logout', {}).pipe(
+      catchError(() => of(null)),
+      finalize(() => this.clearSession()),
+    ).subscribe();
   }
 
   clearSession(): void {
@@ -74,7 +97,8 @@ export class AuthService {
     this.userSignal.set(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    this.router.navigate(['/auth/login']);
+    localStorage.removeItem('viewMode');
+    this.router.navigate(['/']);
   }
 
   /**
@@ -97,14 +121,20 @@ export class AuthService {
   refreshUserSession(): void {
     this.api.get<any>('auth/me').subscribe({
       next: (response) => {
-        if (response.success && response.data) {
-          const updatedUser = response.data;
+        if (response.success && response.data?.user) {
+          const updatedUser = response.data.user;
+          // Merge subscription data if available
+          if (updatedUser.subscription) {
+            updatedUser.subscription = {
+              ...updatedUser.subscription,
+              plan: { name: updatedUser.subscription.plan_name }
+            };
+          }
           this.userSignal.set(updatedUser);
           localStorage.setItem('user', JSON.stringify(updatedUser));
         }
       },
       error: (err) => {
-        console.error('Error al refrescar la sesión:', err);
         if (err.status === 401) this.clearSession();
       }
     });

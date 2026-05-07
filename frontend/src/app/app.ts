@@ -1,18 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './features/layout/components/navbar.component';
 import { NotificationComponent } from './core/components/notification.component';
+import { KernelAIComponent } from './features/student/kernel-ai/kernel-ai.component';
+import { AuthService } from './core/services/auth.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, NotificationComponent],
+  imports: [RouterOutlet, NavbarComponent, NotificationComponent, KernelAIComponent, CommonModule],
   template: `
     <app-notification></app-notification>
     <app-navbar></app-navbar>
     <main>
       <router-outlet></router-outlet>
     </main>
+    @if (showKernelAI()) {
+      <app-kernel-ai></app-kernel-ai>
+    }
   `,
   styles: [
     `
@@ -27,4 +33,8 @@ import { NotificationComponent } from './core/components/notification.component'
     `,
   ],
 })
-export class App {}
+export class App {
+  private authService = inject(AuthService);
+  
+  showKernelAI = computed(() => !!this.authService.user());
+}

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('amount', 10, 2);
             $table->date('payment_date');
             $table->string('transaction_id')->unique()->nullable(); // Stripe/PayPal transaction ID
-            $table->enum('payment_method', ['stripe', 'paypal', 'manual'])->default('stripe');
+            $table->enum('payment_method', ['card', 'stripe', 'paypal', 'manual'])->default('card');
             $table->enum('status', ['pending', 'completed', 'failed', 'refunded'])->default('pending');
             $table->text('payment_gateway_response')->nullable(); // Raw response from gateway
             $table->timestamps();
