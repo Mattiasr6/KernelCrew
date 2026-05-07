@@ -281,7 +281,6 @@ export class CoursePlayerComponent implements OnInit {
       this.courseId = id;
       this.loadCourse(id);
       this.loadCurriculum(id);
-      this.loadProgress(id);
     }
   }
 
@@ -305,6 +304,7 @@ export class CoursePlayerComponent implements OnInit {
           const secs = res.data?.sections || [];
           this.sections.set(secs);
           this.expandedSections.set(secs.map(() => true));
+          this.loadProgress(courseId);
         }
       });
   }

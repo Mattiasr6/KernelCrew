@@ -1,132 +1,175 @@
 import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { CertificateService } from '../../core/services/certificate.service';
 import { ConfettiService } from '../../core/services/confetti.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Certificate } from '../../core/models';
-import { StudentSidebarComponent } from '../../shared/components/student-sidebar/student-sidebar.component';
 
 @Component({
   selector: 'app-student-certificates',
   standalone: true,
-  imports: [CommonModule, StudentSidebarComponent],
+  imports: [CommonModule],
   template: `
-    <div class="bg-background text-on-background min-h-screen flex font-body-md overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
-      
-      <app-student-sidebar></app-student-sidebar>
-
-      <!-- Main Canvas -->
-      <main class="flex-1 md:ml-64 relative p-6 min-h-screen overflow-y-auto">
-        <!-- Ambient Background Glow -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
-
-        <div class="max-w-[1280px] mx-auto space-y-8 animate-fade-in relative z-10">
-          
-          <!-- Header -->
-          <header class="mb-10">
-            <h1 class="text-4xl font-bold text-white mb-2 tracking-tight">Mis Certificados</h1>
-            <p class="text-slate-400 font-body-md">Aquí puedes descargar los reconocimientos por tus cursos completados.</p>
-          </header>
-
-          @if (isLoading()) {
-            <!-- Skeleton Loaders -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              @for (i of [1,2,3]; track i) {
-                <div class="h-48 bg-slate-900/50 rounded-2xl border border-white/5 animate-pulse"></div>
-              }
-            </div>
-          } @else {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              @for (cert of certificates(); track cert.id) {
-                <div class="glass-card group rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between transition-all hover:-translate-y-1 hover:border-blue-500/50 bg-slate-900/40 backdrop-blur-xl border border-white/10">
-                  <!-- Decorative BG Glow -->
-                  <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-600/10 rounded-full blur-3xl group-hover:bg-blue-600/20 transition-all"></div>
-                  
-                  <div class="relative z-10">
-                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center border border-blue-500/30 mb-6">
-                      <span class="material-symbols-outlined text-blue-400">history_edu</span>
-                    </div>
-                    
-                    <h3 class="text-xl font-bold text-white mb-2 line-clamp-2">{{ cert.course?.title }}</h3>
-                    <p class="text-slate-400 text-sm mb-4">Emitido el: {{ cert.issued_at | date:'dd MMM, yyyy' }}</p>
-                  </div>
-
-                  <button 
-                    (click)="download(cert)"
-                    [disabled]="downloadingUuid() === cert.certificate_code"
-                    class="relative w-full py-3 rounded-xl bg-white/5 border border-white/10 text-white font-semibold flex items-center justify-center gap-2 hover:bg-blue-600 hover:border-blue-500 transition-all active:scale-95 disabled:opacity-50">
-                    
-                    @if (downloadingUuid() === cert.certificate_code) {
-                      <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                      <span>Generando PDF...</span>
-                    } @else {
-                      <span class="material-symbols-outlined text-[20px]">download</span>
-                      <span>Descargar PDF</span>
-                    }
-                  </button>
-                </div>
-              } @empty {
-                <div class="col-span-full py-20 flex flex-col items-center justify-center glass-card border-dashed bg-transparent border border-white/10 rounded-2xl">
-                  <span class="material-symbols-outlined text-6xl text-slate-600 mb-4">workspace_premium</span>
-                  <p class="text-slate-400 text-lg">Aún no has obtenido certificados. ¡Completa un curso para empezar!</p>
-                </div>
-              }
-            </div>
-          }
+    <div class="px-4 py-6 md:py-10 animate-fade-in">
+      <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="mb-10">
+          <h1 class="text-3xl font-bold tracking-tight text-zinc-50">Mis Certificados</h1>
+          <p class="text-sm text-zinc-500 mt-1">Descarga los reconocimientos por tus cursos completados</p>
         </div>
-      </main>
+
+        @if (isLoading()) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (i of [1,2,3]; track i) {
+              <div class="h-52 bg-zinc-900 rounded-2xl border border-zinc-800 animate-pulse"></div>
+            }
+          </div>
+        } @else if (certificates().length === 0) {
+          <div class="flex flex-col items-center justify-center py-20 px-6 bg-zinc-900/50 border-2 border-dashed border-zinc-800 rounded-2xl">
+            <span class="material-symbols-outlined text-6xl text-zinc-600 mb-4">workspace_premium</span>
+            <p class="text-zinc-400 text-lg">Aún no has obtenido certificados. ¡Completa un curso para empezar!</p>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (cert of certificates(); track cert.id) {
+              <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-zinc-700 hover:-translate-y-1 transition-all">
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-5">
+                  <span class="material-symbols-outlined text-cyan-400 text-2xl">workspace_premium</span>
+                </div>
+                <h3 class="text-lg font-bold text-zinc-100 mb-1 line-clamp-2">{{ cert.course?.title }}</h3>
+                <p class="text-xs text-zinc-500 mb-5">Emitido el {{ cert.issued_at | date:'dd MMM, yyyy' }}</p>
+
+                <button
+                  (click)="downloadCertificate(cert)"
+                  [disabled]="downloadingId() === cert.id"
+                  class="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:shadow-[0_0_20px_rgba(6,182,212,0.35)] inline-flex items-center justify-center gap-2"
+                >
+                  @if (downloadingId() === cert.id) {
+                    <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Generando PDF...</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-[18px]">download</span>
+                    Descargar Certificado
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Hidden Certificate Template for PDF Generation -->
+    <div style="position: absolute; left: -9999px; top: -9999px;">
+      <div id="certificate-template" class="w-[1056px] h-[816px] relative flex flex-col justify-center items-center text-center bg-zinc-950" style="font-family: 'Inter', system-ui, sans-serif; border: 4px solid #27272a; padding: 64px;">
+        <!-- Gradient background -->
+        <div style="position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(139,92,246,0.08), transparent 70%); pointer-events: none;"></div>
+
+        <!-- Logo -->
+        <div style="position: relative; z-index: 1; margin-bottom: 48px;">
+          <span style="font-size: 48px; font-weight: 900; color: #fafafa; letter-spacing: -0.02em;">Kernel</span>
+          <span style="font-size: 48px; font-weight: 900; background: linear-gradient(135deg, #8b5cf6, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Learn</span>
+        </div>
+
+        <!-- Title -->
+        <h2 style="position: relative; z-index: 1; font-size: 28px; font-weight: 700; color: #e4e4e7; letter-spacing: 0.2em; margin-bottom: 48px; text-transform: uppercase;">Certificado de Finalización</h2>
+
+        <!-- "Se otorga a:" -->
+        <p style="position: relative; z-index: 1; font-size: 16px; color: #a1a1aa; margin-bottom: 16px;">Se otorga el presente a:</p>
+
+        <!-- Student Name -->
+        <h1 style="position: relative; z-index: 1; font-size: 44px; font-weight: 800; color: #22d3ee; margin-bottom: 32px; letter-spacing: -0.01em;">{{ studentName() }}</h1>
+
+        <!-- "Por haber completado:" -->
+        <p style="position: relative; z-index: 1; font-size: 16px; color: #a1a1aa; margin-bottom: 12px;">Por haber completado con éxito el curso:</p>
+
+        <!-- Course Name -->
+        <h3 style="position: relative; z-index: 1; font-size: 26px; font-weight: 700; color: #fafafa; max-width: 700px; line-height: 1.3;">{{ currentCertTitle() }}</h3>
+
+        <!-- Signatures -->
+        <div style="position: relative; z-index: 1; display: flex; gap: 80px; margin-top: 80px;">
+          <div style="text-align: center;">
+            <div style="width: 200px; border-top: 1px solid #3f3f46; padding-top: 12px; font-size: 14px; color: #71717a;">Instructor del Curso</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="width: 200px; border-top: 1px solid #3f3f46; padding-top: 12px; font-size: 14px; color: #71717a;">Director KernelLearn</div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="position: absolute; bottom: 32px; left: 0; right: 0; text-align: center; font-size: 11px; color: #52525b;">
+          Código de verificación: <span style="color: #71717a;">{{ currentCertCode() }}</span> &nbsp;&bull;&nbsp; Emitido: {{ currentCertDate() }}
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     :host { display: block; }
-    .animate-fade-in { animation: fadeIn 0.8s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  `]
+    .animate-fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  `],
 })
 export class StudentCertificatesComponent implements OnInit {
   private certService = inject(CertificateService);
   private confetti = inject(ConfettiService);
+  private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
   certificates = signal<Certificate[]>([]);
   isLoading = signal(true);
-  downloadingUuid = signal<string | null>(null);
+  downloadingId = signal<number | null>(null);
+  studentName = signal('Estudiante KernelLearn');
+  currentCertTitle = signal('');
+  currentCertCode = signal('');
+  currentCertDate = signal('');
 
   ngOnInit() {
     this.loadCertificates();
+    const user = this.authService.user();
+    if (user?.name) this.studentName.set(user.name);
   }
 
   loadCertificates() {
-  this.isLoading.set(true);
-  this.certService.getMyCertificates().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-    next: (res) => {
-      // Usamos '?? []' para asegurar que siempre haya una lista
-      this.certificates.set(res.data ?? []);
-      this.isLoading.set(false);
-    },
-    error: () => this.isLoading.set(false)
-  });
-}
-
-  download(cert: Certificate) {
-    this.downloadingUuid.set(cert.certificate_code);
-    
-    this.certService.downloadPdf(cert.certificate_code).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Certificado_${cert.course?.slug || cert.id}.pdf`;
-        link.click();
-
-        this.confetti.fireSuccessConfetti();
-
-        window.URL.revokeObjectURL(url);
-        this.downloadingUuid.set(null);
+    this.isLoading.set(true);
+    this.certService.getMyCertificates().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res) => {
+        this.certificates.set(res.data ?? []);
+        this.isLoading.set(false);
       },
-      error: () => {
-        this.downloadingUuid.set(null);
-      }
+      error: () => this.isLoading.set(false),
     });
+  }
+
+  async downloadCertificate(cert: Certificate) {
+    const template = document.getElementById('certificate-template');
+    if (!template || this.downloadingId()) return;
+
+    this.downloadingId.set(cert.id);
+    this.currentCertTitle.set(cert.course?.title || 'Curso KernelLearn');
+    this.currentCertCode.set(cert.certificate_code || '---');
+    this.currentCertDate.set(new Date(cert.issued_at || Date.now()).toLocaleDateString('es-BO', {
+      year: 'numeric', month: 'long', day: 'numeric',
+    }));
+
+    // Wait for DOM to update with signals
+    await new Promise(r => setTimeout(r, 100));
+
+    try {
+      const canvas = await html2canvas(template, { scale: 2, backgroundColor: '#09090b', useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF('landscape', 'px', [1056, 816]);
+      pdf.addImage(imgData, 'PNG', 0, 0, 1056, 816);
+      pdf.save('Certificado_KernelLearn.pdf');
+
+      this.confetti.fireSuccessConfetti();
+    } catch (err) {
+      console.error('Error generando certificado:', err);
+    } finally {
+      this.downloadingId.set(null);
+    }
   }
 }

@@ -406,6 +406,8 @@ class CourseController extends Controller
             ], 404);
         }
 
+        $this->authorize('restore', $course);
+
         $course->restore();
 
         return response()->json([
